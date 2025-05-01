@@ -38,6 +38,10 @@ const Image = styled.img`
 
 const CardContent = styled.div`
     padding: 1.5rem;
+    display: flex:
+    flex-direction: left;
+    align-items: flex-start;
+    text-align: left;
 `;
 
 const Title = styled.h3`

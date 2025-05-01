@@ -99,6 +99,8 @@ const CardContent = styled.div`
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    align-items: flex-start;
+    text-align: left;
 `;
 
 const AccommodationTitle = styled.h3`
