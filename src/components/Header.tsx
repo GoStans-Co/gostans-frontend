@@ -2,7 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
 import { FaGlobe, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
-import Button from '@/components/common/Button';
+import Button from '@/components/Common/Button';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -218,7 +218,7 @@ export default function Header() {
                         <Button variant="outline" size="md">
                             Sign up
                         </Button>
-                        <Button variant="primary" size="md">
+                        <Button variant="primary" size="md" as={Link} to="/login">
                             Login
                         </Button>
                     </AuthButtons>

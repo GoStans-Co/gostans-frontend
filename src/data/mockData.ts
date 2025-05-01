@@ -1,4 +1,4 @@
-import { DestinationProps } from '@/components/destinations/DestinationCard';
+import { DestinationProps } from '@/components/Destinations/DestinationCard';
 import { TourProps, AccommodationProps } from '../types';
 
 export const tours: TourProps[] = [

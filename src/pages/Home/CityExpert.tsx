@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import Button from '@/components/common/Button';
+import Button from '@/components/Common/Button';
 
 const ExpertSectionContainer = styled.section`
     display: flex;
