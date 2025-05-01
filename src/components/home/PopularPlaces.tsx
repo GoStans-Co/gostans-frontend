@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import DestinationCard, { DestinationProps } from '@/components/destinations/DestinationCard';
+import DestinationCard, { DestinationProps } from '@/components/Destinations/DestinationCard';
 import { useState } from 'react';
 
 const SectionContainer = styled.section`

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { destinations } from '@/data/mockData';
-import DestinationCard from '@/components/destinations/DestinationCard';
+import DestinationCard from '@/components/Destinations/DestinationCard';
 
 const PageContainer = styled.div`
     padding: 2rem;

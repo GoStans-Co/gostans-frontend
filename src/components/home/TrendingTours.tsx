@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { TourProps } from '@/types/index';
-import TourCard from '@/components/tours/ToursCard';
+import TourCard from '@/components/Tours/ToursCard';
 import { useState } from 'react';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 

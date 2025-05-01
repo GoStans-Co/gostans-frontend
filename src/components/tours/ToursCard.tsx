@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { TourProps } from '@/types/index';
-import Button from '@/components/common/Button';
+import Button from '@/components/Common/Button';
 
 const CardContainer = styled.div`
     border-radius: ${({ theme }) => theme.borderRadius.lg};

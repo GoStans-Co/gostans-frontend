@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { FaMapMarkerAlt, FaCalendarAlt, FaUser, FaSearch } from 'react-icons/fa';
-import Input from '@/components/common/Input';
-import Button from '@/components/common/Button';
+import Input from '@/components/Common/Input';
+import Button from '@/components/Common/Button';
 
 const SearchBarContainer = styled.div`
     background-color: white;

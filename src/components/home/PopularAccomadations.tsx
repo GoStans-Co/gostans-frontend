@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { AccommodationProps } from '@/types/index';
-import Card from '@/components/common/Card';
+import Card from '@/components/Common/Card';
 
 const SectionContainer = styled.section`
     padding: 4rem 2rem;

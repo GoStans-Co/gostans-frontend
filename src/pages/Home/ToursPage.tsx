@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { tours } from '@/data/mockData';
-import TourCard from '@/components/tours/ToursCard';
+import TourCard from '@/components/Tours/ToursCard';
 
 const PageContainer = styled.div`
     padding: 2rem;
