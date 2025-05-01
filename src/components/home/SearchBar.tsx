@@ -25,15 +25,15 @@ const TabsContainer = styled.div`
     margin-bottom: 0;
 `;
 
-const Tab = styled.button<{ active: boolean }>`
-    background-color: ${({ active, theme }) => (active ? theme.colors.primary : 'white')};
-    color: ${({ active }) => (active ? 'white' : 'inherit')};
-    padding: 1rem 2rem;
-    border-radius: 0;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-`;
+// const Tab = styled.button<{ active: boolean }>`
+//     background-color: ${({ active, theme }) => (active ? theme.colors.primary : 'white')};
+//     color: ${({ active }) => (active ? 'white' : 'inherit')};
+//     padding: 1rem 2rem;
+//     border-radius: 0;
+//     font-weight: 500;
+//     border: none;
+//     cursor: pointer;
+// `;
 
 const InputGrid = styled.div`
     display: flex;
@@ -61,23 +61,15 @@ const SearchBarButton = styled(Button)`
     }
 `;
 
-type SearchBarTab = 'tours' | 'hotels' | 'activities';
+// type SearchBarTab = 'tours' | 'hotels' | 'activities';
 
 export default function SearchBar() {
-    const [activeTab, setActiveTab] = useState<SearchBarTab>('tours');
     const [destination, setDestination] = useState('');
     const [dates, setDates] = useState('');
     const [travelers, setTravelers] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle search logic
-        console.log({
-            type: activeTab,
-            destination,
-            dates,
-            travelers,
-        });
     };
 
     return (

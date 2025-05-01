@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { TourProps } from '@/types/index';
 import TourCard from '@/components/tours/ToursCard';
 import { useState } from 'react';
-import { FaAlignRight, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 
 const SectionContainer = styled.section`
     padding: 4rem 2rem;
