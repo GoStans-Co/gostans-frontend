@@ -1,6 +1,10 @@
 import styled from 'styled-components';
 import SearchBar from './SearchBar';
 import { FaBed, FaMountain, FaSuitcase } from 'react-icons/fa';
+import uzb1 from '@/assets/uzb.jpg';
+import uzb2 from '@/assets/uzb2.jpg';
+import uzb3 from '@/assets/uzb3.jpg';
+import uzb4 from '@/assets/uzb4.jpg';
 
 type IconBoxProps = {
     active?: boolean;
@@ -167,32 +171,16 @@ export default function Hero() {
             </HeroContent>
             <ImagesGrid>
                 <ImageContainer>
-                    <img
-                        src="/src/assets/uzb.jpg"
-                        alt="Destination"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+                    <img src={uzb1} alt="Destination" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </ImageContainer>
                 <ImageContainer>
-                    <img
-                        src="/src/assets/uzb2.jpg"
-                        alt="Destination"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+                    <img src={uzb2} alt="Destination" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </ImageContainer>
                 <ImageContainer>
-                    <img
-                        src="/src/assets/uzb3.jpg"
-                        alt="Destination"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+                    <img src={uzb3} alt="Destination" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </ImageContainer>
                 <ImageContainer>
-                    <img
-                        src="/src/assets/uzb4.jpg"
-                        alt="Destination"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+                    <img src={uzb4} alt="Destination" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </ImageContainer>
             </ImagesGrid>
         </HeroContainer>
