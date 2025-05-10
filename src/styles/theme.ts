@@ -4,11 +4,10 @@ export const theme: DefaultTheme = {
     typography: {
         fontFamily: {
             display: 'Poppins, sans-serif',
-            body: 'Inter, sans-serif', // Assuming you want Inter for body text
+            body: 'Inter, sans-serif',
         },
         fontSize: {
             displayLarge: '57px',
-            // Add more sizes as needed
         },
         fontWeight: {
             regular: 400,
@@ -17,11 +16,9 @@ export const theme: DefaultTheme = {
         },
         lineHeight: {
             displayLarge: '64px',
-            // Add more line heights as needed
         },
         letterSpacing: {
             displayLarge: '-0.25px',
-            // Add more letter spacing values as needed
         },
         variants: {
             displayBold: {
