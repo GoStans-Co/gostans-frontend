@@ -1,4 +1,3 @@
-import React from 'react';
 import styled, { css } from 'styled-components';
 import { CardProps } from '@/types/index';
 
@@ -31,12 +30,10 @@ const StyledCard = styled.div<Omit<CardProps, 'children'>>`
     }}
 `;
 
-const Card: React.FC<CardProps> = ({ children, variant = 'default', padding = true, ...rest }) => {
+export default function Card({ children, variant = 'default', padding = true, ...rest }: CardProps) {
     return (
         <StyledCard variant={variant} padding={padding} {...rest}>
             {children}
         </StyledCard>
     );
-};
-
-export default Card;
+}

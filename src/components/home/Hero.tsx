@@ -1,10 +1,10 @@
 import styled from 'styled-components';
-import SearchBar from './SearchBar';
 import { FaBed, FaMountain, FaSuitcase } from 'react-icons/fa';
 import uzb1 from '@/assets/uzb.jpg';
 import uzb2 from '@/assets/uzb2.jpg';
 import uzb3 from '@/assets/uzb3.jpg';
 import uzb4 from '@/assets/uzb4.jpg';
+import SearchBar from './SearchBar';
 
 type IconBoxProps = {
     active?: boolean;

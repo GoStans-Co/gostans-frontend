@@ -4,64 +4,71 @@ import { FaMapMarkerAlt, FaCalendarAlt, FaUser, FaSearch } from 'react-icons/fa'
 import Input from '@/components/Common/Input';
 import Button from '@/components/Common/Button';
 
-const SearchBarContainer = styled.div`
-    background-color: white;
-    border-radius: ${({ theme }) => theme.borderRadius.lg};
-    padding: 0;
-    box-shadow: ${({ theme }) => theme.shadows.md};
-    width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
-    overflow: hidden;
-`;
-
 const SearchForm = styled.form`
     display: flex;
     flex-direction: column;
 `;
 
-const TabsContainer = styled.div`
-    display: flex;
-    margin-bottom: 0;
-`;
-
-// const Tab = styled.button<{ active: boolean }>`
-//     background-color: ${({ active, theme }) => (active ? theme.colors.primary : 'white')};
-//     color: ${({ active }) => (active ? 'white' : 'inherit')};
-//     padding: 1rem 2rem;
-//     border-radius: 0;
-//     font-weight: 500;
-//     border: none;
-//     cursor: pointer;
-// `;
-
 const InputGrid = styled.div`
     display: flex;
-    border-top: 0;
+    border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius.lg};
+    background: white;
     overflow: hidden;
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+    height: 56px;
 
     @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
         flex-direction: column;
+        height: auto;
     }
+`;
+
+const SearchBarContainer = styled.div`
+    background-color: transparent;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
 `;
 
 const SearchBarButton = styled(Button)`
     min-height: auto;
     height: 56px;
-    width: 70px;
+    width: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 0;
+    border-top-right-radius: ${({ theme }) => theme.borderRadius.lg};
+    border-bottom-right-radius: ${({ theme }) => theme.borderRadius.lg};
     padding: 0;
+    margin: 0;
+    background-color: ${({ theme }) => theme.colors.primary};
 
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
         width: 100%;
+        border-radius: 0;
     }
 `;
 
-// type SearchBarTab = 'tours' | 'hotels' | 'activities';
+const StyledInput = styled(Input)`
+    .input-container {
+        border: none !important;
+        border-right: 1px solid ${({ theme }) => theme.colors.border} !important;
+    }
+
+    input {
+        border: none !important;
+        height: 56px;
+        font-size: 1rem;
+        padding: 0 1rem 0 3rem;
+        color: ${({ theme }) => theme.colors.text};
+    }
+
+    svg {
+        color: #aaa;
+    }
+`;
 
 export default function SearchBar() {
     const [destination, setDestination] = useState('');
@@ -75,42 +82,50 @@ export default function SearchBar() {
     return (
         <SearchBarContainer>
             <SearchForm onSubmit={handleSubmit}>
-                <TabsContainer>
-                    {/* <Tab type="button" active={activeTab === 'tours'} onClick={() => setActiveTab('tours')}>
-                        Tours
-                    </Tab> */}
-                </TabsContainer>
-
                 <InputGrid>
-                    <Input
+                    <StyledInput
                         placeholder="Where are you going?"
                         value={destination}
                         onChange={(e) => setDestination(e.target.value)}
                         icon={<FaMapMarkerAlt />}
                         defaultValue="Uzbekistan"
-                        noBorder
+                        inputConfig={{
+                            noBorder: true,
+                            variant: 'outlined',
+                            size: 'md',
+                            fullWidth: true,
+                        }}
                     />
 
-                    <Input
+                    <StyledInput
                         placeholder="Select dates"
                         value={dates}
                         onChange={(e) => setDates(e.target.value)}
                         icon={<FaCalendarAlt />}
                         defaultValue="02 Jan 2025 ~ 04 Jan 2025"
-                        noBorder={true}
+                        inputConfig={{
+                            noBorder: true,
+                            variant: 'outlined',
+                            size: 'md',
+                            fullWidth: true,
+                        }}
                     />
 
-                    <Input
+                    <StyledInput
                         placeholder="Travelers"
                         value={travelers}
                         onChange={(e) => setTravelers(e.target.value)}
                         icon={<FaUser />}
                         defaultValue="2 adults, 2 children"
-                        noBorder
+                        inputConfig={{
+                            noBorder: true,
+                            variant: 'outlined',
+                            size: 'md',
+                            fullWidth: true,
+                        }}
                     />
-
                     <SearchBarButton variant="primary" type="submit">
-                        <FaSearch />
+                        <FaSearch size={20} />
                     </SearchBarButton>
                 </InputGrid>
             </SearchForm>

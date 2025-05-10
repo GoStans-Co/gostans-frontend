@@ -43,15 +43,37 @@ const InputWrapper = styled.div`
 const IconContainer = styled.div`
     position: absolute;
     left: ${({ theme }) => theme.spacing.md};
-    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: ${({ theme }) => theme.colors.text || '#666'};
     z-index: 1;
+
+    svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 2px; /* Make icon lines thicker */
+    }
 `;
 
 const EndIconContainer = styled.div`
     position: absolute;
     right: ${({ theme }) => theme.spacing.md};
-    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: ${({ theme }) => theme.colors.text || '#666'};
     z-index: 1;
+
+    width: 24px;
+    height: 24px;
+    background-color: ${({ theme }) => theme.colors.lightBackground || '#f5f5f5'};
+    border-radius: 50%;
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
 `;
 
 const StyledInput = styled.input<{
@@ -64,6 +86,9 @@ const StyledInput = styled.input<{
     width: 100%;
     border-radius: ${({ theme }) => theme.borderRadius.md};
     transition: all ${({ theme }) => theme.transitions.default};
+    color: ${({ theme }) => theme.colors.text};
+
+    padding: ${({ $size }) => ($size === 'sm' ? '0.1rem 0.75rem' : $size === 'lg' ? '0.75rem 1rem' : '0.625rem 1rem')};
 
     ${({ $hasIcon }) =>
         $hasIcon &&
@@ -94,7 +119,7 @@ const StyledInput = styled.input<{
             case 'md':
             default:
                 return css`
-                    padding: 0.625rem 2.5rem;
+                    padding: 1rem 2.9rem;
                     font-size: ${theme.fontSizes.md};
                     height: 48px;
                 `;

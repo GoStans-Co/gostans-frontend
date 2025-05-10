@@ -3,6 +3,10 @@ import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
 import { FaGlobe, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
+import { theme } from '@/styles/theme';
+import useModal from '@/hooks/useModal';
+import ModalAuth from '@/components/ModalPopup/AuthModal/ModalAuth';
+import { useCookieAuth } from '@/services/cookieAuthService';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -162,6 +166,12 @@ const AuthButtons = styled.div`
 export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const location = useLocation();
+    const { openModal, closeModal } = useModal();
+    const { isAuthenticated, user, logout } = useCookieAuth();
+
+    const openLoginModal = (initialTab: 'login' | 'signup' = 'login') => {
+        openModal('login-modal', <ModalAuth onClose={() => closeModal('login-modal')} initialTab={initialTab} />);
+    };
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -214,14 +224,32 @@ export default function Header() {
                         <CartCount>0</CartCount>
                     </CartLink>
 
-                    <AuthButtons>
-                        <Button variant="outline" size="md">
-                            Sign up
-                        </Button>
-                        <Button variant="primary" size="md" as={Link} to="/login">
-                            Login
-                        </Button>
-                    </AuthButtons>
+                    {isAuthenticated ? (
+                        <AuthButtons>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    marginRight: '16px',
+                                    color: theme.colors.text,
+                                }}
+                            >
+                                Welcome, <strong style={{ marginLeft: '8px' }}>{user?.name || 'User'}</strong>
+                            </div>
+                            <Button variant="outline" onClick={logout}>
+                                Logout
+                            </Button>
+                        </AuthButtons>
+                    ) : (
+                        <AuthButtons>
+                            <Button variant="outline" onClick={() => openLoginModal('signup')}>
+                                Sign up
+                            </Button>
+                            <Button variant="primary" onClick={() => openLoginModal('login')}>
+                                Login
+                            </Button>
+                        </AuthButtons>
+                    )}
                 </RightSection>
             </HeaderContent>
         </HeaderContainer>
