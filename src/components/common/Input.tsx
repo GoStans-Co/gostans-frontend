@@ -24,6 +24,7 @@ const InputContainer = styled.div<{ noBorder: boolean; fullWidth: boolean }>`
     gap: 0.5rem;
     border-right: ${({ noBorder, theme }) => (noBorder ? 'none' : `1px solid ${theme.colors.border}`)};
     width: ${({ fullWidth }) => (fullWidth ? '100%' : 'auto')};
+    // background: transparent;
 `;
 
 const InputLabel = styled.label`
@@ -102,7 +103,8 @@ const StyledInput = styled.input<{
             padding-right: 2.5rem;
         `}
 
-  ${({ $size, theme }) => {
+
+    ${({ $size, theme }) => {
         switch ($size) {
             case 'sm':
                 return css`
@@ -119,14 +121,14 @@ const StyledInput = styled.input<{
             case 'md':
             default:
                 return css`
-                    padding: 1rem 2.9rem;
+                    padding: 1rem 2.8rem;
                     font-size: ${theme.fontSizes.md};
                     height: 48px;
                 `;
         }
     }}
 
-  ${({ $variant, theme, $hasError }) => {
+    ${({ $variant, theme, $hasError }) => {
         switch ($variant) {
             case 'outlined':
                 return css`
