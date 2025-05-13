@@ -15,7 +15,7 @@ export const useCookieAuth = () => {
     const user: User | null = cookies.auth_user ? JSON.parse(cookies.auth_user) : null;
     const isAuthenticated = !!cookies.auth_token;
 
-    const login = async (emailOrPhone: string, password: string) => {
+    const login = async (emailOrPhone: string) => {
         try {
             //later we will change it
             const mockResponse = {
@@ -43,7 +43,7 @@ export const useCookieAuth = () => {
         }
     };
 
-    const signup = async (name: string, email: string, phoneNumber: string, password: string) => {
+    const signup = async (name: string, email: string, phoneNumber: string) => {
         try {
             const mockResponse = {
                 data: {

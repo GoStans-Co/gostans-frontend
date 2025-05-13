@@ -186,7 +186,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 if (!password) {
                     throw new Error('Password is required');
                 }
-                await login(email || phoneNumber, password);
+                await login(email || phoneNumber);
                 /* close modal on successful login */
                 onClose();
             } else {
@@ -196,7 +196,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 if (!password) throw new Error('Password is required');
                 if (password !== confirmPassword) throw new Error('Passwords do not match');
 
-                await signup(name, email, phoneNumber, password);
+                await signup(name, email, phoneNumber);
                 onClose();
             }
         } catch (err) {
