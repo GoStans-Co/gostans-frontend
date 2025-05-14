@@ -24,7 +24,11 @@ dist-ssr
 *.sw?
 
 
-# firebase configs
-.firebasrc
+# Firebase
 .firebase/
+.firebaserc
+firebase-debug.log
+firebase-debug.*.log
+.firebase/*.cache
 hosting.*.cache
+/.firebase/

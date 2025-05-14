@@ -138,18 +138,18 @@ const Subtitle = styled.p`
     }
 `;
 
-type SearchBarProps = {
-    destination: string;
-    dates: string;
-    travelers: string;
-    destinationRef: React.RefObject<HTMLDivElement | null>;
-    datesRef: React.RefObject<HTMLDivElement | null>;
-    travelersRef: React.RefObject<HTMLDivElement | null>;
-    onDestinationClick: (e: React.MouseEvent) => void;
-    onDatesClick: (e: React.MouseEvent) => void;
-    onTravelersClick: (e: React.MouseEvent) => void;
-    onSubmit: (values: { destination: string; dates: string; travelers: string }) => void;
-};
+// type SearchBarProps = {
+//     destination: string;
+//     dates: string;
+//     travelers: string;
+//     destinationRef: React.RefObject<HTMLDivElement | null>;
+//     datesRef: React.RefObject<HTMLDivElement | null>;
+//     travelersRef: React.RefObject<HTMLDivElement | null>;
+//     onDestinationClick: (e: React.MouseEvent) => void;
+//     onDatesClick: (e: React.MouseEvent) => void;
+//     onTravelersClick: (e: React.MouseEvent) => void;
+//     onSubmit: (values: { destination: string; dates: string; travelers: string }) => void;
+// };
 
 const SearchForm = styled.form`
     display: flex;
