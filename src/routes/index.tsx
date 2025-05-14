@@ -4,6 +4,7 @@ import DestinationsPage from '@/pages/Home/DestinationPage';
 import ToursPage from '@/pages/Home/ToursPage';
 import NotFoundPage from '@/pages/NotFound';
 import MainLayout from '@/components/Layout/Layout';
+import MyPage from '@/pages/MyPage';
 
 const routes: RouteObject[] = [
     {
@@ -13,6 +14,7 @@ const routes: RouteObject[] = [
             { index: true, element: <HomePage /> },
             { path: 'destinations', element: <DestinationsPage /> },
             { path: 'tours', element: <ToursPage /> },
+            { path: 'mypage', element: <MyPage /> },
         ],
     },
     {

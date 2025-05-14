@@ -210,6 +210,9 @@ export default function Header() {
                         <NavItem isActive={location.pathname === '/faq'}>
                             <Link to="/faq">FAQ</Link>
                         </NavItem>
+                        <NavItem isActive={location.pathname === '/mypage'}>
+                            <Link to="/mypage">MyPage</Link>
+                        </NavItem>
                     </NavList>
                 </Nav>
 
