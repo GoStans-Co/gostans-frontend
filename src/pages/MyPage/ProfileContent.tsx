@@ -13,10 +13,9 @@ type ProfileContentProps = {
 };
 
 const ProfileContentContainer = styled.div`
-    flex: 1;
-    padding: ${({ theme }) => theme.spacing['2xl']};
-    background-color: ${({ theme }) => theme.colors.grayBackground};
-    min-height: 100vh;
+    padding: ${({ theme }) => theme.spacing.xl};
+    width: 100%;
+    max-width: 650px;
 `;
 
 const Card = styled.div`
@@ -25,24 +24,38 @@ const Card = styled.div`
     padding: ${({ theme }) => theme.spacing.xl};
     margin-bottom: ${({ theme }) => theme.spacing.xl};
     box-shadow: ${({ theme }) => theme.shadows.sm};
+    width: 100%;
+    box-sizing: border-box;
 `;
 
+const FieldsGrid = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.lg};
+
+    @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    & > div {
+        width: 100%;
+    }
+`;
+
+const ButtonContainer = styled.div`
+    margin-top: ${({ theme }) => theme.spacing.xl};
+    display: flex;
+    justify-content: center;
+`;
 const SectionTitle = styled.h2`
     font-size: ${({ theme }) => theme.fontSizes.xl};
     font-weight: 600;
     margin-top: 0;
     margin-bottom: ${({ theme }) => theme.spacing.lg};
     color: ${({ theme }) => theme.colors.primary};
-`;
-
-const FieldsGrid = styled.div`
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: ${({ theme }) => theme.spacing.lg};
-
-    @media (min-width: ${({ theme }) => theme.breakpoints.md}) {
-        grid-template-columns: 1fr 1fr;
-    }
+    align-self: flex-start;
+    width: 100%;
+    text-align: left;
 `;
 
 const PasswordHint = styled.p`
@@ -50,10 +63,8 @@ const PasswordHint = styled.p`
     color: ${({ theme }) => theme.colors.lightText};
     margin-top: 0;
     margin-bottom: ${({ theme }) => theme.spacing.md};
-`;
-
-const ButtonContainer = styled.div`
-    margin-top: ${({ theme }) => theme.spacing.xl};
+    text-align: left;
+    width: 100%;
 `;
 
 export default function ProfileContent({ userData }: ProfileContentProps) {

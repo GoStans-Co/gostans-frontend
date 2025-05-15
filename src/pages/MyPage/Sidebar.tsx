@@ -4,10 +4,17 @@ import { FaViacoin } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
+enum PageSection {
+    TRIPS = 'trips',
+    FAVORITES = 'favorites',
+    PROFILE = 'profile',
+}
+
 type SidebarProps = {
     userName: string;
     joinDate: string;
-    activePage: 'profile' | 'trips' | 'favorites';
+    activePage: PageSection;
+    onSectionChange: (section: PageSection) => void;
 };
 
 type SidebarItemProps = {
@@ -15,14 +22,18 @@ type SidebarItemProps = {
     icon: React.ReactNode;
     label: string;
     href: string;
+    onClick?: () => void;
 };
 
 const SidebarContainer = styled.div`
     width: 280px;
     background-color: ${({ theme }) => theme.colors.background};
     border-right: 1px solid ${({ theme }) => theme.colors.border};
-    height: 100%;
     padding: ${({ theme }) => theme.spacing.xl};
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 72px);
+    overflow-y: auto;
 `;
 
 const ProfileSection = styled.div`
@@ -69,7 +80,7 @@ const NavSection = styled.div`
     gap: ${({ theme }) => theme.spacing.md};
 `;
 
-const NavItem = styled(Link)<{ $active?: boolean }>`
+const NavItem = styled.button<{ $active?: boolean }>`
     display: flex;
     align-items: center;
     padding: ${({ theme }) => theme.spacing.md};
@@ -95,17 +106,16 @@ const IconWrapper = styled.span`
         height: 20px;
     }
 `;
-
-function SidebarItem({ active, icon, label, href }: SidebarItemProps) {
+function SidebarItem({ active, icon, label, onClick }: SidebarItemProps) {
     return (
-        <NavItem to={href} $active={active}>
+        <NavItem $active={active} onClick={onClick}>
             <IconWrapper>{icon}</IconWrapper>
             {label}
         </NavItem>
     );
 }
 
-export default function Sidebar({ userName, joinDate, activePage }: SidebarProps) {
+export default function Sidebar({ userName, joinDate, activePage, onSectionChange }: SidebarProps) {
     return (
         <SidebarContainer>
             <ProfileSection>
@@ -119,13 +129,26 @@ export default function Sidebar({ userName, joinDate, activePage }: SidebarProps
             </ProfileSection>
 
             <NavSection>
-                <SidebarItem active={activePage === 'profile'} icon={<User />} label="Personal Info" href="/mypage" />
-                <SidebarItem active={activePage === 'trips'} icon={<TreePine />} label="Trips" href="/mypage/trips" />
+                <SidebarItem
+                    active={activePage === 'profile'}
+                    icon={<User />}
+                    label="Personal Info"
+                    href="/mypage"
+                    onClick={() => onSectionChange(PageSection.PROFILE)}
+                />
+                <SidebarItem
+                    active={activePage === 'trips'}
+                    icon={<TreePine />}
+                    label="Trips"
+                    href="/mypage/trips"
+                    onClick={() => onSectionChange(PageSection.TRIPS)}
+                />
                 <SidebarItem
                     active={activePage === 'favorites'}
                     icon={<FaViacoin />}
                     label="Favorites"
                     href="/mypage/favorites"
+                    onClick={() => onSectionChange(PageSection.FAVORITES)}
                 />
 
                 {/* Extra space before logout */}
