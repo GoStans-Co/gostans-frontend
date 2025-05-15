@@ -24,6 +24,13 @@ const StyledButton = styled.button<Omit<ButtonProps, 'children'>>`
   
     ${({ size }) => {
         switch (size) {
+            case 'mini':
+                return css`
+                    padding: 0.3rem 0.7rem;
+                    font-size: ${({ theme }) => theme.fontSizes.xs};
+                    height: auto;
+                    min-height: 24px;
+                `;
             case 'xs':
                 return css`
                     padding: 0.7rem;

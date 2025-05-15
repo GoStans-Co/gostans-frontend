@@ -22,9 +22,10 @@ const InputContainer = styled.div<{ noBorder: boolean; fullWidth: boolean }>`
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    border-right: ${({ noBorder, theme }) => (noBorder ? 'none' : `1px solid ${theme.colors.border}`)};
-    width: ${({ fullWidth }) => (fullWidth ? '100%' : 'auto')};
-    // background: transparent;
+    text-align: left;
+    align-items: flex-start;
+    width: 100%;
+    // width: ${({ fullWidth }) => (fullWidth ? '100%' : 'auto')};
 `;
 
 const InputLabel = styled.label`
@@ -121,7 +122,7 @@ const StyledInput = styled.input<{
             case 'md':
             default:
                 return css`
-                    padding: 1rem 2.8rem;
+                    padding: 0.65rem 1rem;
                     font-size: ${theme.fontSizes.md};
                     height: 48px;
                 `;
