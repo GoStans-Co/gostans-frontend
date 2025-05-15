@@ -9,6 +9,7 @@ export type DestinationProps = {
     image: string;
     toursCount?: number;
     shape?: CardShape;
+    location?: string;
 };
 
 const CardContainer = styled(Link)<{ $shape?: CardShape }>`

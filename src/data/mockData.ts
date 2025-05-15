@@ -12,6 +12,9 @@ export const tours: TourProps[] = [
         country: 'Turkmenistan',
         days: 7,
         rating: 4.8,
+        status: 'all',
+        date: '2023-10-01',
+        dayInfo: 'One Day Tour',
     },
     {
         id: 'tour-2',
@@ -23,6 +26,9 @@ export const tours: TourProps[] = [
         country: 'Uzbekistan',
         days: 10,
         rating: 4.9,
+        status: 'booked',
+        date: '2023-09-15',
+        dayInfo: 'Two Day Tour',
     },
     {
         id: 'tour-3',
@@ -33,6 +39,9 @@ export const tours: TourProps[] = [
         country: 'Kazakhstan',
         days: 8,
         rating: 4.7,
+        status: 'waiting',
+        date: '2023-11-05',
+        dayInfo: 'Three Day Tour',
     },
     {
         id: 'tour-4',
@@ -44,6 +53,9 @@ export const tours: TourProps[] = [
         country: 'Kyrgyzstan',
         days: 12,
         rating: 4.9,
+        status: 'complete',
+        date: '2023-08-20',
+        dayInfo: 'Four Day Tour',
     },
     {
         id: 'tour-5',
@@ -55,6 +67,9 @@ export const tours: TourProps[] = [
         country: 'Tajikistan',
         days: 9,
         rating: 4.6,
+        status: 'cancelled',
+        date: '2023-07-10',
+        dayInfo: 'Three Day Tour',
     },
     {
         id: 'tour-6',
@@ -65,50 +80,57 @@ export const tours: TourProps[] = [
         country: 'Multiple',
         days: 14,
         rating: 4.9,
+        status: 'all',
+        date: '2023-12-01',
+        dayInfo: 'Five Day Tour',
     },
 ];
 
-// Sample data for destinations
 export const destinations: DestinationProps[] = [
     {
         id: 'uzbekistan-bukhara',
         name: 'Bukhara',
         image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb',
         toursCount: 25,
+        location: 'Uzbekistan',
     },
     {
         id: 'uzbekistan-samarkand',
         name: 'Samarkand',
         image: 'https://images.unsplash.com/photo-1659651117607-d2b397cf100f?q=80&w=3046&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         toursCount: 30,
+        location: 'Uzbekistan',
     },
     {
         id: 'turkmenistan-ashgabat',
         name: 'Ashgabat',
         image: 'https://images.unsplash.com/photo-1572940734104-684309ed7ac9?q=80&w=3174&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         toursCount: 15,
+        location: 'Turkmenistan',
     },
     {
         id: 'kazakhstan-almaty',
         name: 'Almaty',
         image: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791',
         toursCount: 22,
+        location: 'Kazakhstan',
     },
     {
         id: 'kyrgyzstan-bishkek',
         name: 'Bishkek',
         image: 'https://images.unsplash.com/photo-1623661885790-67640e1e6b21?q=80&w=3270&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         toursCount: 18,
+        location: 'Kyrgyzstan',
     },
     {
         id: 'tajikistan-dushanbe',
         name: 'Dushanbe',
         image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb',
         toursCount: 12,
+        location: 'Tajikistan',
     },
 ];
 
-// Sample data for accommodations
 export const accommodations: AccommodationProps[] = [
     {
         id: 'acc-1',

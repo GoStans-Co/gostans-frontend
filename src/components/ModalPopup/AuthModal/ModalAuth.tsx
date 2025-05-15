@@ -67,8 +67,6 @@ const ForgotPasswordLink = styled.a`
     color: ${theme.colors.secondary};
     text-align: right;
     font-size: ${theme.fontSizes.sm};
-    // margin-top: -${theme.spacing.sm};
-    // margin-bottom: ${theme.spacing.md};
     text-decoration: none;
     cursor: pointer;
     font-family: ${theme.typography.fontFamily.body};
@@ -239,24 +237,13 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
 
             <Form onSubmit={handleSubmit}>
                 {activeTab === 'signup' && (
-                    <InputField>
-                        <Input
-                            placeholder="Full Name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            required={activeTab === 'signup'}
-                            inputConfig={{ noBorder: true }}
-                            icon={
-                                <User
-                                    size={10}
-                                    style={{
-                                        color: '#666',
-                                        strokeWidth: 1.5,
-                                    }}
-                                />
-                            }
-                        />
-                    </InputField>
+                    <Input
+                        placeholder="Full Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required={activeTab === 'signup'}
+                        inputConfig={{ noBorder: true }}
+                    />
                 )}
 
                 <InputField>
@@ -267,56 +254,59 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                         onChange={(e) => setEmail(e.target.value)}
                         required={(activeTab === 'login' && !phoneNumber) || activeTab === 'signup'}
                         inputConfig={{ noBorder: true }}
-                        icon={
-                            <Mail
-                                size={10}
-                                style={{
-                                    color: '#666',
-                                    strokeWidth: 1.5,
-                                }}
-                            />
-                        }
                     />
                 </InputField>
 
                 {activeTab === 'signup' && (
-                    <InputField>
-                        <Input
-                            placeholder="Phone Number"
-                            type="tel"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            inputConfig={{ noBorder: true }}
-                            icon={
-                                <Phone
-                                    size={10}
-                                    style={{
-                                        color: '#666',
-                                        strokeWidth: 1.5,
-                                    }}
-                                />
-                            }
-                        />
-                    </InputField>
+                    <Input
+                        placeholder="Phone Number"
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        inputConfig={{ noBorder: true }}
+                    />
                 )}
 
-                <InputField>
-                    <Input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        inputConfig={{ noBorder: true }}
-                        icon={
-                            <Lock
+                <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    inputConfig={{ noBorder: true }}
+                    endIcon={
+                        showPassword ? (
+                            <Eye
                                 size={20}
+                                onClick={() => setShowPassword(false)}
                                 style={{
+                                    cursor: 'pointer',
                                     color: '#666',
                                     strokeWidth: 2,
                                 }}
                             />
-                        }
+                        ) : (
+                            <EyeOff
+                                size={20}
+                                onClick={() => setShowPassword(true)}
+                                style={{
+                                    cursor: 'pointer',
+                                    color: '#666',
+                                    strokeWidth: 2,
+                                }}
+                            />
+                        )
+                    }
+                />
+
+                {activeTab === 'signup' && (
+                    <Input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required={activeTab === 'signup'}
+                        inputConfig={{ noBorder: true }}
                         endIcon={
                             showPassword ? (
                                 <Eye
@@ -341,51 +331,6 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                             )
                         }
                     />
-                </InputField>
-
-                {activeTab === 'signup' && (
-                    <InputField>
-                        <Input
-                            type={showPassword ? 'text' : 'password'}
-                            placeholder="Confirm Password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required={activeTab === 'signup'}
-                            inputConfig={{ noBorder: true }}
-                            icon={
-                                <Lock
-                                    size={20}
-                                    style={{
-                                        color: '#666',
-                                        strokeWidth: 2,
-                                    }}
-                                />
-                            }
-                            endIcon={
-                                showPassword ? (
-                                    <Eye
-                                        size={20}
-                                        onClick={() => setShowPassword(false)}
-                                        style={{
-                                            cursor: 'pointer',
-                                            color: '#666',
-                                            strokeWidth: 2,
-                                        }}
-                                    />
-                                ) : (
-                                    <EyeOff
-                                        size={20}
-                                        onClick={() => setShowPassword(true)}
-                                        style={{
-                                            cursor: 'pointer',
-                                            color: '#666',
-                                            strokeWidth: 2,
-                                        }}
-                                    />
-                                )
-                            }
-                        />
-                    </InputField>
                 )}
 
                 {activeTab === 'login' && <ForgotPasswordLink href="#">Forgot Password?</ForgotPasswordLink>}

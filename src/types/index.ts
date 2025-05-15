@@ -12,6 +12,9 @@ export type TourProps = {
     rating?: number;
     variant?: TourCardVariant;
     buttonText?: string;
+    status: 'all' | 'booked' | 'waiting' | 'complete' | 'cancelled';
+    date?: string;
+    dayInfo?: string;
 };
 
 export interface AccommodationProps {
@@ -27,7 +30,7 @@ export interface AccommodationProps {
 export interface ButtonProps {
     children: React.ReactNode;
     variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'light';
-    size?: 'sm' | 'md' | 'lg' | 'xs';
+    size?: 'sm' | 'md' | 'lg' | 'xs' | 'mini';
     fullWidth?: boolean;
     onClick?: () => void;
     disabled?: boolean;
@@ -41,6 +44,7 @@ export interface CardProps {
     children: React.ReactNode;
     variant?: 'default' | 'outlined' | 'elevated';
     padding?: boolean;
+    style?: React.CSSProperties;
 }
 
 export interface IconButtonProps {
