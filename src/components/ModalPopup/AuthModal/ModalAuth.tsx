@@ -6,7 +6,7 @@ import Input from '@/components/Common/Input';
 import Modal from '@/components/Modal';
 import useCookieAuth from '@/services/cookieAuthService';
 import SocialLogin from '@/components/ModalPopup/AuthModal/SocialLogin';
-import { Mail, Lock, User, Phone } from 'lucide-react';
+import useApiService, { LoginCredentials, SignUpData, SocialLoginData } from '@/services/api';
 
 type ModalAuthProps = {
     onClose: () => void;
@@ -153,10 +153,25 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
-    const { login, signup } = useCookieAuth();
+    const {
+        login,
+        loginLoading,
+        loginError,
+        signUp,
+        signupLoading,
+        signupError,
+        socialLogin,
+        socialLoginLoading,
+        socialLoginError,
+        resetAll,
+    } = useApiService();
+
+    const { isAuthenticated } = useCookieAuth();
+
+    const loading = loginLoading || signupLoading || socialLoginLoading;
+    const error = loginError || signupError || socialLoginError;
 
     useEffect(() => {
         setName('');
@@ -164,17 +179,27 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         setPhoneNumber('');
         setPassword('');
         setConfirmPassword('');
-        setError('');
+        setSuccess('');
+        resetAll();
     }, [activeTab]);
 
     useEffect(() => {
         setActiveTab(initialTab);
     }, [initialTab]);
 
+    useEffect(() => {
+        if (isAuthenticated()) {
+            setSuccess('Login successful!');
+            const timer = setTimeout(() => {
+                onClose();
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [isAuthenticated, onClose]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-        setLoading(true);
+        setSuccess('');
 
         try {
             if (activeTab === 'login') {
@@ -184,39 +209,68 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 if (!password) {
                     throw new Error('Password is required');
                 }
-                await login(email || phoneNumber);
-                /* close modal on successful login */
-                onClose();
+
+                const credentials: LoginCredentials = {
+                    email_or_phone: email || phoneNumber,
+                    password,
+                };
+
+                const result = await login(credentials);
+
+                if (result) {
+                    setSuccess('Login successful!');
+                    setTimeout(() => {
+                        onClose();
+                    }, 1000);
+                }
             } else {
-                /* signup  logic*/
                 if (!name) throw new Error('Name is required');
                 if (!email) throw new Error('Email is required for signup');
                 if (!password) throw new Error('Password is required');
                 if (password !== confirmPassword) throw new Error('Passwords do not match');
 
-                await signup(name, email, phoneNumber);
-                onClose();
+                const signupData: SignUpData = {
+                    name,
+                    email,
+                    phone: phoneNumber,
+                    password,
+                };
+
+                const result = await signUp(signupData);
+
+                if (result) {
+                    setSuccess('Account created successfully!');
+                    setTimeout(() => {
+                        onClose();
+                    }, 1000);
+                }
             }
         } catch (err) {
             console.error('Authentication error:', err);
-            setError(err instanceof Error ? err.message : 'Authentication failed');
-        } finally {
-            setLoading(false);
         }
     };
 
-    const handleSocialLogin = (provider: string) => {
-        setLoading(true);
-        // i will implement the social login logic later
-        console.log(`Authenticating with ${provider}`);
+    const handleSocialLogin = async (provider: string, credential?: string) => {
+        try {
+            setSuccess('');
+            if (!credential) return;
 
-        // as of now mocking the successful login after a short delay
-        setTimeout(() => {
-            // then we call the  actual service
-            // cookieAuthService.socialLogin(provider)
-            setLoading(false);
-            onClose();
-        }, 1000);
+            const socialData: SocialLoginData = {
+                provider: provider as 'google' | 'facebook' | 'twitter',
+                id_token: credential,
+            };
+
+            const result = await socialLogin(socialData);
+
+            if (result) {
+                setSuccess(`${provider} login successful!`);
+                setTimeout(() => {
+                    onClose();
+                }, 1000);
+            }
+        } catch (err) {
+            console.error('Social login error:', err);
+        }
     };
 
     return (

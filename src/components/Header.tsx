@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
 import { FaGlobe, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
@@ -7,6 +7,7 @@ import { theme } from '@/styles/theme';
 import useModal from '@/hooks/useModal';
 import ModalAuth from '@/components/ModalPopup/AuthModal/ModalAuth';
 import { useCookieAuth } from '@/services/cookieAuthService';
+import useApiService from '@/services/api';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -146,6 +147,16 @@ const CloseButton = styled.button`
     }
 `;
 
+const MobileAuthSection = styled.div`
+    display: block;
+    margin-top: 20px;
+    padding: 0 20px;
+
+    @media (min-width: 768px) {
+        display: none;
+    }
+`;
+
 const AuthButtons = styled.div`
     display: flex;
     align-items: center;
@@ -167,13 +178,31 @@ export default function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const location = useLocation();
     const { openModal, closeModal } = useModal();
-    const { isAuthenticated, user, logout } = useCookieAuth();
+    const { isAuthenticated, getUserData, removeAuthCookie } = useCookieAuth();
+    const { logout: apiLogout, logoutLoading } = useApiService();
+
+    const userData = getUserData();
+    const isLoggedIn = isAuthenticated();
 
     const openLoginModal = (initialTab: 'login' | 'signup' = 'login') => {
         openModal('login-modal', <ModalAuth onClose={() => closeModal('login-modal')} initialTab={initialTab} />);
     };
 
-    const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+    const toggleMenu = useCallback(() => {
+        setIsMenuOpen(!isMenuOpen);
+    }, []);
+
+    const handleLogout = useCallback(async () => {
+        try {
+            await apiLogout();
+        } catch (error) {
+            console.error('Logout error:', error);
+            /* if logout fails, we force to remove cookies */
+            removeAuthCookie();
+        } finally {
+            setIsMenuOpen(false);
+        }
+    }, []);
 
     return (
         <HeaderContainer>
@@ -210,10 +239,53 @@ export default function Header() {
                         <NavItem isActive={location.pathname === '/faq'}>
                             <Link to="/faq">FAQ</Link>
                         </NavItem>
-                        <NavItem isActive={location.pathname === '/mypage'}>
-                            <Link to="/mypage">MyPage</Link>
-                        </NavItem>
                     </NavList>
+                    <MobileAuthSection>
+                        {isLoggedIn ? (
+                            <div>
+                                <div
+                                    style={{
+                                        color: theme.colors.text,
+                                        marginBottom: '12px',
+                                        fontSize: '14px',
+                                    }}
+                                >
+                                    Welcome, <strong>{userData?.name || 'User'}</strong>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    onClick={handleLogout}
+                                    disabled={logoutLoading}
+                                    style={{ width: '100%' }}
+                                >
+                                    {logoutLoading ? 'Logging out...' : 'Logout'}
+                                </Button>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        openLoginModal('signup');
+                                        setIsMenuOpen(false);
+                                    }}
+                                    style={{ width: '100%' }}
+                                >
+                                    Sign up
+                                </Button>
+                                <Button
+                                    variant="primary"
+                                    onClick={() => {
+                                        openLoginModal('login');
+                                        setIsMenuOpen(false);
+                                    }}
+                                    style={{ width: '100%' }}
+                                >
+                                    Login
+                                </Button>
+                            </div>
+                        )}
+                    </MobileAuthSection>
                 </Nav>
 
                 <RightSection>
@@ -227,7 +299,7 @@ export default function Header() {
                         <CartCount>0</CartCount>
                     </CartLink>
 
-                    {isAuthenticated ? (
+                    {isLoggedIn ? (
                         <AuthButtons>
                             <div
                                 style={{
@@ -237,10 +309,10 @@ export default function Header() {
                                     color: theme.colors.text,
                                 }}
                             >
-                                Welcome, <strong style={{ marginLeft: '8px' }}>{user?.name || 'User'}</strong>
+                                Welcome, <strong style={{ marginLeft: '8px' }}>{userData?.name || 'User'}</strong>
                             </div>
-                            <Button variant="outline" onClick={logout}>
-                                Logout
+                            <Button variant="outline" onClick={handleLogout} disabled={logoutLoading}>
+                                {logoutLoading ? 'Logging out...' : 'Logout'}
                             </Button>
                         </AuthButtons>
                     ) : (

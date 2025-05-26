@@ -32,3 +32,6 @@ firebase-debug.*.log
 .firebase/*.cache
 hosting.*.cache
 /.firebase/
+
+.env
+.env.*

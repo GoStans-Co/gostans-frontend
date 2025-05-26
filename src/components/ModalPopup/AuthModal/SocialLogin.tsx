@@ -1,12 +1,13 @@
 import { FaGoogle, FaApple, FaFacebook, FaTelegram } from 'react-icons/fa';
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
+import { CredentialResponse, GoogleLogin } from '@react-oauth/google';
 
 type SocialProvider = 'google' | 'apple' | 'facebook' | 'telegram';
 
-interface SocialLoginProps {
-    onSocialLogin: (provider: SocialProvider) => void;
-}
+type SocialLoginProps = {
+    onSocialLogin: (provider: SocialProvider, credential?: string) => void;
+};
 
 const SocialLoginContainer = styled.div`
     display: flex;
@@ -75,6 +76,19 @@ export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
         onSocialLogin(provider);
     };
 
+    const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
+        if (credentialResponse.credential) {
+            console.log('Google authentication successful:', credentialResponse);
+            onSocialLogin('google', credentialResponse.credential);
+        } else {
+            console.error('Google authentication failed: No credential received');
+        }
+    };
+
+    const handleGoogleError = () => {
+        console.error('Google authentication failed');
+    };
+
     return (
         <SocialLoginContainer>
             <SocialLoginButton
@@ -83,6 +97,16 @@ export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
                 aria-label="Sign in with Google"
             >
                 <FaGoogle />
+                <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    useOneTap={false}
+                    theme="outline"
+                    size="large"
+                    width="100%"
+                    text="continue_with"
+                    shape="rectangular"
+                />
             </SocialLoginButton>
 
             <SocialLoginButton
