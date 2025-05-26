@@ -1,14 +1,15 @@
 import { useCookies } from 'react-cookie';
 import { useCallback } from 'react';
 
-const AUTH_COOKIE_NAME = 'authToken';
-const USER_COOKIE_NAME = 'userData';
-const COOKIE_OPTIONS = {
+export const COOKIE_OPTIONS = {
     path: '/',
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: 7 * 24 * 60 * 60,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax' as const,
 };
+
+const AUTH_COOKIE_NAME = 'authToken';
+const USER_COOKIE_NAME = 'userData';
 
 export type UserData = {
     id: string;
@@ -22,7 +23,7 @@ export type UserData = {
  * Custom hook for managing authentication with cookies
  * @returns Object containing cookie auth functions
  */
-export function useCookieAuth() {
+export default function useCookieAuth() {
     const [cookies, setCookie, removeCookie] = useCookies([AUTH_COOKIE_NAME, USER_COOKIE_NAME]);
 
     const setAuthCookie = useCallback(
@@ -60,5 +61,3 @@ export function useCookieAuth() {
         userData: cookies[USER_COOKIE_NAME],
     };
 }
-
-export default useCookieAuth;
