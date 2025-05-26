@@ -1,93 +1,64 @@
 import { useCookies } from 'react-cookie';
-import axios from 'axios';
+import { useCallback } from 'react';
 
-export type User = {
-    id: string;
-    name?: string;
-    email?: string;
-    phoneNumber?: string;
+const AUTH_COOKIE_NAME = 'authToken';
+const USER_COOKIE_NAME = 'userData';
+const COOKIE_OPTIONS = {
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax' as const,
 };
 
-export const useCookieAuth = () => {
-    const [cookies, setCookie, removeCookie] = useCookies(['auth_token', 'auth_user']);
+export type UserData = {
+    id: string;
+    email: string;
+    name: string;
+    phone?: string;
+    avatar?: string;
+};
 
-    // we get the user from cookie
-    const user: User | null = cookies.auth_user ? JSON.parse(cookies.auth_user) : null;
-    const isAuthenticated = !!cookies.auth_token;
+/**
+ * Custom hook for managing authentication with cookies
+ * @returns Object containing cookie auth functions
+ */
+export function useCookieAuth() {
+    const [cookies, setCookie, removeCookie] = useCookies([AUTH_COOKIE_NAME, USER_COOKIE_NAME]);
 
-    const login = async (emailOrPhone: string) => {
-        try {
-            //later we will change it
-            const mockResponse = {
-                data: {
-                    token: 'mock-token-123',
-                    user: {
-                        id: '1',
-                        name: emailOrPhone.includes('@') ? emailOrPhone.split('@')[0] : 'User',
-                        email: emailOrPhone.includes('@') ? emailOrPhone : undefined,
-                        phoneNumber: !emailOrPhone.includes('@') ? emailOrPhone : undefined,
-                    },
-                },
-            };
+    const setAuthCookie = useCallback(
+        (token: string, userData: UserData) => {
+            setCookie(AUTH_COOKIE_NAME, token, COOKIE_OPTIONS);
+            setCookie(USER_COOKIE_NAME, userData, COOKIE_OPTIONS);
+        },
+        [setCookie],
+    );
 
-            const { token, user } = mockResponse.data;
-            setCookie('auth_token', token, { path: '/', maxAge: 86400 }); // 24 hours
-            setCookie('auth_user', JSON.stringify(user), { path: '/', maxAge: 86400 });
+    const removeAuthCookie = useCallback(() => {
+        removeCookie(AUTH_COOKIE_NAME, { path: '/' });
+        removeCookie(USER_COOKIE_NAME, { path: '/' });
+    }, [removeCookie]);
 
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    const getAuthToken = useCallback(() => {
+        return cookies[AUTH_COOKIE_NAME];
+    }, [cookies]);
 
-            return user;
-        } catch (error) {
-            console.error('Login failed:', error);
-            throw error;
-        }
-    };
+    const getUserData = useCallback((): UserData | null => {
+        return cookies[USER_COOKIE_NAME] || null;
+    }, [cookies]);
 
-    const signup = async (name: string, email: string, phoneNumber: string) => {
-        try {
-            const mockResponse = {
-                data: {
-                    token: 'mock-token-123',
-                    user: {
-                        id: '1',
-                        name,
-                        email,
-                        phoneNumber,
-                    },
-                },
-            };
-
-            const { token, user } = mockResponse.data;
-            setCookie('auth_token', token, { path: '/', maxAge: 86400 }); // 24 hours
-            setCookie('auth_user', JSON.stringify(user), { path: '/', maxAge: 86400 });
-
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-            return user;
-        } catch (error) {
-            console.error('Signup failed:', error);
-            throw error;
-        }
-    };
-
-    const logout = () => {
-        removeCookie('auth_token', { path: '/' });
-        removeCookie('auth_user', { path: '/' });
-        delete axios.defaults.headers.common['Authorization'];
-    };
-
-    // we initialize the axios header if token exists
-    if (cookies.auth_token && !axios.defaults.headers.common['Authorization']) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${cookies.auth_token}`;
-    }
+    const isAuthenticated = useCallback(() => {
+        return !!cookies[AUTH_COOKIE_NAME];
+    }, [cookies]);
 
     return {
+        setAuthCookie,
+        removeAuthCookie,
+        getAuthToken,
+        getUserData,
         isAuthenticated,
-        user,
-        login,
-        signup,
-        logout,
+        authToken: cookies[AUTH_COOKIE_NAME],
+        userData: cookies[USER_COOKIE_NAME],
     };
-};
+}
 
 export default useCookieAuth;
