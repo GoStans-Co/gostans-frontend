@@ -1,7 +1,6 @@
 import { AlignVerticalSpaceAround, LogOut, TreePine, User } from 'lucide-react';
 import React from 'react';
 import { FaViacoin } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 
 enum PageSection {
@@ -15,6 +14,7 @@ type SidebarProps = {
     joinDate: string;
     activePage: PageSection;
     onSectionChange: (section: PageSection) => void;
+    handleLogout?: () => void;
 };
 
 type SidebarItemProps = {
@@ -115,7 +115,7 @@ function SidebarItem({ active, icon, label, onClick }: SidebarItemProps) {
     );
 }
 
-export default function Sidebar({ userName, joinDate, activePage, onSectionChange }: SidebarProps) {
+export default function Sidebar({ userName, joinDate, activePage, onSectionChange, handleLogout }: SidebarProps) {
     return (
         <SidebarContainer>
             <ProfileSection>
@@ -151,10 +151,9 @@ export default function Sidebar({ userName, joinDate, activePage, onSectionChang
                     onClick={() => onSectionChange(PageSection.FAVORITES)}
                 />
 
-                {/* Extra space before logout */}
                 <div style={{ flexGrow: 1, minHeight: '120px' }}></div>
 
-                <SidebarItem icon={<LogOut />} label="Logout" href="/logout" />
+                <SidebarItem icon={<LogOut />} label="Logout" href="/logout" onClick={handleLogout} />
             </NavSection>
         </SidebarContainer>
     );

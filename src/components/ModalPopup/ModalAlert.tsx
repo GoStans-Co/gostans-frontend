@@ -18,8 +18,9 @@ type ModalAlertProps = ConfirmationModalProps & {
 };
 
 const AlertContainer = styled.div`
-    text-align: center;
-    padding: ${theme.spacing.md} ${theme.spacing.sm};
+    text-align: left;
+    justify-content: flex-start;
+    padding: ${theme.spacing.sm};
 `;
 
 const AlertTitle = styled.h3`
@@ -35,19 +36,19 @@ const AlertMessage = styled.p`
     font-family: ${theme.typography.fontFamily.body};
     font-weight: ${theme.typography.fontWeight.regular};
     font-size: ${theme.fontSizes.md};
-    margin-bottom: ${theme.spacing.xl};
+    margin-bottom: ${theme.spacing.md};
 `;
 
 const AlertIcon = styled.div`
-    margin-bottom: ${theme.spacing.md};
-    font-size: 48px;
+    margin-bottom: ${theme.spacing.sm};
+    font-size: 40px;
     color: ${(props) => props.color || theme.colors.primary};
     display: flex;
     justify-content: center;
 
     svg {
-        width: 48px;
-        height: 48px;
+        width: 45px;
+        height: 45px;
     }
 `;
 
@@ -109,11 +110,11 @@ export default function ModalAlert({
     const footer = (
         <>
             {showCancel && (
-                <Button variant="secondary" size="md" onClick={handleCancel}>
+                <Button variant="text" size="md" onClick={handleCancel}>
                     {cancelText}
                 </Button>
             )}
-            <Button variant="primary" size="md" onClick={handleConfirm}>
+            <Button variant="text" size="md" onClick={handleConfirm} style={{ color: '#d32f2f' }}>
                 {confirmText}
             </Button>
         </>
@@ -123,18 +124,14 @@ export default function ModalAlert({
         <CoreModalPopup
             isOpen={isOpen}
             onClose={onClose}
-            width="400px"
+            width="350px"
             footer={{
                 showFooter: true,
                 customFooter: footer,
             }}
         >
             <AlertContainer>
-                {icon ? (
-                    <AlertIcon color={typeStyles.color}>{icon}</AlertIcon>
-                ) : (
-                    <AlertIcon color={typeStyles.color}>{typeStyles.icon}</AlertIcon>
-                )}
+                {icon ? <AlertIcon color={typeStyles.color}>{icon}</AlertIcon> : ''}
                 <AlertTitle>{title}</AlertTitle>
                 <AlertMessage>{message}</AlertMessage>
             </AlertContainer>

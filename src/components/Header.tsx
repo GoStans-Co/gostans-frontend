@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
 import { FaGlobe, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
@@ -6,8 +6,11 @@ import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
 import useModal from '@/hooks/useModal';
 import ModalAuth from '@/components/ModalPopup/AuthModal/ModalAuth';
-import { useCookieAuth } from '@/services/cookieAuthService';
 import useApiService from '@/services/api';
+import useCookieAuth from '@/services/cookieAuthService';
+import { User } from 'lucide-react';
+import UserProfileModal from '@/components/ModalPopup/UserProfileModal';
+import { ModalAlert } from '@/components/ModalPopup';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -174,19 +177,47 @@ const AuthButtons = styled.div`
     }
 `;
 
+const UserAvatarButton = styled.button`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: ${({ theme }) => theme.colors.lightBackground};
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: ${({ theme }) => theme.colors.border};
+    }
+`;
+
 export default function Header() {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const location = useLocation();
     const { openModal, closeModal } = useModal();
-    const { isAuthenticated, getUserData, removeAuthCookie } = useCookieAuth();
     const { logout: apiLogout, logoutLoading } = useApiService();
+    const { isAuthenticated, getUserData, removeAuthCookie } = useCookieAuth();
+
+    const userButtonRef = useRef<HTMLButtonElement>(null);
+
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+    const [authState, setAuthState] = useState(isAuthenticated());
 
     const userData = getUserData();
-    const isLoggedIn = isAuthenticated();
+    const isLoggedIn = authState;
 
     const openLoginModal = (initialTab: 'login' | 'signup' = 'login') => {
         openModal('login-modal', <ModalAuth onClose={() => closeModal('login-modal')} initialTab={initialTab} />);
     };
+
+    useEffect(() => {
+        setAuthState(isAuthenticated());
+    }, [isAuthenticated]);
 
     const toggleMenu = useCallback(() => {
         setIsMenuOpen(!isMenuOpen);
@@ -195,14 +226,25 @@ export default function Header() {
     const handleLogout = useCallback(async () => {
         try {
             await apiLogout();
+            window.location.href = '/';
         } catch (error) {
             console.error('Logout error:', error);
-            /* if logout fails, we force to remove cookies */
             removeAuthCookie();
+            window.location.href = '/';
         } finally {
             setIsMenuOpen(false);
+            setIsUserModalOpen(false);
         }
     }, []);
+
+    const toggleUserModal = () => {
+        setIsUserModalOpen(!isUserModalOpen);
+    };
+
+    const showLogoutConfirmation = () => {
+        setIsLogoutModalOpen(true);
+        setIsUserModalOpen(false);
+    };
 
     return (
         <HeaderContainer>
@@ -254,7 +296,7 @@ export default function Header() {
                                 </div>
                                 <Button
                                     variant="outline"
-                                    onClick={handleLogout}
+                                    onClick={showLogoutConfirmation}
                                     disabled={logoutLoading}
                                     style={{ width: '100%' }}
                                 >
@@ -300,21 +342,18 @@ export default function Header() {
                     </CartLink>
 
                     {isLoggedIn ? (
-                        <AuthButtons>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    marginRight: '16px',
-                                    color: theme.colors.text,
-                                }}
-                            >
-                                Welcome, <strong style={{ marginLeft: '8px' }}>{userData?.name || 'User'}</strong>
-                            </div>
-                            <Button variant="outline" onClick={handleLogout} disabled={logoutLoading}>
-                                {logoutLoading ? 'Logging out...' : 'Logout'}
-                            </Button>
-                        </AuthButtons>
+                        <>
+                            <UserAvatarButton ref={userButtonRef} onClick={toggleUserModal} aria-label="User menu">
+                                <User />
+                            </UserAvatarButton>
+
+                            <UserProfileModal
+                                isOpen={isUserModalOpen}
+                                onClose={() => setIsUserModalOpen(false)}
+                                anchorElement={userButtonRef.current}
+                                onLogout={showLogoutConfirmation}
+                            />
+                        </>
                     ) : (
                         <AuthButtons>
                             <Button variant="outline" onClick={() => openLoginModal('signup')}>
@@ -327,6 +366,17 @@ export default function Header() {
                     )}
                 </RightSection>
             </HeaderContent>
+            <ModalAlert
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                title="Confirm Logout"
+                message="Are you sure you want to logout?"
+                type="warning"
+                showCancel={true}
+                confirmText="Logout"
+                cancelText="Cancel"
+                onConfirm={handleLogout}
+            />
         </HeaderContainer>
     );
 }

@@ -1,9 +1,13 @@
 import styled from 'styled-components';
 import Sidebar from '@/pages/MyPage/Sidebar';
 import ProfileContent from '@/pages/MyPage/ProfileContent';
-import { useState } from 'react';
-import FavoritesPage from './MyFavorites';
-import TripsPage from './MyTrip';
+import { useCallback, useEffect, useState } from 'react';
+import FavoritesPage from '@/pages/MyPage/MyFavorites';
+import TripsPage from '@/pages/MyPage/MyTrip';
+import { useSearchParams } from 'react-router-dom';
+import useApiService from '@/services/api';
+import useCookieAuth from '@/services/cookieAuthService';
+import { ModalAlert } from '@/components/ModalPopup';
 
 enum PageSection {
     TRIPS = 'trips',
@@ -36,13 +40,51 @@ const ContentContainer = styled.main`
 `;
 
 export default function MyPage() {
-    const [activeSection, setActiveSection] = useState<PageSection>(PageSection.PROFILE);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const sectionParam = searchParams.get('section');
+
+    const [activeSection, setActiveSection] = useState<PageSection>(() => {
+        if (sectionParam === 'trips') return PageSection.TRIPS;
+        if (sectionParam === 'favorites') return PageSection.FAVORITES;
+        return PageSection.PROFILE;
+    });
+    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+    const { removeAuthCookie } = useCookieAuth();
+
+    const { logout: apiLogout } = useApiService();
+
+    useEffect(() => {
+        if (sectionParam === 'trips') setActiveSection(PageSection.TRIPS);
+        else if (sectionParam === 'favorites') setActiveSection(PageSection.FAVORITES);
+        else setActiveSection(PageSection.PROFILE);
+    }, [sectionParam]);
 
     const userData = {
         name: 'Kholikov Oybek',
         email: 'example@example.com',
         phone: '01012345678',
         joinDate: 'Mar 2025',
+    };
+
+    const handleSectionChange = (section: PageSection) => {
+        setActiveSection(section);
+        setSearchParams({ section });
+    };
+
+    const handleSectionLogout = useCallback(async () => {
+        try {
+            await apiLogout();
+        } catch (error) {
+            console.error('Logout error:', error);
+            /* if logout fails, we force to remove cookies */
+            removeAuthCookie();
+            window.location.href = '/';
+        }
+    }, []);
+
+    const showLogoutConfirmation = () => {
+        setIsLogoutModalOpen(true);
     };
 
     const renderContent = () => {
@@ -65,10 +107,22 @@ export default function MyPage() {
                     userName={userData.name}
                     joinDate={userData.joinDate}
                     activePage={activeSection}
-                    onSectionChange={setActiveSection}
+                    onSectionChange={handleSectionChange}
+                    handleLogout={showLogoutConfirmation}
                 />
             </SidebarContainer>
             <ContentContainer>{renderContent()}</ContentContainer>
+            <ModalAlert
+                isOpen={isLogoutModalOpen}
+                onClose={() => setIsLogoutModalOpen(false)}
+                title="Confirm Logout"
+                message="Are you sure you want to logout?"
+                type="warning"
+                showCancel={true}
+                confirmText="Logout"
+                cancelText="Cancel"
+                onConfirm={handleSectionLogout}
+            />
         </PageContainer>
     );
 }

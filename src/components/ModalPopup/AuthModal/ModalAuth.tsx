@@ -6,7 +6,8 @@ import Input from '@/components/Common/Input';
 import Modal from '@/components/Modal';
 import useCookieAuth from '@/services/cookieAuthService';
 import SocialLogin from '@/components/ModalPopup/AuthModal/SocialLogin';
-import useApiService, { LoginCredentials, SignUpData, SocialLoginData } from '@/services/api';
+import useApiService from '@/services/api';
+import { LoginCredentials, SignUpData, SocialLoginData } from '@/types/auth';
 
 type ModalAuthProps = {
     onClose: () => void;
@@ -192,6 +193,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             setSuccess('Login successful!');
             const timer = setTimeout(() => {
                 onClose();
+                window.location.href = '/mypage';
             }, 1000);
             return () => clearTimeout(timer);
         }
@@ -221,6 +223,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     setSuccess('Login successful!');
                     setTimeout(() => {
                         onClose();
+                        window.location.href = '/mypage';
                     }, 1000);
                 }
             } else {
@@ -264,9 +267,6 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
 
             if (result) {
                 setSuccess(`${provider} login successful!`);
-                setTimeout(() => {
-                    onClose();
-                }, 1000);
             }
         } catch (err) {
             console.error('Social login error:', err);

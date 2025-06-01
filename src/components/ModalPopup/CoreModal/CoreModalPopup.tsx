@@ -1,6 +1,5 @@
 import styled from 'styled-components';
 import Modal from '@/components/Modal/Modal';
-import Card from '@/components/Common/Card';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
 import { AdvancedModalProps } from '@/types/modal';
@@ -8,7 +7,7 @@ import { AdvancedModalProps } from '@/types/modal';
 export type CoreModalPopupProps = AdvancedModalProps;
 
 const ModalContent = styled.div`
-    padding: ${theme.spacing.md};
+    padding: ${theme.spacing.sm} ${theme.spacing.sm} 0;
 `;
 
 const ModalHeader = styled.div`
@@ -25,9 +24,9 @@ const ModalHeader = styled.div`
 const ModalFooter = styled.div`
     display: flex;
     justify-content: flex-end;
-    column-gap: ${theme.spacing.sm};
-    margin-top: ${theme.spacing.md};
-    padding: 0 ${theme.spacing.md} ${theme.spacing.md};
+    align-items: center;
+    column-gap: ${theme.spacing.xl};
+    padding: ${theme.spacing.md};
 `;
 
 export default function CoreModalPopup({
@@ -60,14 +59,10 @@ export default function CoreModalPopup({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} width={width} padding={theme.spacing.md} title={title}>
+        <Modal isOpen={isOpen} onClose={onClose} width={width} padding={theme.spacing.sm} title={title}>
             {icon && <ModalHeader>{icon}</ModalHeader>}
 
-            <ModalContent>
-                <Card variant="default" padding>
-                    {children}
-                </Card>
-            </ModalContent>
+            <ModalContent>{children}</ModalContent>
 
             {footer.showFooter !== false && (
                 <ModalFooter>
