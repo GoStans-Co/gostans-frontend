@@ -1,4 +1,4 @@
-import { FaGoogle, FaApple, FaFacebook, FaTelegram } from 'react-icons/fa';
+import { FaApple, FaFacebook, FaTelegram } from 'react-icons/fa';
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google';
@@ -16,7 +16,7 @@ const SocialLoginContainer = styled.div`
     margin: ${theme.spacing.lg} 0;
 `;
 
-const SocialLoginButton = styled.button<{ provider: SocialProvider }>`
+const SocialLoginButton = styled.button<{ provider: Exclude<SocialProvider, 'google'> }>`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -29,12 +29,9 @@ const SocialLoginButton = styled.button<{ provider: SocialProvider }>`
     transition: ${theme.transitions.default};
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
 
-    /* provider-specific hover styles */
     &:hover {
         background: ${(props) => {
             switch (props.provider) {
-                case 'google':
-                    return '#f2f2f2';
                 case 'apple':
                     return '#f2f2f2';
                 case 'facebook':
@@ -49,14 +46,11 @@ const SocialLoginButton = styled.button<{ provider: SocialProvider }>`
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     }
 
-    /* provider-specific icon colors */
     svg {
         width: 28px;
         height: 28px;
         color: ${(props) => {
             switch (props.provider) {
-                case 'google':
-                    return '#4285F4';
                 case 'apple':
                     return '#000000';
                 case 'facebook':
@@ -67,6 +61,60 @@ const SocialLoginButton = styled.button<{ provider: SocialProvider }>`
                     return 'inherit';
             }
         }};
+    }
+`;
+
+const GoogleLoginWrapper = styled.div`
+    width: 56px;
+    height: 56px;
+    position: relative;
+
+    & > div {
+        width: 56px !important;
+        height: 56px !important;
+        border-radius: 19px !important;
+        overflow: hidden;
+    }
+
+    & iframe {
+        width: 56px !important;
+        height: 56px !important;
+        border-radius: 19px !important;
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 56px;
+        height: 56px;
+        border-radius: 19px;
+        border: 1px solid ${theme.colors.border};
+        background: ${theme.colors.background};
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    &::after {
+        content: 'G';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Product Sans', sans-serif;
+        font-size: 25px;
+        font-weight: 800;
+        color: #4285f4;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    &:hover::before {
+        background: #f2f2f2;
+        transform: translateY(-2px);
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     }
 `;
 
@@ -91,23 +139,18 @@ export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
 
     return (
         <SocialLoginContainer>
-            <SocialLoginButton
-                provider="google"
-                onClick={() => handleSocialLogin('google')}
-                aria-label="Sign in with Google"
-            >
-                <FaGoogle />
+            <GoogleLoginWrapper>
                 <GoogleLogin
                     onSuccess={handleGoogleSuccess}
                     onError={handleGoogleError}
                     useOneTap={false}
+                    type="icon"
                     theme="outline"
-                    size="large"
-                    width="100%"
-                    text="continue_with"
-                    shape="rectangular"
+                    size="medium"
+                    shape="circle"
+                    width="56"
                 />
-            </SocialLoginButton>
+            </GoogleLoginWrapper>
 
             <SocialLoginButton
                 provider="apple"

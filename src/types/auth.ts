@@ -21,6 +21,27 @@ export type AuthResponse = {
     };
 };
 
+export type ApiResponse<T> = {
+    message: string;
+    data: T;
+    statusCode: number;
+};
+
+export type SocialAuthResponse = {
+    id: string;
+    email: string;
+    name: string;
+    phone: string;
+    refresh: string;
+    access_token: string;
+    imageURL: string;
+    oauthProvider: string;
+    oauthId: string;
+    providerId: string;
+};
+
+export type SocialLoginResponse = ApiResponse<SocialAuthResponse>;
+
 export type SocialLoginData = {
     provider: 'google' | 'facebook' | 'twitter';
     id_token: string;

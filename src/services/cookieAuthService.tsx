@@ -28,6 +28,8 @@ export default function useCookieAuth() {
 
     const setAuthCookie = useCallback(
         (token: string, userData: UserData) => {
+            console.log('Setting auth cookie:', AUTH_COOKIE_NAME, token);
+            console.log('Setting user cookie:', USER_COOKIE_NAME, userData);
             setCookie(AUTH_COOKIE_NAME, token, COOKIE_OPTIONS);
             setCookie(USER_COOKIE_NAME, userData, COOKIE_OPTIONS);
         },
@@ -48,7 +50,9 @@ export default function useCookieAuth() {
     }, [cookies]);
 
     const isAuthenticated = useCallback(() => {
-        return !!cookies[AUTH_COOKIE_NAME];
+        const token = cookies[AUTH_COOKIE_NAME];
+        const userData = cookies[USER_COOKIE_NAME];
+        return !!(token && userData);
     }, [cookies]);
 
     return {

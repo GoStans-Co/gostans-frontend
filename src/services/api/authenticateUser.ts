@@ -1,6 +1,6 @@
 import { useFetch } from '@/hooks/useFetch';
 import useCookieAuth from '@/services/cookieAuthService';
-import { AuthResponse, LoginCredentials, SignUpData, SocialLoginData } from '@/types/auth';
+import { AuthResponse, LoginCredentials, SignUpData, SocialLoginData, SocialLoginResponse } from '@/types/auth';
 
 /**
  * Custom hook for authentication operations
@@ -30,7 +30,7 @@ export function useAuthenticateUser() {
         error: socialLoginError,
         execute: executeSocialLogin,
         reset: resetSocialLogin,
-    } = useFetch<AuthResponse>();
+    } = useFetch<SocialLoginResponse>();
 
     const { loading: logoutLoading, error: logoutError, execute: executeLogout, reset: resetLogout } = useFetch();
 
@@ -94,13 +94,35 @@ export function useAuthenticateUser() {
                 method: 'POST',
                 data: { id_token: socialData.id_token },
             });
+            console.log('Full social login response:', response);
+            const apiResponse = response as unknown as SocialLoginResponse;
+            const authData = apiResponse.data;
 
-            if (response.access && response.user) {
-                setAuthCookie(response.access, response.user);
+            if (authData && authData.access_token && authData.id) {
+                console.log('Setting cookies with:', authData.access_token, authData);
+
+                const userForCookie = {
+                    id: authData.id,
+                    email: authData.email,
+                    name: authData.name,
+                    phone: authData.phone,
+                    avatar: authData.imageURL,
+                };
+
+                setAuthCookie(authData.access_token, userForCookie);
+
+                return {
+                    access: authData.access_token,
+                    refresh: authData.refresh,
+                    user: userForCookie,
+                };
+            } else {
+                console.log('Auth data structure:', Object.keys(authData || {}));
+                console.log('Missing access_token or user data:', authData);
+                throw new Error('Invalid response structure');
             }
-
-            return response;
         } catch (error) {
+            console.error('Login error:', error);
             throw error;
         }
     };
