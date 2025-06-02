@@ -8,6 +8,13 @@ import useCookieAuth from '@/services/cookieAuthService';
 import SocialLogin from '@/components/ModalPopup/AuthModal/SocialLogin';
 import useApiService from '@/services/api';
 import { LoginCredentials, SignUpData, SocialLoginData } from '@/types/auth';
+import PhoneVerification from '@/components/ModalPopup/AuthModal/PhoneVerification';
+import { message } from 'antd';
+
+enum SignupStage {
+    FORM = 'form',
+    PHONE_VERIFICATION = 'phone_verification',
+}
 
 type ModalAuthProps = {
     onClose: () => void;
@@ -155,6 +162,9 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [success, setSuccess] = useState('');
+    const [signupStage, setSignupStage] = useState<SignupStage>(SignupStage.FORM);
+
+    const [messageApi, contextHolder] = message.useMessage();
 
     const {
         login,
@@ -224,13 +234,15 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     setTimeout(() => {
                         onClose();
                         window.location.href = '/mypage';
-                    }, 1000);
+                    }, 500);
                 }
             } else {
                 if (!name) throw new Error('Name is required');
                 if (!email) throw new Error('Email is required for signup');
                 if (!password) throw new Error('Password is required');
                 if (password !== confirmPassword) throw new Error('Passwords do not match');
+
+                setSignupStage(SignupStage.PHONE_VERIFICATION);
 
                 const signupData: SignUpData = {
                     name,
@@ -245,11 +257,15 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     setSuccess('Account created successfully!');
                     setTimeout(() => {
                         onClose();
+                        window.location.href = '/mypage';
                     }, 1000);
                 }
             }
         } catch (err) {
-            console.error('Authentication error:', err);
+            messageApi.error({
+                content: err instanceof Error ? err.message : 'An error occurred',
+                duration: 4,
+            });
         }
     };
 
@@ -273,147 +289,170 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         }
     };
 
+    const handlePhoneVerificationComplete = async (verifiedPhoneNumber: string) => {
+        try {
+            const signupData: SignUpData = {
+                name,
+                email,
+                phone: verifiedPhoneNumber,
+                password,
+            };
+
+            const result = await signUp(signupData);
+
+            if (result) {
+                setSuccess('Account created successfully!');
+                setTimeout(() => {
+                    onClose();
+                }, 1000);
+            }
+        } catch (err) {
+            console.error('Signup error:', err);
+            setSignupStage(SignupStage.FORM);
+        }
+    };
+
     return (
-        <Modal isOpen={true} onClose={onClose} title="" width="480px" padding={theme.spacing.xl}>
-            <AuthContentHeader>
-                <AuthTitle>Login or Sign Up</AuthTitle>
-                <TabContainer>
-                    <Tab active={activeTab === 'login'} onClick={() => setActiveTab('login')}>
-                        Login
-                    </Tab>
-                    <Tab active={activeTab === 'signup'} onClick={() => setActiveTab('signup')}>
-                        Sign Up
-                    </Tab>
-                </TabContainer>
-            </AuthContentHeader>
-
-            {error && <ErrorMessage>{error}</ErrorMessage>}
-
-            <Form onSubmit={handleSubmit}>
-                {activeTab === 'signup' && (
-                    <Input
-                        placeholder="Full Name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required={activeTab === 'signup'}
-                        inputConfig={{ noBorder: true }}
+        <>
+            {contextHolder}
+            <Modal isOpen={true} onClose={onClose} title="" width="450px" padding={theme.spacing.xl}>
+                {signupStage === SignupStage.PHONE_VERIFICATION ? (
+                    <PhoneVerification
+                        onBack={() => setSignupStage(SignupStage.FORM)}
+                        onComplete={handlePhoneVerificationComplete}
+                        loading={signupLoading}
                     />
-                )}
+                ) : (
+                    <>
+                        <AuthContentHeader>
+                            <AuthTitle>Login or Sign Up</AuthTitle>
+                            <TabContainer>
+                                <Tab active={activeTab === 'login'} onClick={() => setActiveTab('login')}>
+                                    Login
+                                </Tab>
+                                <Tab active={activeTab === 'signup'} onClick={() => setActiveTab('signup')}>
+                                    Sign Up
+                                </Tab>
+                            </TabContainer>
+                        </AuthContentHeader>
 
-                <InputField>
-                    <Input
-                        placeholder="Email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required={(activeTab === 'login' && !phoneNumber) || activeTab === 'signup'}
-                        inputConfig={{ noBorder: true }}
-                    />
-                </InputField>
+                        {/* {error && <ErrorMessage>{error}</ErrorMessage>} */}
 
-                {activeTab === 'signup' && (
-                    <Input
-                        placeholder="Phone Number"
-                        type="tel"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        inputConfig={{ noBorder: true }}
-                    />
-                )}
-
-                <Input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    inputConfig={{ noBorder: true }}
-                    endIcon={
-                        showPassword ? (
-                            <Eye
-                                size={20}
-                                onClick={() => setShowPassword(false)}
-                                style={{
-                                    cursor: 'pointer',
-                                    color: '#666',
-                                    strokeWidth: 2,
-                                }}
+                        <Form onSubmit={handleSubmit}>
+                            {activeTab === 'signup' && (
+                                <Input
+                                    placeholder="Full Name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    required={activeTab === 'signup'}
+                                    inputConfig={{ noBorder: true }}
+                                />
+                            )}
+                            <InputField>
+                                <Input
+                                    placeholder="Email"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required={(activeTab === 'login' && !phoneNumber) || activeTab === 'signup'}
+                                    inputConfig={{ noBorder: true }}
+                                />
+                            </InputField>{' '}
+                            <Input
+                                type={showPassword ? 'text' : 'password'}
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                inputConfig={{ noBorder: true }}
+                                endIcon={
+                                    showPassword ? (
+                                        <Eye
+                                            size={20}
+                                            onClick={() => setShowPassword(false)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                color: '#666',
+                                                strokeWidth: 2,
+                                            }}
+                                        />
+                                    ) : (
+                                        <EyeOff
+                                            size={20}
+                                            onClick={() => setShowPassword(true)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                color: '#666',
+                                                strokeWidth: 2,
+                                            }}
+                                        />
+                                    )
+                                }
                             />
+                            {activeTab === 'signup' && (
+                                <Input
+                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder="Confirm Password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required={activeTab === 'signup'}
+                                    inputConfig={{ noBorder: true }}
+                                    endIcon={
+                                        showPassword ? (
+                                            <Eye
+                                                size={20}
+                                                onClick={() => setShowPassword(false)}
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    color: '#666',
+                                                    strokeWidth: 2,
+                                                }}
+                                            />
+                                        ) : (
+                                            <EyeOff
+                                                size={20}
+                                                onClick={() => setShowPassword(true)}
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    color: '#666',
+                                                    strokeWidth: 2,
+                                                }}
+                                            />
+                                        )
+                                    }
+                                />
+                            )}
+                            {activeTab === 'login' && (
+                                <ForgotPasswordLink href="#">Forgot Password?</ForgotPasswordLink>
+                            )}
+                            <SubmitButton type="submit" disabled={loading}>
+                                {loading
+                                    ? activeTab === 'login'
+                                        ? 'Logging in...'
+                                        : 'Signing up...'
+                                    : activeTab === 'login'
+                                      ? 'Login'
+                                      : 'Sign Up'}
+                            </SubmitButton>
+                        </Form>
+                        <OrDivider>
+                            <span>OR</span>
+                        </OrDivider>
+
+                        <SocialLogin onSocialLogin={handleSocialLogin} />
+
+                        {activeTab === 'login' ? (
+                            <SignupPrompt>
+                                Not registered yet? <a onClick={() => setActiveTab('signup')}>Sign up here</a>
+                            </SignupPrompt>
                         ) : (
-                            <EyeOff
-                                size={20}
-                                onClick={() => setShowPassword(true)}
-                                style={{
-                                    cursor: 'pointer',
-                                    color: '#666',
-                                    strokeWidth: 2,
-                                }}
-                            />
-                        )
-                    }
-                />
-
-                {activeTab === 'signup' && (
-                    <Input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Confirm Password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required={activeTab === 'signup'}
-                        inputConfig={{ noBorder: true }}
-                        endIcon={
-                            showPassword ? (
-                                <Eye
-                                    size={20}
-                                    onClick={() => setShowPassword(false)}
-                                    style={{
-                                        cursor: 'pointer',
-                                        color: '#666',
-                                        strokeWidth: 2,
-                                    }}
-                                />
-                            ) : (
-                                <EyeOff
-                                    size={20}
-                                    onClick={() => setShowPassword(true)}
-                                    style={{
-                                        cursor: 'pointer',
-                                        color: '#666',
-                                        strokeWidth: 2,
-                                    }}
-                                />
-                            )
-                        }
-                    />
+                            <SignupPrompt>
+                                Already have an account? <a onClick={() => setActiveTab('login')}>Login here</a>
+                            </SignupPrompt>
+                        )}
+                    </>
                 )}
-
-                {activeTab === 'login' && <ForgotPasswordLink href="#">Forgot Password?</ForgotPasswordLink>}
-
-                <SubmitButton type="submit" disabled={loading}>
-                    {loading
-                        ? activeTab === 'login'
-                            ? 'Logging in...'
-                            : 'Signing up...'
-                        : activeTab === 'login'
-                          ? 'Login'
-                          : 'Sign Up'}
-                </SubmitButton>
-            </Form>
-            <OrDivider>
-                <span>OR</span>
-            </OrDivider>
-
-            <SocialLogin onSocialLogin={handleSocialLogin} />
-
-            {activeTab === 'login' ? (
-                <SignupPrompt>
-                    Not registered yet? <a onClick={() => setActiveTab('signup')}>Sign up here</a>
-                </SignupPrompt>
-            ) : (
-                <SignupPrompt>
-                    Already have an account? <a onClick={() => setActiveTab('login')}>Login here</a>
-                </SignupPrompt>
-            )}
-        </Modal>
+            </Modal>
+        </>
     );
 }
