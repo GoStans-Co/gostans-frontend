@@ -1,5 +1,5 @@
-import { AlignVerticalSpaceAround, LogOut, TreePine, User } from 'lucide-react';
-import React from 'react';
+import { AlignVerticalSpaceAround, Camera, LogOut, TreePine, User } from 'lucide-react';
+import React, { useState } from 'react';
 import { FaViacoin } from 'react-icons/fa';
 import styled from 'styled-components';
 
@@ -15,6 +15,12 @@ type SidebarProps = {
     activePage: PageSection;
     onSectionChange: (section: PageSection) => void;
     handleLogout?: () => void;
+    profileImage?: string | null;
+    isHovering?: boolean;
+    onImageUpload?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onAvatarClick?: () => void;
+    onMouseEnter?: () => void;
+    onMouseLeave?: () => void;
 };
 
 type SidebarItemProps = {
@@ -45,16 +51,50 @@ const ProfileSection = styled.div`
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-const Avatar = styled.div`
+const Avatar = styled.div<{ hasImage?: boolean }>`
     width: 80px;
     height: 80px;
     border-radius: 50%;
     background-color: ${({ theme }) => theme.colors.lightBackground};
+    background-image: ${({ hasImage }) => (hasImage ? `url(${hasImage})` : 'none')};
+    background-size: cover;
+    background-position: center;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: ${({ theme }) => theme.spacing.md};
     overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: scale(1.05);
+    }
+`;
+
+const AvatarOverlay = styled.div<{ show: boolean }>`
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: ${({ show }) => (show ? 1 : 0)};
+    transition: opacity 0.3s ease;
+
+    svg {
+        color: white;
+        width: 24px;
+        height: 24px;
+    }
+`;
+
+const HiddenFileInput = styled.input`
+    display: none;
 `;
 
 const ProfileInfo = styled.div`
@@ -115,12 +155,33 @@ function SidebarItem({ active, icon, label, onClick }: SidebarItemProps) {
     );
 }
 
-export default function Sidebar({ userName, joinDate, activePage, onSectionChange, handleLogout }: SidebarProps) {
+export default function Sidebar({
+    userName,
+    joinDate,
+    activePage,
+    onSectionChange,
+    handleLogout,
+    profileImage,
+    isHovering,
+    onImageUpload,
+    onAvatarClick,
+    onMouseEnter,
+    onMouseLeave,
+}: SidebarProps) {
     return (
         <SidebarContainer>
             <ProfileSection>
-                <Avatar>
-                    <AlignVerticalSpaceAround />
+                <Avatar
+                    hasImage={!!profileImage}
+                    onMouseEnter={onMouseEnter}
+                    onMouseLeave={onMouseLeave}
+                    onClick={onAvatarClick}
+                >
+                    {!profileImage && <AlignVerticalSpaceAround />}
+                    <AvatarOverlay show={isHovering || false}>
+                        <Camera />
+                    </AvatarOverlay>
+                    <HiddenFileInput id="avatar-upload" type="file" accept="image/*" onChange={onImageUpload} />
                 </Avatar>
                 <ProfileInfo>
                     <ProfileName>{userName}</ProfileName>

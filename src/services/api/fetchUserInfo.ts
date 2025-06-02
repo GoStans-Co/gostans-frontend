@@ -51,6 +51,8 @@ export function useFetchUserInfo() {
         reset: resetPasswordChange,
     } = useFetch();
 
+    const { loading: uploadLoading, error: uploadError, execute: executeUploadImage, reset: resetUpload } = useFetch();
+
     const { loading: deleteLoading, error: deleteError, execute: executeDelete, reset: resetDelete } = useFetch();
 
     /**
@@ -126,18 +128,15 @@ export function useFetchUserInfo() {
      * @param file - Avatar image file
      * @returns Promise<UserProfile>
      */
-    const uploadAvatar = async (file: File): Promise<UserProfile> => {
+    const uploadProfileImage = async (imageFile: File): Promise<any> => {
         try {
             const formData = new FormData();
-            formData.append('avatar', file);
+            formData.append('image', imageFile);
 
-            const response = await executeUpdate({
-                url: '/auth/profile/avatar/',
-                method: 'POST',
+            const response = await executeUploadImage({
+                url: '/auth/updateimage/',
+                method: 'PATCH',
                 data: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
             });
 
             return response;
@@ -211,7 +210,10 @@ export function useFetchUserInfo() {
         deleteError,
         resetDelete,
 
-        uploadAvatar,
+        uploadProfileImage,
+        uploadLoading,
+        uploadError,
+        resetUpload,
 
         verifyEmail,
         resendEmailVerification,

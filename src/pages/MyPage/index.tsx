@@ -8,6 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import useApiService from '@/services/api';
 import useCookieAuth from '@/services/cookieAuthService';
 import { ModalAlert } from '@/components/ModalPopup';
+import { message } from 'antd';
 
 enum PageSection {
     TRIPS = 'trips',
@@ -49,10 +50,13 @@ export default function MyPage() {
         return PageSection.PROFILE;
     });
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+    const [isHovering, setIsHovering] = useState(false);
+    const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [messageApi, contextHolder] = message.useMessage();
 
     const { removeAuthCookie } = useCookieAuth();
 
-    const { logout: apiLogout } = useApiService();
+    const { logout: apiLogout, uploadProfileImage } = useApiService();
 
     useEffect(() => {
         if (sectionParam === 'trips') setActiveSection(PageSection.TRIPS);
@@ -100,29 +104,81 @@ export default function MyPage() {
         }
     };
 
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 1024 * 1024) {
+            messageApi.error({
+                content: 'File size exceeds 1MB limit',
+                duration: 3,
+            });
+            return;
+        }
+
+        if (!file.type.startsWith('image/')) {
+            messageApi.error({
+                content: 'Invalid file type. Please upload an image.',
+                duration: 3,
+            });
+            return;
+        }
+
+        try {
+            const response = await uploadProfileImage(file);
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setProfileImage(e.target?.result as string);
+            };
+            reader.readAsDataURL(file);
+            console.log('Upload successful:', response);
+        } catch (error) {
+            console.error('Image upload failed:', error);
+            messageApi.error({
+                content: 'Image upload failed. Please try again.',
+                duration: 3,
+            });
+            setProfileImage(null);
+        }
+    };
+
+    const handleAvatarClick = () => {
+        document.getElementById('avatar-upload')?.click();
+    };
+
     return (
-        <PageContainer>
-            <SidebarContainer>
-                <Sidebar
-                    userName={userData.name}
-                    joinDate={userData.joinDate}
-                    activePage={activeSection}
-                    onSectionChange={handleSectionChange}
-                    handleLogout={showLogoutConfirmation}
+        <>
+            {contextHolder}
+            <PageContainer>
+                <SidebarContainer>
+                    <Sidebar
+                        userName={userData.name}
+                        joinDate={userData.joinDate}
+                        activePage={activeSection}
+                        onSectionChange={handleSectionChange}
+                        handleLogout={showLogoutConfirmation}
+                        profileImage={profileImage}
+                        isHovering={isHovering}
+                        onImageUpload={handleImageUpload}
+                        onAvatarClick={handleAvatarClick}
+                        onMouseEnter={() => setIsHovering(true)}
+                        onMouseLeave={() => setIsHovering(false)}
+                    />
+                </SidebarContainer>
+                <ContentContainer>{renderContent()}</ContentContainer>
+                <ModalAlert
+                    isOpen={isLogoutModalOpen}
+                    onClose={() => setIsLogoutModalOpen(false)}
+                    title="Confirm Logout"
+                    message="Are you sure you want to logout?"
+                    type="warning"
+                    showCancel={true}
+                    confirmText="Logout"
+                    cancelText="Cancel"
+                    onConfirm={handleSectionLogout}
                 />
-            </SidebarContainer>
-            <ContentContainer>{renderContent()}</ContentContainer>
-            <ModalAlert
-                isOpen={isLogoutModalOpen}
-                onClose={() => setIsLogoutModalOpen(false)}
-                title="Confirm Logout"
-                message="Are you sure you want to logout?"
-                type="warning"
-                showCancel={true}
-                confirmText="Logout"
-                cancelText="Cancel"
-                onConfirm={handleSectionLogout}
-            />
-        </PageContainer>
+            </PageContainer>
+        </>
     );
 }
