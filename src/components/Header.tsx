@@ -8,9 +8,10 @@ import useModal from '@/hooks/useModal';
 import ModalAuth from '@/components/ModalPopup/AuthModal/ModalAuth';
 import useApiService from '@/services/api';
 import useCookieAuth from '@/services/cookieAuthService';
-import { User } from 'lucide-react';
 import UserProfileModal from '@/components/ModalPopup/UserProfileModal';
 import { ModalAlert } from '@/components/ModalPopup';
+import userImage from '@/assets/user.jpg';
+import { User } from 'lucide-react';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -194,6 +195,14 @@ const UserAvatarButton = styled.button`
     }
 `;
 
+const UserImageDefault = styled.img`
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: none;
+`;
+
 export default function Header() {
     const location = useLocation();
     const { openModal, closeModal } = useModal();
@@ -344,7 +353,17 @@ export default function Header() {
                     {isLoggedIn ? (
                         <>
                             <UserAvatarButton ref={userButtonRef} onClick={toggleUserModal} aria-label="User menu">
-                                <User />
+                                <UserImageDefault
+                                    src={userImage}
+                                    alt="User Avatar"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        e.currentTarget.parentElement
+                                            ?.querySelector('svg')
+                                            ?.style.setProperty('display', 'block');
+                                    }}
+                                />
+                                <User style={{ display: userData?.avatar ? 'none' : 'block' }} />
                             </UserAvatarButton>
 
                             <UserProfileModal
