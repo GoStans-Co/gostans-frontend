@@ -4,6 +4,7 @@ import { theme } from '@/styles/theme';
 import { User, BookOpen, Heart, LogOut } from 'lucide-react';
 import useCookieAuth from '@/services/cookieAuthService';
 import { useAuthenticateUser } from '@/services/api/authenticateUser';
+import { DropdownModal, ModalOverlay } from '@/components/Common/DropdownElemStyles';
 
 type UserProfileModalProps = {
     isOpen: boolean;
@@ -11,55 +12,6 @@ type UserProfileModalProps = {
     anchorElement?: HTMLElement | null;
     onLogout?: () => void;
 };
-
-const ModalOverlay = styled.div<{ isOpen: boolean }>`
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: transparent;
-    z-index: 1000;
-    display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
-`;
-
-const UserModal = styled.div<{ position: { top: number; left: number } }>`
-    position: absolute;
-    top: ${({ position }) => position.top}px;
-    left: ${({ position }) => position.left}px;
-    background: ${theme.colors.background};
-    border-radius: ${theme.borderRadius.lg};
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    border: 1px solid ${theme.colors.border};
-    min-width: 200px;
-    overflow: hidden;
-    z-index: 1001;
-
-    /* Arrow pointing up */
-    &::before {
-        content: '';
-        position: absolute;
-        top: -8px;
-        right: 20px;
-        width: 0;
-        height: 0;
-        border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
-        border-bottom: 8px solid ${theme.colors.background};
-    }
-
-    &::after {
-        content: '';
-        position: absolute;
-        top: -9px;
-        right: 20px;
-        width: 0;
-        height: 0;
-        border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
-        border-bottom: 8px solid ${theme.colors.border};
-    }
-`;
 
 const MenuItemButton = styled.button<{ isLogout?: boolean }>`
     width: 100%;
@@ -120,10 +72,29 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
     useEffect(() => {
         if (isOpen && anchorElement) {
             const rect = anchorElement.getBoundingClientRect();
-            setPosition({
-                top: rect.bottom + window.scrollY + 8,
-                left: rect.right + window.scrollX - 200,
-            });
+            const modalWidth = 200;
+            const modalHeight = 300;
+
+            let top = rect.bottom + 8;
+            let left = rect.right - modalWidth;
+
+            if (left + modalWidth > window.innerWidth) {
+                left = window.innerWidth - modalWidth - 16;
+            }
+
+            if (left < 16) {
+                left = 16;
+            }
+
+            if (top + modalHeight > window.innerHeight) {
+                top = rect.top - modalHeight - 8;
+            }
+
+            if (top < 16) {
+                top = 16;
+            }
+
+            setPosition({ top, left });
         }
     }, [isOpen, anchorElement]);
 
@@ -173,7 +144,7 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
 
     return (
         <ModalOverlay isOpen={isOpen} onClick={onClose}>
-            <UserModal ref={modalRef} position={position} onClick={(e) => e.stopPropagation()}>
+            <DropdownModal ref={modalRef} position={position} onClick={(e) => e.stopPropagation()}>
                 {' '}
                 <MenuItemButton onClick={handlePersonalInfo}>
                     <User />
@@ -192,7 +163,7 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
                     <LogOut />
                     {logoutLoading ? 'Logging out...' : 'Logout'}
                 </MenuItemButton>
-            </UserModal>
+            </DropdownModal>
         </ModalOverlay>
     );
 }
