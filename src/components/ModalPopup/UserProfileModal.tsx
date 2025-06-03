@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { theme } from '@/styles/theme';
 import { User, BookOpen, Heart, LogOut } from 'lucide-react';
 import useCookieAuth from '@/services/cookieAuthService';
-import useApiService from '@/services/api';
+import { useAuthenticateUser } from '@/services/api/authenticateUser';
 
 type UserProfileModalProps = {
     isOpen: boolean;
@@ -115,7 +115,7 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const modalRef = useRef<HTMLDivElement>(null);
     const { removeAuthCookie } = useCookieAuth();
-    const { logoutLoading } = useApiService();
+    const { logoutLoading } = useAuthenticateUser();
 
     useEffect(() => {
         if (isOpen && anchorElement) {

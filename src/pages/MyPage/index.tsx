@@ -5,10 +5,11 @@ import { useCallback, useEffect, useState } from 'react';
 import FavoritesPage from '@/pages/MyPage/MyFavorites';
 import TripsPage from '@/pages/MyPage/MyTrip';
 import { useSearchParams } from 'react-router-dom';
-import useApiService from '@/services/api';
 import useCookieAuth from '@/services/cookieAuthService';
 import { ModalAlert } from '@/components/ModalPopup';
 import { message } from 'antd';
+import { useAuthenticateUser } from '@/services/api/authenticateUser';
+import { useFetchUserInfo } from '@/services/api/fetchUserInfo';
 
 enum PageSection {
     TRIPS = 'trips',
@@ -56,7 +57,8 @@ export default function MyPage() {
 
     const { removeAuthCookie } = useCookieAuth();
 
-    const { logout: apiLogout, uploadProfileImage } = useApiService();
+    const { logout: apiLogout } = useAuthenticateUser();
+    const { uploadProfileImage } = useFetchUserInfo();
 
     useEffect(() => {
         if (sectionParam === 'trips') setActiveSection(PageSection.TRIPS);

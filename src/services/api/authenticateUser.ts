@@ -8,6 +8,7 @@ import { AuthResponse, LoginCredentials, SignUpData, SocialLoginData, SocialLogi
  */
 export function useAuthenticateUser() {
     const { setAuthCookie, removeAuthCookie } = useCookieAuth();
+
     const {
         data: loginData,
         loading: loginLoading,
@@ -40,6 +41,8 @@ export function useAuthenticateUser() {
      * @returns Promise<AuthResponse>
      */
     const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
+        console.log('Starting login process...');
+
         try {
             const response = await executeLogin({
                 url: '/auth/login/',
@@ -47,12 +50,33 @@ export function useAuthenticateUser() {
                 data: credentials,
             });
 
-            if (response.access && response.user) {
-                setAuthCookie(response.access, response.user);
+            console.log('Login API response received:', {
+                hasResponse: !!response,
+                hasToken: !!response?.token,
+                hasUser: !!response?.user,
+                tokenLength: response?.token?.length,
+                userKeys: response?.user ? Object.keys(response.user) : [],
+                userEmail: response?.user?.email,
+            });
+
+            if (response?.token && response?.user) {
+                setAuthCookie(response.token, response.user);
+            } else {
+                console.error('Login response structure invalid:', {
+                    response,
+                    hasToken: !!response?.token,
+                    hasUser: !!response?.user,
+                });
+                throw new Error('Invalid login response structure');
             }
 
             return response;
         } catch (error) {
+            console.error('Login error details:', {
+                error,
+                message: error instanceof Error ? error.message : 'Unknown error',
+                stack: error instanceof Error ? error.stack : undefined,
+            });
             throw error;
         }
     };
@@ -70,8 +94,8 @@ export function useAuthenticateUser() {
                 data: userData,
             });
 
-            if (response.access && response.user) {
-                setAuthCookie(response.access, response.user);
+            if (response.token && response.user) {
+                setAuthCookie(response.token, response.user);
             }
 
             return response;
@@ -112,7 +136,7 @@ export function useAuthenticateUser() {
                 setAuthCookie(authData.access_token, userForCookie);
 
                 return {
-                    access: authData.access_token,
+                    token: authData.access_token,
                     refresh: authData.refresh,
                     user: userForCookie,
                 };
@@ -132,16 +156,19 @@ export function useAuthenticateUser() {
      * @returns Promise<void>
      */
     const logout = async (): Promise<void> => {
+        console.log('Starting logout process...');
+
         try {
             await executeLogout({
                 url: '/auth/logout/',
                 method: 'POST',
             });
-
-            removeAuthCookie();
+            console.log('Logout API call successful');
         } catch (error) {
+            console.error('Logout API error:', error);
+        } finally {
             removeAuthCookie();
-            throw error;
+            console.log('Logout process completed');
         }
     };
 

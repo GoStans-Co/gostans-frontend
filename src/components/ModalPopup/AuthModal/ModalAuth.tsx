@@ -6,10 +6,10 @@ import Input from '@/components/Common/Input';
 import Modal from '@/components/Modal';
 import useCookieAuth from '@/services/cookieAuthService';
 import SocialLogin from '@/components/ModalPopup/AuthModal/SocialLogin';
-import useApiService from '@/services/api';
 import { LoginCredentials, SignUpData, SocialLoginData } from '@/types/auth';
 import PhoneVerification from '@/components/ModalPopup/AuthModal/PhoneVerification';
 import { message } from 'antd';
+import { useAuthenticateUser } from '@/services/api/authenticateUser';
 
 enum SignupStage {
     FORM = 'form',
@@ -146,13 +146,6 @@ const SignupPrompt = styled.div`
     }
 `;
 
-const ErrorMessage = styled.div`
-    color: red;
-    font-size: ${theme.fontSizes.sm};
-    margin-bottom: ${theme.spacing.md};
-    text-align: center;
-`;
-
 export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthProps) {
     const [activeTab, setActiveTab] = useState<'login' | 'signup'>(initialTab);
     const [name, setName] = useState('');
@@ -166,23 +159,12 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
 
     const [messageApi, contextHolder] = message.useMessage();
 
-    const {
-        login,
-        loginLoading,
-        loginError,
-        signUp,
-        signupLoading,
-        signupError,
-        socialLogin,
-        socialLoginLoading,
-        socialLoginError,
-        resetAll,
-    } = useApiService();
+    const { login, loginLoading, signUp, signupLoading, socialLogin, socialLoginLoading, resetAll } =
+        useAuthenticateUser();
 
     const { isAuthenticated } = useCookieAuth();
 
     const loading = loginLoading || signupLoading || socialLoginLoading;
-    const error = loginError || signupError || socialLoginError;
 
     useEffect(() => {
         setName('');
@@ -335,8 +317,6 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                                 </Tab>
                             </TabContainer>
                         </AuthContentHeader>
-
-                        {/* {error && <ErrorMessage>{error}</ErrorMessage>} */}
 
                         <Form onSubmit={handleSubmit}>
                             {activeTab === 'signup' && (
