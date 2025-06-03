@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 export const COOKIE_OPTIONS = {
     path: '/',
     maxAge: 7 * 24 * 60 * 60,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // for local machine dev purpose only
     sameSite: 'lax' as const,
 };
 
@@ -28,31 +28,53 @@ export default function useCookieAuth() {
 
     const setAuthCookie = useCallback(
         (token: string, userData: UserData) => {
-            console.log('Setting auth cookie:', AUTH_COOKIE_NAME, token);
-            console.log('Setting user cookie:', USER_COOKIE_NAME, userData);
             setCookie(AUTH_COOKIE_NAME, token, COOKIE_OPTIONS);
             setCookie(USER_COOKIE_NAME, userData, COOKIE_OPTIONS);
+
+            setTimeout(() => {
+                const savedToken = cookies[AUTH_COOKIE_NAME];
+                const savedUser = cookies[USER_COOKIE_NAME];
+                console.log('Cookie verification:', {
+                    tokenSet: !!savedToken,
+                    userSet: !!savedUser,
+                    tokenValue: savedToken?.substring(0, 20) + '...',
+                    userEmail: savedUser?.email,
+                });
+            }, 100);
         },
-        [setCookie],
+        [setCookie, cookies],
     );
 
     const removeAuthCookie = useCallback(() => {
+        console.log('Removing auth cookies');
         removeCookie(AUTH_COOKIE_NAME, { path: '/' });
         removeCookie(USER_COOKIE_NAME, { path: '/' });
     }, [removeCookie]);
 
     const getAuthToken = useCallback(() => {
-        return cookies[AUTH_COOKIE_NAME];
+        const token = cookies[AUTH_COOKIE_NAME];
+        return token;
     }, [cookies]);
 
     const getUserData = useCallback((): UserData | null => {
-        return cookies[USER_COOKIE_NAME] || null;
+        const userData = cookies[USER_COOKIE_NAME];
+        return userData || null;
     }, [cookies]);
 
     const isAuthenticated = useCallback(() => {
         const token = cookies[AUTH_COOKIE_NAME];
         const userData = cookies[USER_COOKIE_NAME];
-        return !!(token && userData);
+        const authenticated = !!(token && userData);
+
+        console.log('isAuthenticated check:', {
+            hasToken: !!token,
+            hasUserData: !!userData,
+            authenticated,
+            tokenLength: token?.length,
+            userEmail: userData?.email,
+        });
+
+        return authenticated;
     }, [cookies]);
 
     return {

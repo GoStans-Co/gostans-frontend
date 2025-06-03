@@ -11,13 +11,14 @@ export type SignUpData = {
 };
 
 export type AuthResponse = {
-    access: string;
+    token: string;
     refresh: string;
+    ip_address?: string;
     user: {
         id: string;
         email: string;
         name: string;
-        phone?: string;
+        phone: string;
     };
 };
 

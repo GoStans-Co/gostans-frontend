@@ -6,12 +6,12 @@ import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
 import useModal from '@/hooks/useModal';
 import ModalAuth from '@/components/ModalPopup/AuthModal/ModalAuth';
-import useApiService from '@/services/api';
 import useCookieAuth from '@/services/cookieAuthService';
 import UserProfileModal from '@/components/ModalPopup/UserProfileModal';
 import { ModalAlert } from '@/components/ModalPopup';
 import userImage from '@/assets/user.jpg';
 import { User } from 'lucide-react';
+import { useAuthenticateUser } from '@/services/api/authenticateUser';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -206,7 +206,7 @@ const UserImageDefault = styled.img`
 export default function Header() {
     const location = useLocation();
     const { openModal, closeModal } = useModal();
-    const { logout: apiLogout, logoutLoading } = useApiService();
+    const { logout: apiLogout, logoutLoading } = useAuthenticateUser();
     const { isAuthenticated, getUserData, removeAuthCookie } = useCookieAuth();
 
     const userButtonRef = useRef<HTMLButtonElement>(null);
