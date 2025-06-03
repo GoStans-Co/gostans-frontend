@@ -109,6 +109,29 @@ const StyledButton = styled.button<Omit<ButtonProps, 'children'>>`
                         background-color: ${theme.colors.secondary};
                     }
                 `;
+            case 'circle':
+                return css`
+                    background-color: white;
+                    border: 1px solid ${theme.colors.border};
+                    color: ${theme.colors.text};
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 50%;
+                    padding: 0;
+                    box-shadow: ${theme.shadows.sm};
+
+                    &:hover:not(:disabled) {
+                        background-color: ${theme.colors.lightBackground};
+                        color: ${theme.colors.primary};
+                    }
+
+                    &:disabled {
+                        background-color: ${theme.colors.lightBackground};
+                        color: ${theme.colors.border};
+                        border-color: ${theme.colors.border};
+                        box-shadow: none;
+                    }
+                `;
         }
     }}
 `;

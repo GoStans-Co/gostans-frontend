@@ -4,6 +4,7 @@ import { TourProps } from '@/types/index';
 import TourCard from '@/components/Tours/ToursCard';
 import { useState } from 'react';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import Button from '@/components/Common/Button';
 
 const SectionContainer = styled.section`
     padding: 4rem 2rem;
@@ -65,45 +66,6 @@ const NavigationButtons = styled.div`
     margin-top: 2rem;
 `;
 
-const NavButton = styled.button`
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background-color: white;
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    color: black;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: ${({ theme }) => theme.shadows.sm};
-    transition: all ${({ theme }) => theme.transitions.default};
-
-    svg {
-        stroke: black;
-    }
-
-    &:hover {
-        background-color: ${({ theme }) => theme.colors.lightBackground};
-        color: ${({ theme }) => theme.colors.primary};
-
-        svg {
-            stroke: ${({ theme }) => theme.colors.primary};
-        }
-    }
-
-    &:disabled {
-        background-color: ${({ theme }) => theme.colors.lightBackground};
-        color: ${({ theme }) => theme.colors.border};
-        border-color: ${({ theme }) => theme.colors.border};
-        cursor: not-allowed;
-        box-shadow: none;
-
-        svg {
-            stroke: ${({ theme }) => theme.colors.border};
-        }
-    }
-`;
-
 type TrendingToursProps = {
     tours: TourProps[];
 };
@@ -153,17 +115,31 @@ export default function TrendingTours({ tours }: TrendingToursProps) {
                         price={tour.price}
                         image={tour.image}
                         country={tour.country}
+                        status={tour.status}
                     />
                 ))}
             </ToursGrid>
 
             <NavigationButtons>
-                <NavButton onClick={handlePrevPage} disabled={currentPage === 0} aria-label="Previous page">
-                    <FaArrowLeft />
-                </NavButton>
-                <NavButton onClick={handleNextPage} disabled={currentPage === totalPages - 1} aria-label="Next page">
-                    <FaArrowRight />
-                </NavButton>
+                <NavigationButtons>
+                    <Button
+                        variant="circle"
+                        onClick={handlePrevPage}
+                        disabled={currentPage === 0}
+                        aria-label="Previous page"
+                    >
+                        <FaArrowLeft />
+                    </Button>
+
+                    <Button
+                        variant="circle"
+                        onClick={handleNextPage}
+                        disabled={currentPage === totalPages - 1}
+                        aria-label="Next page"
+                    >
+                        <FaArrowRight />
+                    </Button>
+                </NavigationButtons>
             </NavigationButtons>
         </SectionContainer>
     );

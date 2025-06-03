@@ -29,7 +29,7 @@ export interface AccommodationProps {
 
 export interface ButtonProps {
     children: React.ReactNode;
-    variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'light';
+    variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'light' | 'circle';
     size?: 'sm' | 'md' | 'lg' | 'xs' | 'mini';
     fullWidth?: boolean;
     onClick?: () => void;

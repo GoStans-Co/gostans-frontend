@@ -16,6 +16,7 @@ const CardContainer = styled.div`
         transform: translateY(-5px);
         box-shadow: ${({ theme }) => theme.shadows.md};
     }
+    padding-bottom: 0;
 `;
 
 const ImageContainer = styled.div`
@@ -37,50 +38,52 @@ const Image = styled.img`
 `;
 
 const CardContent = styled.div`
-    padding: 1.5rem;
-    display: flex:
-    flex-direction: left;
+    padding: 1.5rem 1.5rem 1rem;
     align-items: flex-start;
     text-align: left;
 `;
-
 const Title = styled.h3`
     font-size: ${({ theme }) => theme.fontSizes.lg};
+    font-weight: 600;
     margin-bottom: 0.5rem;
     color: ${({ theme }) => theme.colors.text};
+    line-height: 1.3;
 `;
 
 const Description = styled.p`
-    font-size: ${({ theme }) => theme.fontSizes.md};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.lightText};
     margin-bottom: 1rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    line-height: 1.4;
 `;
 
 const PriceRow = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 1rem;
 `;
 
 const Price = styled.div`
     display: flex;
     flex-direction: column;
+    gap: 0.25rem;
 `;
 
 const PriceValue = styled.span`
     font-size: ${({ theme }) => theme.fontSizes.xl};
     font-weight: 700;
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.text};
+    line-height: 1;
 `;
 
 const PriceLabel = styled.span`
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-size: ${({ theme }) => theme.fontSizes.xs};
     color: ${({ theme }) => theme.colors.lightText};
+    line-height: 1;
 `;
 const CardWrapper = styled(Link)`
     text-decoration: none;
@@ -111,7 +114,7 @@ export default function TourCard({
                         <PriceLabel>/Person</PriceLabel>
                     </Price>
                     {variant === 'button' && (
-                        <Button variant="light" size="sm" as={Link} to={`/tours/${id}`}>
+                        <Button variant="light" size="mini" as={Link} to={`/tours/${id}`}>
                             {buttonText}
                         </Button>
                     )}
