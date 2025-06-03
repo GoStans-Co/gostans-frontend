@@ -45,7 +45,7 @@ const ViewAllLink = styled(Link)`
 
 const ToursGrid = styled.div`
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 2rem;
     max-width: 1200px;
     margin: 0 auto;
@@ -61,9 +61,10 @@ const ToursGrid = styled.div`
 
 const NavigationButtons = styled.div`
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
+    align-items: center;
     gap: 1rem;
-    margin-top: 2rem;
+    margin-top: 0.5rem;
 `;
 
 type TrendingToursProps = {
@@ -72,7 +73,7 @@ type TrendingToursProps = {
 
 export default function TrendingTours({ tours }: TrendingToursProps) {
     const [currentPage, setCurrentPage] = useState(0);
-    const toursPerPage = 3;
+    const toursPerPage = 4;
     const totalPages = Math.ceil(tours.length / toursPerPage);
 
     const currentTours = tours.slice(currentPage * toursPerPage, (currentPage + 1) * toursPerPage);

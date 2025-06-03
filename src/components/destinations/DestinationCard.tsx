@@ -27,9 +27,12 @@ const CardContainer = styled(Link)<{ $shape?: CardShape }>`
 const ImageContainer = styled.div<{ $shape?: CardShape }>`
     overflow: hidden;
     border-radius: ${({ $shape, theme }) =>
-        $shape === 'oval' ? '50% / 60%' : $shape === 'rounded' ? theme.borderRadius.lg : '0'};
-    aspect-ratio: ${({ $shape }) => ($shape === 'oval' ? '0.9' : '1')};
+        $shape === 'oval' ? '85px' : $shape === 'rounded' ? theme.borderRadius.lg : '0'};
+    aspect-ratio: ${({ $shape }) => ($shape === 'oval' ? '170 / 230' : '1')};
     margin-bottom: 1rem;
+    width: 100%;
+    max-width: ${({ $shape }) => ($shape === 'oval' ? '170px' : 'none')};
+    height: ${({ $shape }) => ($shape === 'oval' ? '230px' : 'auto')};
 `;
 
 // Update Image to be inside ImageContainer

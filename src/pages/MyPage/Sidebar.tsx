@@ -1,5 +1,5 @@
 import { AlignVerticalSpaceAround, Camera, LogOut, TreePine, User } from 'lucide-react';
-import React, { useState } from 'react';
+import React from 'react';
 import { FaViacoin } from 'react-icons/fa';
 import styled from 'styled-components';
 

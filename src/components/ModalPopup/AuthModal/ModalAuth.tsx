@@ -298,6 +298,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         <>
             {contextHolder}
             <Modal isOpen={true} onClose={onClose} title="" width="450px" padding={theme.spacing.xl}>
+                {success && <div style={{ color: 'green', textAlign: 'center', marginBottom: '1rem' }}>{success}</div>}
                 {signupStage === SignupStage.PHONE_VERIFICATION ? (
                     <PhoneVerification
                         onBack={() => setSignupStage(SignupStage.FORM)}

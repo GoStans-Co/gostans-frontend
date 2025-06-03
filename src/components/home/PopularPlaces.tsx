@@ -4,7 +4,8 @@ import DestinationCard, { DestinationProps } from '@/components/Destinations/Des
 import { useState } from 'react';
 
 const SectionContainer = styled.section`
-    padding: 4rem 2rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 `;
 
 const SectionHeader = styled.div`

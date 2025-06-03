@@ -4,7 +4,8 @@ import { AccommodationProps } from '@/types/index';
 import Card from '@/components/Common/Card';
 
 const SectionContainer = styled.section`
-    padding: 4rem 2rem;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
 `;
 
 const SectionHeader = styled.div`
