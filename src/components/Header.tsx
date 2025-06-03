@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Link, useLocation } from 'react-router-dom';
-import { FaGlobe, FaShoppingCart, FaBars, FaTimes } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { FaGlobe, FaShoppingCart, FaBars, FaTimes, FaChevronDown, FaMoneyBill } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
 import useModal from '@/hooks/useModal';
 import ModalAuth from '@/components/ModalPopup/AuthModal/ModalAuth';
 import useCookieAuth from '@/services/cookieAuthService';
-import UserProfileModal from '@/components/ModalPopup/UserProfileModal';
+import UserProfileModal from '@/components/Modal/UserProfileModal';
 import { ModalAlert } from '@/components/ModalPopup';
 import userImage from '@/assets/user.jpg';
 import { User } from 'lucide-react';
 import { useAuthenticateUser } from '@/services/api/authenticateUser';
+import CountriesModal from '@/components/Modal/CountriesModal';
+import LanguageModal from '@/components/Modal/LanguageModal';
+import CurrencyModal from '@/components/Modal/CurrencyModal';
+import CartModal from '@/components/Modal/CartModal';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -66,29 +70,38 @@ const NavList = styled.ul`
     }
 `;
 
-const NavItem = styled.li<{ isActive: boolean }>`
-    font-weight: ${({ isActive }) => (isActive ? '600' : '400')};
-    color: ${({ theme, isActive }) => (isActive ? theme.colors.primary : theme.colors.text)};
-
-    &:hover {
-        color: ${({ theme }) => theme.colors.primary};
-    }
-`;
-
 const RightSection = styled.div`
     display: flex;
     align-items: center;
     gap: 1.5rem;
 `;
 
-const LanguageSelector = styled.div`
+const LanguageSelector = styled.div<{ isActive?: boolean }>`
     display: flex;
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
+    border-radius: ${({ theme }) => theme.borderRadius.sm};
+    transition: all 0.2s ease;
+    background-color: 'transparent';
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        display: none;
+    svg {
+        transition: color 0.2s ease;
+        color: ${({ isActive, theme }) => (isActive ? theme.colors.primary : theme.colors.lightText)};
+    }
+
+    span {
+        color: ${({ isActive, theme }) => (isActive ? theme.colors.primary : theme.colors.text)};
+    }
+
+    &:hover {
+        svg {
+            color: ${({ theme }) => theme.colors.primary};
+        }
+
+        span {
+            color: ${({ theme }) => theme.colors.primary};
+        }
     }
 `;
 
@@ -203,8 +216,40 @@ const UserImageDefault = styled.img`
     border: none;
 `;
 
+const LeftSection = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+`;
+
+const CountrySelector = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 6px 12px;
+    border: 0.4px solid ${({ theme }) => theme.colors.border};
+    border-radius: 25px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    color: ${({ theme }) => theme.colors.text};
+
+    &:hover {
+        background-color: ${({ theme }) => theme.colors.lightBackground};
+        border-color: ${({ theme }) => theme.colors.primary};
+    }
+
+    svg {
+        transition: transform 0.2s ease;
+        color: ${({ theme }) => theme.colors.lightText};
+    }
+
+    &:hover svg {
+        color: ${({ theme }) => theme.colors.primary};
+    }
+`;
+
 export default function Header() {
-    const location = useLocation();
     const { openModal, closeModal } = useModal();
     const { logout: apiLogout, logoutLoading } = useAuthenticateUser();
     const { isAuthenticated, getUserData, removeAuthCookie } = useCookieAuth();
@@ -216,6 +261,37 @@ export default function Header() {
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
     const [authState, setAuthState] = useState(isAuthenticated());
+
+    const countryRef = useRef<HTMLDivElement>(null);
+    const languageRef = useRef<HTMLDivElement>(null);
+    const currencyRef = useRef<HTMLDivElement>(null);
+    const cartRef = useRef<HTMLAnchorElement>(null);
+
+    const [showCountries, setShowCountries] = useState(false);
+    const [showLanguage, setShowLanguage] = useState(false);
+    const [showCurrency, setShowCurrency] = useState(false);
+    const [showCart, setShowCart] = useState(false);
+
+    const [selectedCountry, setSelectedCountry] = useState({
+        code: 'UZ',
+        name: 'Uzbekistan',
+        flag: '🇺🇿',
+    });
+    const [selectedLanguage, setSelectedLanguage] = useState({
+        code: 'en',
+        name: 'English',
+        nativeName: 'English',
+        flag: '🇺🇸',
+    });
+    const [selectedCurrency, setSelectedCurrency] = useState({
+        code: 'USD',
+        name: 'United States Dollar',
+        symbol: '$',
+        flag: '🇺🇸',
+    });
+    const [cartItems, setCartItems] = useState([
+        { id: '1', name: 'Samarkand City', price: 307.98, currency: '€', quantity: 1 },
+    ]);
 
     const userData = getUserData();
     const isLoggedIn = authState;
@@ -258,7 +334,14 @@ export default function Header() {
     return (
         <HeaderContainer>
             <HeaderContent>
-                <Logo to="/">GoStans</Logo>
+                <LeftSection>
+                    <Logo to="/">GoStans</Logo>
+                    <CountrySelector ref={countryRef} onClick={() => setShowCountries(true)}>
+                        <span style={{ fontSize: '18px' }}>{selectedCountry.flag}</span>
+                        <span>{selectedCountry.name}</span>
+                        <FaChevronDown size={12} />
+                    </CountrySelector>
+                </LeftSection>
 
                 <MobileMenuButton onClick={toggleMenu}>
                     <FaBars />
@@ -270,27 +353,7 @@ export default function Header() {
                     <CloseButton onClick={toggleMenu}>
                         <FaTimes />
                     </CloseButton>
-
-                    <NavList>
-                        <NavItem isActive={location.pathname === '/'}>
-                            <Link to="/">Home</Link>
-                        </NavItem>
-                        <NavItem isActive={location.pathname === '/destinations'}>
-                            <Link to="/destinations">Destinations</Link>
-                        </NavItem>
-                        <NavItem isActive={location.pathname === '/tours'}>
-                            <Link to="/tours">Tours</Link>
-                        </NavItem>
-                        <NavItem isActive={location.pathname === '/activities'}>
-                            <Link to="/activities">Activities</Link>
-                        </NavItem>
-                        <NavItem isActive={location.pathname === '/hotels'}>
-                            <Link to="/hotels">Hotels</Link>
-                        </NavItem>
-                        <NavItem isActive={location.pathname === '/faq'}>
-                            <Link to="/faq">FAQ</Link>
-                        </NavItem>
-                    </NavList>
+                    <NavList></NavList>
                     <MobileAuthSection>
                         {isLoggedIn ? (
                             <div>
@@ -340,16 +403,26 @@ export default function Header() {
                 </Nav>
 
                 <RightSection>
-                    <LanguageSelector>
-                        <FaGlobe />
-                        <span>English</span>
+                    <LanguageSelector ref={languageRef} onClick={() => setShowLanguage(true)} isActive={showLanguage}>
+                        <FaGlobe style={{ width: '18px', height: '18px' }} />
+                        <span>{selectedLanguage.name}</span>
                     </LanguageSelector>
 
-                    <CartLink to="/cart">
+                    <LanguageSelector ref={currencyRef} onClick={() => setShowCurrency(true)} isActive={showCurrency}>
+                        <FaMoneyBill style={{ width: '18px', height: '18px' }} />
+                        <span>{selectedCurrency.code}</span>
+                    </LanguageSelector>
+                    <CartLink
+                        to="#"
+                        ref={cartRef}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setShowCart(true);
+                        }}
+                    >
                         <FaShoppingCart />
-                        <CartCount>0</CartCount>
+                        <CartCount>{cartItems.reduce((sum, item) => sum + item.quantity, 0)}</CartCount>
                     </CartLink>
-
                     {isLoggedIn ? (
                         <>
                             <UserAvatarButton ref={userButtonRef} onClick={toggleUserModal} aria-label="User menu">
@@ -385,6 +458,50 @@ export default function Header() {
                     )}
                 </RightSection>
             </HeaderContent>
+            <CountriesModal
+                isOpen={showCountries}
+                onClose={() => setShowCountries(false)}
+                anchorElement={countryRef.current}
+                selectedCountry={selectedCountry}
+                onCountrySelect={setSelectedCountry}
+            />
+
+            <LanguageModal
+                isOpen={showLanguage}
+                onClose={() => setShowLanguage(false)}
+                anchorElement={languageRef.current}
+                selectedLanguage={selectedLanguage}
+                onLanguageSelect={setSelectedLanguage}
+            />
+
+            <CurrencyModal
+                isOpen={showCurrency}
+                onClose={() => setShowCurrency(false)}
+                anchorElement={currencyRef.current}
+                selectedCurrency={selectedCurrency}
+                onCurrencySelect={(currency) =>
+                    setSelectedCurrency({
+                        ...currency,
+                        name: currency.code,
+                    })
+                }
+            />
+
+            <CartModal
+                isOpen={showCart}
+                onClose={() => setShowCart(false)}
+                anchorElement={cartRef.current}
+                cartItems={cartItems}
+                onUpdateQuantity={(id, quantity) => {
+                    setCartItems((items) => items.map((item) => (item.id === id ? { ...item, quantity } : item)));
+                }}
+                onRemoveItem={(id) => {
+                    setCartItems((items) => items.filter((item) => item.id !== id));
+                }}
+                onGoToCart={() => {
+                    window.location.href = '/cart';
+                }}
+            />
             <ModalAlert
                 isOpen={isLogoutModalOpen}
                 onClose={() => setIsLogoutModalOpen(false)}
