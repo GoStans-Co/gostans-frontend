@@ -9,12 +9,6 @@ export type SearchData = {
     infants: number;
 };
 
-export type SearchFilters = {
-    minPrice: string;
-    maxPrice: string;
-    selectedRating: string;
-};
-
 export type SearchUIState = {
     showTravelersDropdown: boolean;
     isSearching: boolean;
@@ -24,6 +18,16 @@ export type SearchCacheStatus = {
     loaded: boolean;
     lastFetch: number | null;
     isLoading: boolean;
+};
+
+export type SearchFilters = {
+    minPrice: string;
+    maxPrice: string;
+    selectedRating: string;
+    propertyTypes: string[];
+    amenities: string[];
+    locations: string[];
+    guestRating: string[];
 };
 
 export const searchDataAtom = atom<SearchData>({
@@ -44,6 +48,10 @@ export const searchFiltersAtom = atom<SearchFilters>({
         minPrice: '',
         maxPrice: '',
         selectedRating: '',
+        propertyTypes: [],
+        amenities: [],
+        locations: [],
+        guestRating: [],
     },
 });
 
