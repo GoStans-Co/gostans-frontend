@@ -12,10 +12,10 @@ import { ModalAlert } from '@/components/ModalPopup';
 import userImage from '@/assets/user.jpg';
 import { User } from 'lucide-react';
 import { useAuthenticateUser } from '@/services/api/authenticateUser';
-import CountriesModal from '@/components/Modal/CountriesModal';
-import LanguageModal from '@/components/Modal/LanguageModal';
-import CurrencyModal from '@/components/Modal/CurrencyModal';
-import CartModal from '@/components/Modal/CartModal';
+import CountriesModal from '@/components/Modal/HeaderModals/CountriesModal';
+import LanguageModal from '@/components/Modal/HeaderModals/LanguageModal';
+import CurrencyModal from '@/components/Modal/HeaderModals/CurrencyModal';
+import CartModal from '@/components/Modal/HeaderModals/CartModal';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
