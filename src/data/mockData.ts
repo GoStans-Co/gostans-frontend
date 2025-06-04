@@ -15,6 +15,8 @@ export const tours: TourProps[] = [
         status: 'all',
         date: '2023-10-01',
         dayInfo: 'One Day Tour',
+        peopleBooked: 120,
+        reviews: 45,
     },
     {
         id: 'tour-2',
@@ -29,6 +31,8 @@ export const tours: TourProps[] = [
         status: 'booked',
         date: '2023-09-15',
         dayInfo: 'Two Day Tour',
+        peopleBooked: 200,
+        reviews: 75,
     },
     {
         id: 'tour-3',
@@ -42,6 +46,8 @@ export const tours: TourProps[] = [
         status: 'waiting',
         date: '2023-11-05',
         dayInfo: 'Three Day Tour',
+        peopleBooked: 80,
+        reviews: 30,
     },
     {
         id: 'tour-4',
@@ -56,6 +62,8 @@ export const tours: TourProps[] = [
         status: 'complete',
         date: '2023-08-20',
         dayInfo: 'Four Day Tour',
+        peopleBooked: 150,
+        reviews: 60,
     },
     {
         id: 'tour-5',
@@ -70,6 +78,8 @@ export const tours: TourProps[] = [
         status: 'cancelled',
         date: '2023-07-10',
         dayInfo: 'Three Day Tour',
+        peopleBooked: 90,
+        reviews: 40,
     },
     {
         id: 'tour-6',
@@ -83,6 +93,8 @@ export const tours: TourProps[] = [
         status: 'all',
         date: '2023-12-01',
         dayInfo: 'Five Day Tour',
+        peopleBooked: 300,
+        reviews: 120,
     },
 ];
 

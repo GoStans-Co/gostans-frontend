@@ -15,9 +15,11 @@ export type TourProps = {
     status: 'all' | 'booked' | 'waiting' | 'complete' | 'cancelled';
     date?: string;
     dayInfo?: string;
+    peopleBooked?: number;
+    reviews?: number;
 };
 
-export interface AccommodationProps {
+export type AccommodationProps = {
     id: string;
     name: string;
     description: string;
@@ -25,9 +27,9 @@ export interface AccommodationProps {
     image: string;
     location: string;
     rating?: number;
-}
+};
 
-export interface ButtonProps {
+export type ButtonProps = {
     children: React.ReactNode;
     variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'light' | 'circle';
     size?: 'sm' | 'md' | 'lg' | 'xs' | 'mini';
@@ -38,25 +40,25 @@ export interface ButtonProps {
     as?: React.ElementType;
     to?: string;
     style?: React.CSSProperties;
-}
+};
 
-export interface CardProps {
+export type CardProps = {
     children: React.ReactNode;
     variant?: 'default' | 'outlined' | 'elevated';
     padding?: boolean;
     style?: React.CSSProperties;
-}
+};
 
-export interface IconButtonProps {
+export type IconButtonProps = {
     icon: React.ReactNode;
     onClick?: () => void;
     ariaLabel: string;
     variant?: 'primary' | 'secondary' | 'outline' | 'text';
     size?: 'sm' | 'md' | 'lg';
     disabled?: boolean;
-}
+};
 
-export interface InputProps {
+export type InputProps = {
     type?: string;
     placeholder?: string;
     value?: string;
@@ -67,9 +69,9 @@ export interface InputProps {
     disabled?: boolean;
     icon?: React.ReactNode;
     error?: string;
-}
+};
 
-export interface SelectProps {
+export type SelectProps = {
     options: { value: string; label: string }[];
     value?: string;
     onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -79,4 +81,4 @@ export interface SelectProps {
     disabled?: boolean;
     placeholder?: string;
     error?: string;
-}
+};

@@ -1,12 +1,8 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
-import { Suspense } from 'react';
-import HomePage from '@/pages/Home';
-import DestinationsPage from '@/pages/Home/DestinationPage';
-import ToursPage from '@/pages/Home/ToursPage';
+import React, { Suspense } from 'react';
 import NotFoundPage from '@/pages/NotFound';
-import MainLayout from '@/components/Layout/Layout';
-import MyPage from '@/pages/MyPage';
 import ProtectedRoute from '@/routes/protectedRoute';
+import MainLayout from '@/components/Layout/Layout';
 
 const ComponentLoading = () => (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -35,19 +31,23 @@ const routes: RouteObject[] = [
         children: [
             {
                 index: true,
-                element: withSuspense(HomePage),
+                element: withSuspense(React.lazy(() => import('@/pages/Home'))),
             },
             {
                 path: 'destinations',
-                element: withSuspense(DestinationsPage),
+                element: withSuspense(React.lazy(() => import('@/pages/Home/DestinationPage'))),
             },
             {
                 path: 'tours',
-                element: withSuspense(ToursPage),
+                element: withSuspense(React.lazy(() => import('@/pages/Home/ToursPage'))),
             },
             {
                 path: 'mypage',
-                element: withProtection(MyPage),
+                element: withProtection(React.lazy(() => import('@/pages/MyPage'))),
+            },
+            {
+                path: '/searchTrips',
+                element: withSuspense(React.lazy(() => import('@/pages/SearchTrips'))),
             },
         ],
     },
