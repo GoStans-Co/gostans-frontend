@@ -101,7 +101,7 @@ const TourCard = styled(Card)`
 
 const TourImage = styled.div`
     width: 200px;
-    height: 150px;
+    height: 170px;
     flex-shrink: 0;
     border-radius: ${({ theme }) => theme.borderRadius.md};
     overflow: hidden;
@@ -145,6 +145,7 @@ const TourContent = styled.div`
     flex: 1;
     display: flex;
     flex-direction: column;
+    text-align: left;
 `;
 
 const TourHeader = styled.div`
@@ -185,6 +186,7 @@ const TourDescription = styled.p`
     font-size: ${({ theme }) => theme.fontSizes.sm};
     line-height: 1.5;
     margin-bottom: 1rem;
+    text-align: left;
 `;
 
 const TourLocation = styled.div`
@@ -194,6 +196,7 @@ const TourLocation = styled.div`
     color: ${({ theme }) => theme.colors.lightText};
     font-size: ${({ theme }) => theme.fontSizes.sm};
     margin-bottom: 0.75rem;
+    justify-content: flex-start;
 `;
 
 const TourMeta = styled.div`
@@ -213,6 +216,7 @@ const MetaLeft = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    align-items: flex-start;
 `;
 
 const Rating = styled.div`
