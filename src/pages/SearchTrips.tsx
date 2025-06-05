@@ -15,6 +15,7 @@ import {
     useSearchUIState,
 } from '@/hooks/useSearchActions';
 import FilterBar from '@/components/FilterBar';
+import NoDataFound from '@/components/Common/NoDataFound';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -399,9 +400,13 @@ export default function SearchPackageList() {
                         ))}
 
                         {filteredTours.length === 0 ? (
-                            <div style={{ textAlign: 'center', color: '#999' }}>
-                                No tours found matching your criteria.
-                            </div>
+                            <NoDataFound
+                                type="search"
+                                onButtonClick={() => {
+                                    filterActions.clearAllFilters();
+                                    searchActions.resetSearch();
+                                }}
+                            />
                         ) : (
                             <div style={{ textAlign: 'center', marginTop: '1rem' }}>
                                 <Button
