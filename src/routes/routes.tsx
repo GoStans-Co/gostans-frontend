@@ -47,7 +47,11 @@ const routes: RouteObject[] = [
             },
             {
                 path: '/searchTrips',
-                element: withSuspense(React.lazy(() => import('@/pages/SearchPackageList'))),
+                element: withSuspense(React.lazy(() => import('@/pages/Search/SearchPackageList'))),
+            },
+            {
+                path: 'searchTrips/package/:packageId',
+                element: withSuspense(React.lazy(() => import('@/pages/Search/SearchPackageDetails'))),
             },
         ],
     },
