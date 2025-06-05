@@ -1,8 +1,21 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { FaStar, FaWifi, FaParking, FaSwimmingPool, FaDumbbell, FaUtensils } from 'react-icons/fa';
-import { Checkbox, Radio } from 'antd';
+import {
+    FaStar,
+    FaWifi,
+    FaParking,
+    FaSwimmingPool,
+    FaDumbbell,
+    FaUtensils,
+    FaChevronDown,
+    FaChevronUp,
+    FaDollarSign,
+    FaBuilding,
+    FaUsers,
+    FaMapMarkerAlt,
+} from 'react-icons/fa';
 import { SearchFilters } from '@/atoms/search';
+import { Checkbox } from 'antd';
 
 export type FilterHandlers = {
     updateFilters: (updates: Partial<SearchFilters>) => void;
@@ -88,7 +101,7 @@ const FilterTitle = styled.h3`
 `;
 
 const FilterContent = styled.div`
-    padding: 20px 24px;
+    padding: 16px 20px;
 `;
 
 const SectionTitle = styled.h4`
@@ -97,6 +110,25 @@ const SectionTitle = styled.h4`
     font-weight: 600;
     color: ${({ theme }) => theme.colors.text};
     text-align: left;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &:hover {
+        color: ${({ theme }) => theme.colors.primary};
+    }
+`;
+
+const SectionTitleContent = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .section-icon {
+        opacity: 0.7;
+        font-size: 14px;
+    }
 `;
 
 const PriceInputContainer = styled.div`
@@ -127,26 +159,6 @@ const PriceInput = styled.input`
 const PriceSeparator = styled.span`
     color: ${({ theme }) => theme.colors.lightText};
     font-weight: 500;
-`;
-
-const RatingOption = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 0;
-    cursor: pointer;
-
-    &:hover {
-        background: ${({ theme }) => theme.colors.lightBackground};
-        margin: 0 -12px;
-        padding: 8px 12px;
-        border-radius: ${({ theme }) => theme.borderRadius.sm};
-    }
-`;
-
-const StarContainer = styled.div`
-    display: flex;
-    gap: 2px;
 `;
 
 const CheckboxOption = styled.div`
@@ -206,6 +218,29 @@ const ShowAllButton = styled.button`
     }
 `;
 
+const StarRatingContainer = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
+`;
+
+const InteractiveStar = styled(FaStar)<{ isSelected: boolean; isHovered: boolean }>`
+    cursor: pointer;
+    transition: all 0.2s;
+    color: ${({ isSelected, isHovered }) => (isSelected || isHovered ? '#ffc107' : '#e0e0e0')};
+
+    &:hover {
+        transform: scale(1.1);
+    }
+`;
+
+const RatingText = styled.span`
+    margin-left: 8px;
+    font-size: 14px;
+    color: ${({ theme }) => theme.colors.text};
+`;
+
 const propertyTypes = [
     { value: 'hotel', label: 'Hotels', count: 2847 },
     { value: 'apartment', label: 'Apartments', count: 1205 },
@@ -241,6 +276,15 @@ const guestRatings = [
 export default function FilterBar({ filters, handlers }: FilterBarProps) {
     const [showAllPropertyTypes, setShowAllPropertyTypes] = useState(false);
     const [showAllLocations, setShowAllLocations] = useState(false);
+    const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
+        price: false,
+        starRating: false,
+        propertyType: false,
+        guestRating: false,
+        amenities: false,
+        location: false,
+    });
+    const [hoveredStar, setHoveredStar] = useState<number | null>(null);
 
     const handlePriceInputChange = (type: 'min' | 'max', value: string) => {
         if (type === 'min') {
@@ -248,11 +292,6 @@ export default function FilterBar({ filters, handlers }: FilterBarProps) {
         } else {
             handlers.handlePriceChange(filters.minPrice, value);
         }
-    };
-
-    const handleRatingClick = (rating: string) => {
-        const newRating = filters.selectedRating === rating ? '' : rating;
-        handlers.handleRatingChange(newRating);
     };
 
     const handlePropertyTypeChange = (type: string, checked: boolean) => {
@@ -277,6 +316,33 @@ export default function FilterBar({ filters, handlers }: FilterBarProps) {
         handlers.handleGuestRatingChange(newRatings);
     };
 
+    const toggleSection = (section: string) => {
+        setCollapsedSections((prev) => ({
+            ...prev,
+            [section]: !prev[section],
+        }));
+    };
+
+    const handleStarClick = (rating: number) => {
+        const newRating = filters.selectedRating === rating.toString() ? '' : rating.toString();
+        handlers.handleRatingChange(newRating);
+    };
+
+    const handleStarHover = (rating: number | null) => {
+        setHoveredStar(rating);
+    };
+
+    const getRatingText = (rating: number) => {
+        const texts: { [key: number]: string } = {
+            1: 'Poor',
+            2: 'Fair',
+            3: 'Good',
+            4: 'Very Good',
+            5: 'Excellent',
+        };
+        return texts[rating] || '';
+    };
+
     const displayedPropertyTypes = showAllPropertyTypes ? propertyTypes : propertyTypes.slice(0, 5);
     const displayedLocations = showAllLocations ? locations : locations.slice(0, 4);
 
@@ -289,62 +355,96 @@ export default function FilterBar({ filters, handlers }: FilterBarProps) {
             {/* Price Filter */}
             <FilterSection>
                 <FilterContent>
-                    <SectionTitle>Price</SectionTitle>
-                    <PriceInputContainer>
-                        <PriceInput
-                            type="number"
-                            placeholder="0"
-                            value={filters.minPrice}
-                            onChange={(e) => handlePriceInputChange('min', e.target.value)}
-                        />
-                        <PriceSeparator>-</PriceSeparator>
-                        <PriceInput
-                            type="number"
-                            placeholder="1100"
-                            value={filters.maxPrice}
-                            onChange={(e) => handlePriceInputChange('max', e.target.value)}
-                        />
-                    </PriceInputContainer>
+                    <SectionTitle onClick={() => toggleSection('price')}>
+                        <SectionTitleContent>
+                            <FaDollarSign className="section-icon" />
+                            Price
+                        </SectionTitleContent>
+                        {collapsedSections.price ? <FaChevronDown size={12} /> : <FaChevronUp size={12} />}
+                    </SectionTitle>{' '}
+                    {!collapsedSections.price && (
+                        <PriceInputContainer>
+                            <PriceInput
+                                type="number"
+                                placeholder="0"
+                                value={filters.minPrice}
+                                onChange={(e) => handlePriceInputChange('min', e.target.value)}
+                            />
+                            <PriceSeparator>-</PriceSeparator>
+                            <PriceInput
+                                type="number"
+                                placeholder="1100"
+                                value={filters.maxPrice}
+                                onChange={(e) => handlePriceInputChange('max', e.target.value)}
+                            />
+                        </PriceInputContainer>
+                    )}
                 </FilterContent>
             </FilterSection>
 
             {/* Star Rating Filter */}
             <FilterSection>
                 <FilterContent>
-                    <SectionTitle>Star Rating</SectionTitle>
-                    {[5, 4, 3, 2, 1].map((rating) => (
-                        <RatingOption key={rating} onClick={() => handleRatingClick(rating.toString())}>
-                            <Radio checked={filters.selectedRating === rating.toString()} onChange={() => {}} />
-                            <StarContainer>
-                                {Array.from({ length: rating }, (_, i) => (
-                                    <FaStar key={i} size={14} color="#ffc107" />
-                                ))}
-                            </StarContainer>
-                            <span>{rating}</span>
-                        </RatingOption>
-                    ))}
+                    <SectionTitle onClick={() => toggleSection('starRating')}>
+                        <SectionTitleContent>
+                            <FaStar className="section-icon" />
+                            Star Rating
+                        </SectionTitleContent>
+                        {collapsedSections.starRating ? <FaChevronDown size={12} /> : <FaChevronUp size={12} />}
+                    </SectionTitle>
+                    {!collapsedSections.starRating && (
+                        <StarRatingContainer onMouseLeave={() => handleStarHover(null)}>
+                            {[1, 2, 3, 4, 5].map((rating) => (
+                                <InteractiveStar
+                                    key={rating}
+                                    size={24}
+                                    isSelected={parseInt(filters.selectedRating) >= rating}
+                                    isHovered={hoveredStar !== null && hoveredStar >= rating}
+                                    onClick={() => handleStarClick(rating)}
+                                    onMouseEnter={() => handleStarHover(rating)}
+                                />
+                            ))}
+                            <RatingText>
+                                {hoveredStar
+                                    ? `${hoveredStar} star${hoveredStar > 1 ? 's' : ''} - ${getRatingText(hoveredStar)}`
+                                    : filters.selectedRating
+                                      ? `${filters.selectedRating} star${parseInt(filters.selectedRating) > 1 ? 's' : ''} & up`
+                                      : ''}
+                            </RatingText>
+                        </StarRatingContainer>
+                    )}
                 </FilterContent>
             </FilterSection>
 
             {/* Property Type Filter */}
             <FilterSection>
                 <FilterContent>
-                    <SectionTitle>Property Type</SectionTitle>
-                    {displayedPropertyTypes.map((type) => (
-                        <CheckboxOption key={type.value}>
-                            <Checkbox
-                                checked={filters.propertyTypes.includes(type.value)}
-                                onChange={(e) => handlePropertyTypeChange(type.value, e.target.checked)}
-                            >
-                                <OptionLabel>{type.label}</OptionLabel>
-                            </Checkbox>
-                            <OptionCount>{type.count}</OptionCount>
-                        </CheckboxOption>
-                    ))}
-                    {propertyTypes.length > 5 && (
-                        <ShowAllButton onClick={() => setShowAllPropertyTypes(!showAllPropertyTypes)}>
-                            {showAllPropertyTypes ? 'Show Less' : `Show All ${propertyTypes.length}`}
-                        </ShowAllButton>
+                    <SectionTitle onClick={() => toggleSection('propertyType')}>
+                        <SectionTitleContent>
+                            <FaBuilding className="section-icon" />
+                            Property Type
+                        </SectionTitleContent>{' '}
+                        {collapsedSections.propertyType ? <FaChevronDown size={12} /> : <FaChevronUp size={12} />}{' '}
+                    </SectionTitle>{' '}
+                    {!collapsedSections.propertyType && (
+                        <div>
+                            {displayedPropertyTypes.map((type) => (
+                                <CheckboxOption key={type.value}>
+                                    <Checkbox
+                                        checked={filters.propertyTypes.includes(type.value)}
+                                        onChange={(e) => handlePropertyTypeChange(type.value, e.target.checked)}
+                                    >
+                                        <OptionLabel>{type.label}</OptionLabel>
+                                    </Checkbox>
+                                    <OptionCount>{type.count}</OptionCount>
+                                </CheckboxOption>
+                            ))}
+                            {propertyTypes.length > 5 && (
+                                <ShowAllButton onClick={() => setShowAllPropertyTypes(!showAllPropertyTypes)}>
+                                    {showAllPropertyTypes ? 'Show Less' : `Show All ${propertyTypes.length}`}
+                                </ShowAllButton>
+                            )}
+                        </div>
                     )}
                 </FilterContent>
             </FilterSection>
@@ -352,61 +452,91 @@ export default function FilterBar({ filters, handlers }: FilterBarProps) {
             {/* Guest Rating Filter */}
             <FilterSection>
                 <FilterContent>
-                    <SectionTitle>Guest Rating</SectionTitle>
-                    {guestRatings.map((rating) => (
-                        <CheckboxOption key={rating.value}>
-                            <Checkbox
-                                checked={filters.guestRating.includes(rating.value)}
-                                onChange={(e) => handleGuestRatingChange(rating.value, e.target.checked)}
-                            >
-                                <OptionLabel>{rating.label}</OptionLabel>
-                            </Checkbox>
-                            <OptionCount>{rating.count}</OptionCount>
-                        </CheckboxOption>
-                    ))}
+                    <SectionTitle onClick={() => toggleSection('guestRating')}>
+                        <SectionTitleContent>
+                            <FaUsers className="section-icon" />
+                            Guest Rating
+                        </SectionTitleContent>
+                        {collapsedSections.guestRating ? <FaChevronDown size={12} /> : <FaChevronUp size={12} />}{' '}
+                    </SectionTitle>
+                    {!collapsedSections.guestRating && (
+                        <div>
+                            {guestRatings.map((rating) => (
+                                <CheckboxOption key={rating.value}>
+                                    <Checkbox
+                                        checked={filters.guestRating.includes(rating.value)}
+                                        onChange={(e) => handleGuestRatingChange(rating.value, e.target.checked)}
+                                    >
+                                        <OptionLabel>{rating.label}</OptionLabel>
+                                    </Checkbox>
+                                    <OptionCount>{rating.count}</OptionCount>
+                                </CheckboxOption>
+                            ))}
+                        </div>
+                    )}
                 </FilterContent>
             </FilterSection>
 
             {/* Amenities Filter */}
             <FilterSection>
                 <FilterContent>
-                    <SectionTitle>Amenities</SectionTitle>
-                    {amenities.map((amenity) => (
-                        <CheckboxOption key={amenity.value}>
-                            <Checkbox
-                                checked={filters.amenities.includes(amenity.value)}
-                                onChange={(e) => handleAmenityChange(amenity.value, e.target.checked)}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    {amenity.icon}
-                                    <OptionLabel>{amenity.label}</OptionLabel>
-                                </div>
-                            </Checkbox>
-                            <OptionCount>{amenity.count}</OptionCount>
-                        </CheckboxOption>
-                    ))}
+                    <SectionTitle onClick={() => toggleSection('amenities')}>
+                        <SectionTitleContent>
+                            <FaWifi className="section-icon" />
+                            Amenities
+                        </SectionTitleContent>
+                        {collapsedSections.amenities ? <FaChevronDown size={12} /> : <FaChevronUp size={12} />}{' '}
+                    </SectionTitle>{' '}
+                    {!collapsedSections.amenities && (
+                        <div>
+                            {amenities.map((amenity) => (
+                                <CheckboxOption key={amenity.value}>
+                                    <Checkbox
+                                        checked={filters.amenities.includes(amenity.value)}
+                                        onChange={(e) => handleAmenityChange(amenity.value, e.target.checked)}
+                                    >
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            {amenity.icon}
+                                            <OptionLabel>{amenity.label}</OptionLabel>
+                                        </div>
+                                    </Checkbox>
+                                    <OptionCount>{amenity.count}</OptionCount>
+                                </CheckboxOption>
+                            ))}
+                        </div>
+                    )}
                 </FilterContent>
             </FilterSection>
 
             {/* Location Filter */}
             <FilterSection>
                 <FilterContent>
-                    <SectionTitle>Location</SectionTitle>
-                    {displayedLocations.map((location) => (
-                        <CheckboxOption key={location.value}>
-                            <Checkbox
-                                checked={filters.locations.includes(location.value)}
-                                onChange={(e) => handleLocationChange(location.value, e.target.checked)}
-                            >
-                                <OptionLabel>{location.label}</OptionLabel>
-                            </Checkbox>
-                            <OptionCount>{location.count}</OptionCount>
-                        </CheckboxOption>
-                    ))}
-                    {locations.length > 4 && (
-                        <ShowAllButton onClick={() => setShowAllLocations(!showAllLocations)}>
-                            {showAllLocations ? 'Show Less' : `Show All ${locations.length}`}
-                        </ShowAllButton>
+                    <SectionTitle onClick={() => toggleSection('location')}>
+                        <SectionTitleContent>
+                            <FaMapMarkerAlt className="section-icon" />
+                            Location
+                        </SectionTitleContent>
+                        {collapsedSections.location ? <FaChevronDown size={12} /> : <FaChevronUp size={12} />}{' '}
+                    </SectionTitle>{' '}
+                    {!collapsedSections.location && (
+                        <div>
+                            {displayedLocations.map((location) => (
+                                <CheckboxOption key={location.value}>
+                                    <Checkbox
+                                        checked={filters.locations.includes(location.value)}
+                                        onChange={(e) => handleLocationChange(location.value, e.target.checked)}
+                                    >
+                                        <OptionLabel>{location.label}</OptionLabel>
+                                    </Checkbox>
+                                    <OptionCount>{location.count}</OptionCount>
+                                </CheckboxOption>
+                            ))}
+                            {locations.length > 4 && (
+                                <ShowAllButton onClick={() => setShowAllLocations(!showAllLocations)}>
+                                    {showAllLocations ? 'Show Less' : `Show All ${locations.length}`}
+                                </ShowAllButton>
+                            )}
+                        </div>
                     )}
                 </FilterContent>
             </FilterSection>
