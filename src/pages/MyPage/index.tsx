@@ -8,8 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import useCookieAuth from '@/services/cookieAuthService';
 import { ModalAlert } from '@/components/ModalPopup';
 import { message } from 'antd';
-import { useAuthenticateUser } from '@/services/api/authenticateUser';
-import { useFetchUserInfo } from '@/services/api/fetchUserInfo';
+import useApiServices from '@/services';
 
 enum PageSection {
     TRIPS = 'trips',
@@ -56,9 +55,7 @@ export default function MyPage() {
     const [messageApi, contextHolder] = message.useMessage();
 
     const { removeAuthCookie } = useCookieAuth();
-
-    const { logout: apiLogout } = useAuthenticateUser();
-    const { uploadProfileImage } = useFetchUserInfo();
+    const { auth: authService, user: userService } = useApiServices();
 
     useEffect(() => {
         if (sectionParam === 'trips') setActiveSection(PageSection.TRIPS);
@@ -80,31 +77,14 @@ export default function MyPage() {
 
     const handleSectionLogout = useCallback(async () => {
         try {
-            await apiLogout();
+            await authService.logout();
         } catch (error) {
             console.error('Logout error:', error);
             /* if logout fails, we force to remove cookies */
             removeAuthCookie();
             window.location.href = '/';
         }
-    }, []);
-
-    const showLogoutConfirmation = () => {
-        setIsLogoutModalOpen(true);
-    };
-
-    const renderContent = () => {
-        switch (activeSection) {
-            case PageSection.PROFILE:
-                return <ProfileContent userData={userData} />;
-            case PageSection.FAVORITES:
-                return <FavoritesPage />;
-            case PageSection.TRIPS:
-                return <TripsPage />;
-            default:
-                return <ProfileContent userData={userData} />;
-        }
-    };
+    }, [authService, removeAuthCookie]);
 
     const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -127,14 +107,16 @@ export default function MyPage() {
         }
 
         try {
-            const response = await uploadProfileImage(file);
+            const response = await userService.uploadProfileImage(file);
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setProfileImage(e.target?.result as string);
-            };
-            reader.readAsDataURL(file);
-            console.log('Upload successful:', response);
+            if (response.statusCode === 200) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    setProfileImage(e.target?.result as string);
+                };
+                reader.readAsDataURL(file);
+                console.log('Upload successful:', response);
+            }
         } catch (error) {
             console.error('Image upload failed:', error);
             messageApi.error({
@@ -142,6 +124,23 @@ export default function MyPage() {
                 duration: 3,
             });
             setProfileImage(null);
+        }
+    };
+
+    const showLogoutConfirmation = () => {
+        setIsLogoutModalOpen(true);
+    };
+
+    const renderContent = () => {
+        switch (activeSection) {
+            case PageSection.PROFILE:
+                return <ProfileContent userData={userData} />;
+            case PageSection.FAVORITES:
+                return <FavoritesPage />;
+            case PageSection.TRIPS:
+                return <TripsPage />;
+            default:
+                return <ProfileContent userData={userData} />;
         }
     };
 

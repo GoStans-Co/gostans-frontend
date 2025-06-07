@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import { theme } from '@/styles/theme';
 import { User, BookOpen, Heart, LogOut } from 'lucide-react';
 import useCookieAuth from '@/services/cookieAuthService';
-import { useAuthenticateUser } from '@/services/api/authenticateUser';
 import { DropdownModal, ModalOverlay } from '@/components/Common/DropdownElemStyles';
+import useApiServices from '@/services';
 
 type UserProfileModalProps = {
     isOpen: boolean;
@@ -66,8 +66,10 @@ const LogoutSeparator = styled.div`
 export default function UserProfileModal({ isOpen, onClose, anchorElement, onLogout }: UserProfileModalProps) {
     const [position, setPosition] = useState({ top: 0, left: 0 });
     const modalRef = useRef<HTMLDivElement>(null);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+
     const { removeAuthCookie } = useCookieAuth();
-    const { logoutLoading } = useAuthenticateUser();
+    const { auth: authService } = useApiServices();
 
     useEffect(() => {
         if (isOpen && anchorElement) {
@@ -130,16 +132,23 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
         window.location.href = '/mypage?section=favorites';
         onClose();
     };
-    const handleLogout = () => {
-        if (onLogout) {
-            onLogout();
-        } else {
-            console.error('Logout error:', 'No onLogout handler provided');
-            removeAuthCookie();
-        }
-        onClose();
-    };
+    const handleLogout = async () => {
+        setIsLoggingOut(true);
 
+        try {
+            if (onLogout) {
+                await onLogout();
+            } else {
+                await authService.logout();
+            }
+        } catch (error) {
+            console.error('Logout error:', error);
+            removeAuthCookie();
+        } finally {
+            setIsLoggingOut(false);
+            onClose();
+        }
+    };
     if (!isOpen) return null;
 
     return (
@@ -159,9 +168,9 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
                     Favorites
                 </MenuItemButton>
                 <LogoutSeparator />
-                <MenuItemButton isLogout={true} onClick={handleLogout} disabled={logoutLoading}>
+                <MenuItemButton isLogout={true} onClick={handleLogout} disabled={isLoggingOut}>
                     <LogOut />
-                    {logoutLoading ? 'Logging out...' : 'Logout'}
+                    {isLoggingOut ? 'Logging out...' : 'Logout'}
                 </MenuItemButton>
             </DropdownModal>
         </ModalOverlay>

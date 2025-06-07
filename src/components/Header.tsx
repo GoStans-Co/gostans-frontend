@@ -11,11 +11,11 @@ import UserProfileModal from '@/components/Modal/UserProfileModal';
 import { ModalAlert } from '@/components/ModalPopup';
 import userImage from '@/assets/user.jpg';
 import { User } from 'lucide-react';
-import { useAuthenticateUser } from '@/services/api/authenticateUser';
 import CountriesModal from '@/components/Modal/HeaderModals/CountriesModal';
 import LanguageModal from '@/components/Modal/HeaderModals/LanguageModal';
 import CurrencyModal from '@/components/Modal/HeaderModals/CurrencyModal';
 import CartModal from '@/components/Modal/HeaderModals/CartModal';
+import useApiServices from '@/services';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -251,8 +251,9 @@ const CountrySelector = styled.div`
 
 export default function Header() {
     const { openModal, closeModal } = useModal();
-    const { logout: apiLogout, logoutLoading } = useAuthenticateUser();
+    const { auth: authService } = useApiServices();
     const { isAuthenticated, getUserData, removeAuthCookie } = useCookieAuth();
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const userButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -309,18 +310,20 @@ export default function Header() {
     }, []);
 
     const handleLogout = useCallback(async () => {
+        setIsLoggingOut(true);
         try {
-            await apiLogout();
+            await authService.logout();
             window.location.href = '/';
         } catch (error) {
             console.error('Logout error:', error);
             removeAuthCookie();
             window.location.href = '/';
         } finally {
+            setIsLoggingOut(false);
             setIsMenuOpen(false);
             setIsUserModalOpen(false);
         }
-    }, []);
+    }, [authService, removeAuthCookie]);
 
     const toggleUserModal = () => {
         setIsUserModalOpen(!isUserModalOpen);
@@ -369,10 +372,10 @@ export default function Header() {
                                 <Button
                                     variant="outline"
                                     onClick={showLogoutConfirmation}
-                                    disabled={logoutLoading}
+                                    disabled={isLoggingOut}
                                     style={{ width: '100%' }}
                                 >
-                                    {logoutLoading ? 'Logging out...' : 'Logout'}
+                                    {isLoggingOut ? 'Logging out...' : 'Logout'}
                                 </Button>
                             </div>
                         ) : (

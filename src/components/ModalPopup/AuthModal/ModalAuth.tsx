@@ -9,7 +9,7 @@ import SocialLogin from '@/components/ModalPopup/AuthModal/SocialLogin';
 import { LoginCredentials, SignUpData, SocialLoginData } from '@/types/auth';
 import PhoneVerification from '@/components/ModalPopup/AuthModal/PhoneVerification';
 import { message } from 'antd';
-import { useAuthenticateUser } from '@/services/api/authenticateUser';
+import useApiServices from '@/services';
 
 enum SignupStage {
     FORM = 'form',
@@ -156,15 +156,12 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const [showPassword, setShowPassword] = useState(false);
     const [success, setSuccess] = useState('');
     const [signupStage, setSignupStage] = useState<SignupStage>(SignupStage.FORM);
+    const [isLoading, setIsLoading] = useState(false);
 
     const [messageApi, contextHolder] = message.useMessage();
-
-    const { login, loginLoading, signUp, signupLoading, socialLogin, socialLoginLoading, resetAll } =
-        useAuthenticateUser();
+    const { auth: authService } = useApiServices();
 
     const { isAuthenticated } = useCookieAuth();
-
-    const loading = loginLoading || signupLoading || socialLoginLoading;
 
     useEffect(() => {
         setName('');
@@ -173,7 +170,6 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         setPassword('');
         setConfirmPassword('');
         setSuccess('');
-        resetAll();
     }, [activeTab]);
 
     useEffect(() => {
@@ -194,6 +190,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSuccess('');
+        setIsLoading(true);
 
         try {
             if (activeTab === 'login') {
@@ -209,7 +206,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     password,
                 };
 
-                const result = await login(credentials);
+                const result = await authService.login(credentials);
 
                 if (result) {
                     setSuccess('Login successful!');
@@ -233,7 +230,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     password,
                 };
 
-                const result = await signUp(signupData);
+                const result = await authService.signUp(signupData);
 
                 if (result) {
                     setSuccess('Account created successfully!');
@@ -248,10 +245,13 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 content: err instanceof Error ? err.message : 'An error occurred',
                 duration: 4,
             });
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleSocialLogin = async (provider: string, credential?: string) => {
+        setIsLoading(true);
         try {
             setSuccess('');
             if (!credential) return;
@@ -261,17 +261,20 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 id_token: credential,
             };
 
-            const result = await socialLogin(socialData);
+            const result = await authService.socialLogin(socialData);
 
             if (result) {
                 setSuccess(`${provider} login successful!`);
             }
         } catch (err) {
             console.error('Social login error:', err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handlePhoneVerificationComplete = async (verifiedPhoneNumber: string) => {
+        setIsLoading(true);
         try {
             const signupData: SignUpData = {
                 name,
@@ -280,7 +283,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 password,
             };
 
-            const result = await signUp(signupData);
+            const result = await authService.signUp(signupData);
 
             if (result) {
                 setSuccess('Account created successfully!');
@@ -291,6 +294,8 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         } catch (err) {
             console.error('Signup error:', err);
             setSignupStage(SignupStage.FORM);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -303,7 +308,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     <PhoneVerification
                         onBack={() => setSignupStage(SignupStage.FORM)}
                         onComplete={handlePhoneVerificationComplete}
-                        loading={signupLoading}
+                        loading={isLoading}
                     />
                 ) : (
                     <>
@@ -406,8 +411,8 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                             {activeTab === 'login' && (
                                 <ForgotPasswordLink href="#">Forgot Password?</ForgotPasswordLink>
                             )}
-                            <SubmitButton type="submit" disabled={loading}>
-                                {loading
+                            <SubmitButton type="submit" disabled={isLoading}>
+                                {isLoading
                                     ? activeTab === 'login'
                                         ? 'Logging in...'
                                         : 'Signing up...'
