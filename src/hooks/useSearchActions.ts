@@ -6,9 +6,9 @@ import {
     searchCacheStatusAtom,
     searchResultsAtom,
     defaultSearchValuesAtom,
-    SearchData,
-    SearchFilters,
 } from '@/atoms/search';
+import { SearchCacheEntry, SearchData, SearchFilters } from '@/types/search';
+import { TourListResponse } from '@/atoms/tours';
 
 export const useSearchData = () => {
     return useRecoilValue(searchDataAtom);
@@ -65,14 +65,33 @@ export const useSearchActions = () => {
         updateUIState({ isSearching });
     };
 
-    const cacheSearchResults = (searchKey: string, data: any[], searchParams: SearchData & SearchFilters) => {
+    const cacheSearchResults = (
+        searchKey: string,
+        data: TourListResponse[],
+        searchParams: SearchData & SearchFilters & { paginationInfo?: any },
+    ) => {
         setSearchResults((prev) => ({
             ...prev,
             [searchKey]: {
                 data,
                 lastFetch: Date.now(),
-                searchParams,
-            },
+                searchParams: {
+                    destination: searchParams.destination,
+                    dates: searchParams.dates,
+                    travelers: searchParams.travelers,
+                    adults: searchParams.adults,
+                    children: searchParams.children,
+                    infants: searchParams.infants,
+                    minPrice: searchParams.minPrice,
+                    maxPrice: searchParams.maxPrice,
+                    selectedRating: searchParams.selectedRating,
+                    propertyTypes: searchParams.propertyTypes,
+                    amenities: searchParams.amenities,
+                    locations: searchParams.locations,
+                    guestRating: searchParams.guestRating,
+                },
+                paginationInfo: searchParams.paginationInfo,
+            } as SearchCacheEntry,
         }));
     };
 

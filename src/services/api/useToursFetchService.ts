@@ -34,7 +34,7 @@ export const useToursFetchService = () => {
                 page?: number;
                 page_size?: number;
             } = {}): Promise<ApiResponse<ToursListApiResponse>> => {
-                if (cacheStatus.loaded && isCacheValid(cacheStatus.lastFetch) && !search) {
+                if (cacheStatus.loaded && isCacheValid(cacheStatus.lastFetch) && !search && page === 1) {
                     console.log('Using cached tours');
                     return {
                         data: {
@@ -68,21 +68,10 @@ export const useToursFetchService = () => {
                         message: backendResponse.message,
                     };
 
-                    // const apiResponse: ApiResponse<ToursListApiResponse> = {
-                    //     data: response,
-                    //     statusCode: 200,
-                    //     message: 'success',
-                    // };
-
-                    if (toursData?.results && !search) {
+                    if (toursData?.results && !search && page === 1) {
                         setTours(toursData.results);
                         setCacheStatus({ loaded: true, lastFetch: Date.now() });
                     }
-
-                    // if (response?.results && !search) {
-                    //     setTours(response.results);
-                    //     setCacheStatus({ loaded: true, lastFetch: Date.now() });
-                    // }
 
                     return apiResponse;
                 } catch (error: any) {

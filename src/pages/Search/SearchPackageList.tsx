@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { FaMapMarkerAlt, FaHeart, FaStar } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaHeart, FaStar, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
 import Card from '@/components/Common/Card';
-import { tours } from '@/data/mockData';
 import SearchBar from '@/components/SearchBar';
 import {
     useFilterActions,
@@ -16,6 +15,8 @@ import {
 } from '@/hooks/useSearchActions';
 import FilterBar from '@/components/FilterBar';
 import NoDataFound from '@/components/Common/NoDataFound';
+import useApiServices from '@/services';
+import { TourListResponse } from '@/atoms/tours';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -237,8 +238,8 @@ const BookedInfo = styled.span`
 `;
 
 export default function SearchPackageList() {
-    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const { tours: toursService } = useApiServices();
 
     const searchData = useSearchData();
     const uiState = useSearchUIState();
@@ -248,58 +249,133 @@ export default function SearchPackageList() {
 
     const { getCachedResults, isCacheValid } = useSearchCache();
 
-    const [filteredTours, setFilteredTours] = useState<any[]>([]);
+    const [filteredTours, setFilteredTours] = useState<TourListResponse[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [currentPagination, setCurrentPagination] = useState({
+        currentPage: 1,
+        totalPages: 1,
+        totalCount: 0,
+        hasNext: false,
+        hasPrevious: false,
+        pageSize: 10,
+    });
+    const [lastSearchParams, setLastSearchParams] = useState({
+        destination: '',
+        minPrice: '',
+        maxPrice: '',
+    });
 
-    useEffect(() => {
-        const urlDestination = searchParams.get('destination');
-        const urlDates = searchParams.get('dates');
-        const urlTravelers = searchParams.get('travelers');
+    const PAGE_SIZE = 10;
 
-        const updates: any = {};
-        if (urlDestination) updates.destination = urlDestination;
-        if (urlDates) updates.dates = urlDates;
-        if (urlTravelers) updates.travelers = urlTravelers;
+    const generateCacheKey = (page: number): string => {
+        return `${searchData.destination || ''}-${page}-${PAGE_SIZE}-${searchFilters.minPrice || ''}-${searchFilters.maxPrice || ''}-${searchFilters.selectedRating || ''}`;
+    };
 
-        if (Object.keys(updates).length > 0) {
-            searchActions.updateSearchData(updates);
-        }
-    }, [searchParams]);
+    const fetchTours = async (page = 1) => {
+        const cacheKey = generateCacheKey(page);
 
-    useEffect(() => {
-        const searchKey = `${searchData.destination}-${searchData.dates}-${searchFilters.minPrice}-${searchFilters.maxPrice}-${searchFilters.selectedRating}`;
-
-        if (isCacheValid(searchKey)) {
-            const cached = getCachedResults(searchKey);
+        if (isCacheValid(cacheKey)) {
+            const cached = getCachedResults(cacheKey);
             if (cached) {
+                console.log('Using search cache for page:', page);
                 setFilteredTours(cached.data);
+                if (cached.paginationInfo) {
+                    setCurrentPagination(cached.paginationInfo);
+                } else {
+                    setCurrentPagination((prev) => ({ ...prev, currentPage: page }));
+                }
                 return;
             }
         }
+        console.log('Fetching fresh data for page:', page);
+        setIsLoading(true);
+        try {
+            const response = await toursService.getTours({
+                search: searchData.destination,
+                page: page,
+                page_size: PAGE_SIZE,
+            });
 
-        let filtered = tours;
+            if (response.statusCode === 200 && response.data?.results) {
+                let filtered = response.data.results;
 
-        if (searchData.destination) {
-            filtered = filtered.filter(
-                (tour) =>
-                    tour.title.toLowerCase().includes(searchData.destination.toLowerCase()) ||
-                    tour.country.toLowerCase().includes(searchData.destination.toLowerCase()),
-            );
+                if (searchFilters.minPrice) {
+                    filtered = filtered.filter((tour) => parseFloat(tour.price) >= parseInt(searchFilters.minPrice));
+                }
+                if (searchFilters.maxPrice) {
+                    filtered = filtered.filter((tour) => parseFloat(tour.price) <= parseInt(searchFilters.maxPrice));
+                }
+
+                const paginationInfo = {
+                    currentPage: page,
+                    totalPages: Math.ceil(response.data.count / PAGE_SIZE),
+                    totalCount: response.data.count,
+                    hasNext: !!response.data.next,
+                    hasPrevious: !!response.data.previous,
+                    pageSize: PAGE_SIZE,
+                };
+
+                /* buyerda existing search codedan foydanalanib cache qilamiz */
+                searchActions.cacheSearchResults(cacheKey, filtered, {
+                    ...searchData,
+                    ...searchFilters,
+                    paginationInfo,
+                });
+
+                setFilteredTours(filtered);
+                setCurrentPagination(paginationInfo);
+            }
+        } catch (error) {
+            console.error('Error fetching tours:', error);
+            setFilteredTours([]);
+        } finally {
+            setIsLoading(false);
         }
+    };
 
-        if (searchFilters.minPrice) {
-            filtered = filtered.filter((tour) => tour.price >= parseInt(searchFilters.minPrice));
-        }
-        if (searchFilters.maxPrice) {
-            filtered = filtered.filter((tour) => tour.price <= parseInt(searchFilters.maxPrice));
-        }
-        if (searchFilters.selectedRating) {
-            filtered = filtered.filter((tour) => (tour.rating ?? 0) >= parseFloat(searchFilters.selectedRating));
-        }
+    useEffect(() => {
+        fetchTours(1);
+    }, []);
 
-        setFilteredTours(filtered);
+    useEffect(() => {
+        const currentSearchParams = {
+            destination: searchData.destination,
+            minPrice: searchFilters.minPrice,
+            maxPrice: searchFilters.maxPrice,
+        };
 
-        searchActions.cacheSearchResults(searchKey, filtered, { ...searchData, ...searchFilters });
-    }, [searchData, searchFilters]);
+        /* buyerda search params o'zgarganini tekshiramiz */
+        if (
+            currentSearchParams.destination !== lastSearchParams.destination ||
+            currentSearchParams.minPrice !== lastSearchParams.minPrice ||
+            currentSearchParams.maxPrice !== lastSearchParams.maxPrice
+        ) {
+            console.log('Search params changed, fetching page 1');
+            setLastSearchParams(currentSearchParams);
+            toursService.clearCache();
+            setCurrentPagination((prev) => ({ ...prev, currentPage: 1 }));
+            fetchTours(1);
+        }
+    }, [searchData.destination, searchFilters.minPrice, searchFilters.maxPrice]);
+
+    const handlePageChange = (page: number) => {
+        console.log('Page change requested:', page);
+        if (page >= 1 && page <= currentPagination.totalPages && !isLoading && page !== currentPagination.currentPage) {
+            fetchTours(page);
+        }
+    };
+
+    const handlePrevious = () => {
+        if (currentPagination.hasPrevious) {
+            handlePageChange(currentPagination.currentPage - 1);
+        }
+    };
+
+    const handleNext = () => {
+        if (currentPagination.hasNext) {
+            handlePageChange(currentPagination.currentPage + 1);
+        }
+    };
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -342,7 +418,10 @@ export default function SearchPackageList() {
 
                 <ResultsContainer>
                     <ResultsHeader>
-                        <ResultsCount>{filteredTours.length} results found</ResultsCount>
+                        <ResultsCount>
+                            Page {currentPagination.currentPage} of {currentPagination.totalPages} /
+                            {currentPagination.totalCount} total results found
+                        </ResultsCount>
                         {uiState.isSearching && <span>Searching...</span>}
                     </ResultsHeader>
 
@@ -350,7 +429,7 @@ export default function SearchPackageList() {
                         {filteredTours.map((tour) => (
                             <TourCard key={tour.id} variant="elevated">
                                 <TourImage>
-                                    <img src={tour.image} alt={tour.title} />
+                                    <img src={tour.main_image || '/placeholder.jpg'} alt={tour.title} />
                                     <FavoriteButton>
                                         <FaHeart size={16} />
                                     </FavoriteButton>
@@ -360,15 +439,17 @@ export default function SearchPackageList() {
                                     <TourHeader>
                                         <TourTitle>{tour.title}</TourTitle>
                                         <TourPrice>
-                                            <Price>${tour.price}</Price>
+                                            <Price>
+                                                {tour.currency} {tour.price}
+                                            </Price>
                                         </TourPrice>
                                     </TourHeader>
 
-                                    <TourDescription>{tour.description}</TourDescription>
+                                    <TourDescription>{tour.short_description}</TourDescription>
 
                                     <TourLocation>
                                         <FaMapMarkerAlt size={14} />
-                                        <span>{tour.country}</span>
+                                        <span>{tour.tour_type.name}</span>
                                         <Button variant="text" size="sm">
                                             Show on Map
                                         </Button>
@@ -376,23 +457,15 @@ export default function SearchPackageList() {
 
                                     <TourMeta>
                                         <MetaLeft>
-                                            <BookedInfo>{tour.peopleBooked || '10K+'} people booked</BookedInfo>
+                                            <BookedInfo>10K+ people booked</BookedInfo>
                                             <Rating>
-                                                <RatingValue>{tour.rating || 4.5}</RatingValue>
+                                                <RatingValue>4.5</RatingValue>
                                                 <RatingStars>
                                                     {Array.from({ length: 5 }, (_, i) => (
-                                                        <FaStar
-                                                            key={i}
-                                                            size={12}
-                                                            color={
-                                                                i < Math.floor(tour.rating || 4.5)
-                                                                    ? '#ffc107'
-                                                                    : '#e4e5e9'
-                                                            }
-                                                        />
+                                                        <FaStar key={i} size={12} color="#ffc107" />
                                                     ))}
                                                 </RatingStars>
-                                                <span>({tour.reviews || 50} reviews)</span>
+                                                <span>(50 reviews)</span>
                                             </Rating>
                                         </MetaLeft>
                                         <Button
@@ -416,16 +489,66 @@ export default function SearchPackageList() {
                                 }}
                             />
                         ) : (
-                            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    gap: '1rem',
+                                    marginTop: '2rem',
+                                    padding: '1rem',
+                                }}
+                            >
                                 <Button
-                                    variant="primary"
-                                    size="md"
-                                    onClick={() => {
-                                        console.log('Fetch more tours');
-                                    }}
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handlePrevious}
+                                    disabled={!currentPagination.hasPrevious || isLoading}
                                 >
-                                    Show more
+                                    <FaChevronLeft />
                                 </Button>
+
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    {Array.from({ length: Math.min(5, currentPagination.totalPages) }, (_, i) => {
+                                        const pageNumber =
+                                            Math.max(
+                                                1,
+                                                Math.min(
+                                                    currentPagination.totalPages - 4,
+                                                    currentPagination.currentPage - 2,
+                                                ),
+                                            ) + i;
+                                        if (pageNumber > currentPagination.totalPages) return null;
+
+                                        return (
+                                            <Button
+                                                key={pageNumber}
+                                                variant={
+                                                    currentPagination.currentPage === pageNumber ? 'primary' : 'outline'
+                                                }
+                                                size="sm"
+                                                onClick={() => handlePageChange(pageNumber)}
+                                                disabled={isLoading || currentPagination.currentPage === pageNumber}
+                                                style={{ minWidth: '40px' }}
+                                            >
+                                                {pageNumber}
+                                            </Button>
+                                        );
+                                    })}
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleNext}
+                                    disabled={!currentPagination.hasNext || isLoading}
+                                >
+                                    <FaChevronRight />
+                                </Button>
+                                {/* <span style={{ marginLeft: '1rem', color: '#666', fontSize: '14px' }}>
+                                    Page {currentPagination.currentPage} of {currentPagination.totalPages} (
+                                    {currentPagination.totalCount} total results)
+                                </span> */}
                             </div>
                         )}
                     </ToursList>
