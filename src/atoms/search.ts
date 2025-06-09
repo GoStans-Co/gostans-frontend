@@ -1,34 +1,5 @@
 import { atom } from 'recoil';
-
-export type SearchData = {
-    destination: string;
-    dates: string;
-    travelers: string;
-    adults: number;
-    children: number;
-    infants: number;
-};
-
-export type SearchUIState = {
-    showTravelersDropdown: boolean;
-    isSearching: boolean;
-};
-
-export type SearchCacheStatus = {
-    loaded: boolean;
-    lastFetch: number | null;
-    isLoading: boolean;
-};
-
-export type SearchFilters = {
-    minPrice: string;
-    maxPrice: string;
-    selectedRating: string;
-    propertyTypes: string[];
-    amenities: string[];
-    locations: string[];
-    guestRating: string[];
-};
+import { SearchData, SearchFilters, SearchUIState, SearchCacheStatus, SearchCacheEntry } from '@/types/search';
 
 export const searchDataAtom = atom<SearchData>({
     key: 'searchDataAtom',
@@ -72,16 +43,7 @@ export const searchCacheStatusAtom = atom<SearchCacheStatus>({
     },
 });
 
-export const searchResultsAtom = atom<
-    Record<
-        string,
-        {
-            data: any[];
-            lastFetch: number;
-            searchParams: SearchData & SearchFilters;
-        }
-    >
->({
+export const searchResultsAtom = atom<Record<string, SearchCacheEntry>>({
     key: 'searchResultsAtom',
     default: {},
 });
