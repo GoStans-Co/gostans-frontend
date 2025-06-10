@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import {
     FaStar,
@@ -17,8 +17,12 @@ import {
 import { DatePicker } from 'antd';
 import Button from '@/components/Common/Button';
 import Card from '@/components/Common/Card';
-import { tours } from '@/data/mockData';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useParams } from 'react-router-dom';
+import useApiServices from '@/services';
+import { tourDetailsAtom } from '@/atoms/tours';
+import { useRecoilValue } from 'recoil';
+import CopyLink from '@/components/CopyLink';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -491,7 +495,7 @@ const ModalImage = styled.img`
     max-height: 90vh;
 `;
 
-const CloseButton = styled.button`
+const CloseButton = styled(Button)`
     position: absolute;
     top: -40px;
     right: 0;
@@ -503,18 +507,13 @@ const CloseButton = styled.button`
     z-index: 1001;
 `;
 
-const NavigationButton = styled.button`
+const NavigationButton = styled(Button)`
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.2);
     border: none;
     color: white;
-    font-size: 2rem;
-    padding: 1rem;
-    cursor: pointer;
-    z-index: 1001;
-    border-radius: 50%;
+    background: ${({ theme }) => theme.colors.primary};
 
     &:hover {
         background: rgba(255, 255, 255, 0.3);
@@ -539,15 +538,89 @@ const ImageCounter = styled.div`
 `;
 
 export default function SearchPackageDetails() {
+    const { packageId: id } = useParams<{ packageId: string }>();
+    const { tours: toursService } = useApiServices();
+    const tourDetailsCache = useRecoilValue(tourDetailsAtom);
+
     const [selectedDate, setSelectedDate] = useState(null);
     const [adults, setAdults] = useState(0);
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const tourId = 'tour-1';
-    const tour = tours.find((t) => t.id === tourId) || tours[0];
+    const tour = id ? tourDetailsCache[id]?.data : null;
 
-    const images = [tour.image, tour.image, tour.image, tour.image, tour.image];
+    useEffect(() => {
+        const fetchTourDetails = async () => {
+            console.log('fetchTourDetails called with id:', id); // ✅ Debug log
+            console.log('tourDetailsCache:', tourDetailsCache); // ✅ Debug log
+
+            if (!id) {
+                setIsLoading(false);
+                return;
+            }
+
+            const cachedTour = tourDetailsCache[id];
+
+            console.log('cachedTour for id', id, ':', cachedTour);
+
+            if (cachedTour && cachedTour.data) {
+                console.log('Using cached tour details');
+                setIsLoading(false);
+                return;
+            }
+
+            setIsLoading(true);
+
+            console.log('No valid cache found, making API call');
+
+            try {
+                const response = await toursService.getTourDetails(id);
+                console.log('Tour details fetched:', response);
+            } catch (error) {
+                console.error('Error fetching tour details:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchTourDetails();
+    }, [id, tourDetailsCache, toursService]);
+
+    if (isLoading) {
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '50vh',
+                    fontSize: '18px',
+                }}
+            >
+                Loading tour details...
+            </div>
+        );
+    }
+
+    if (!tour) {
+        return (
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '50vh',
+                    fontSize: '18px',
+                }}
+            >
+                Tour not found
+            </div>
+        );
+    }
+
+    const images = tour.images?.map((img) => img.image) || [tour.main_image];
+    const totalPrice = parseFloat(tour.price) * adults;
 
     const includedItems = [
         'Lorem Ipsum is simply dummy text of the printing',
@@ -557,29 +630,6 @@ export default function SearchPackageDetails() {
     const excludedItems = [
         'Lorem Ipsum is simply dummy text of the printing',
         'Lorem Ipsum is simply dummy text of the printing',
-    ];
-
-    const itineraryDays = [
-        {
-            day: 1,
-            title: 'Arrival in Samarkand',
-            description: 'Lorem Ipsum is simply dummy text of the printing',
-            active: true,
-        },
-        {
-            day: 2,
-            title: 'Arrival in Samarkand',
-            description: 'Lorem Ipsum is simply dummy text of the printing',
-            active: false,
-        },
-        {
-            day: 3,
-            title: 'Arrival in Samarkand',
-            description: 'Lorem Ipsum is simply dummy text of the printing',
-            active: false,
-        },
-
-        { day: 4, title: 'Arrival in Samarkand', description: 'Departure', active: true },
     ];
 
     const reviews = [
@@ -604,8 +654,6 @@ export default function SearchPackageDetails() {
         { id: 4, title: 'Uzbekistan, Khiva', subtitle: '100+ Tours', image: '/api/placeholder/200/150' },
         { id: 5, title: 'Uzbekistan, Khiva', subtitle: '100+ Tours', image: '/api/placeholder/200/150' },
     ];
-
-    const totalPrice = tour.price * adults;
 
     const openImageModal = (index: number) => {
         setSelectedImageIndex(index);
@@ -640,24 +688,24 @@ export default function SearchPackageDetails() {
                             <FaHeart />
                         </IconButton>
                         <IconButton>
-                            <FaShare />
+                            <CopyLink url={window.location.href} iconSize={16} showText={false} />
                         </IconButton>
                     </ActionButtons>
                 </TitleSection>
 
                 <MetaInfo>
                     <Rating>
-                        <span>{tour.rating}</span>
+                        <span>4.5</span>
                         {[...Array(5)].map((_, i) => (
                             <FaStar key={i} color="#ffc107" size={14} />
                         ))}
-                        <span>({tour.reviews} reviews)</span>
+                        <span>(25 reviews)</span>
                     </Rating>
                     <span>•</span>
-                    <span>{tour.peopleBooked} people booked</span>
+                    <span>{tour.group_size}+ people booked</span>
                     <span>•</span>
                     <span>
-                        <FaMapMarkerAlt /> {tour.country}, {tour.city || 'Tashkent'}
+                        <FaMapMarkerAlt /> {tour.country}, {tour.city}
                     </span>
                     <a href="#map">Show on Map</a>
                 </MetaInfo>
@@ -697,33 +745,35 @@ export default function SearchPackageDetails() {
                             <InfoCard>
                                 <FaClock className="icon" size={24} />
                                 <div className="label">Duration</div>
-                                <div className="value">{tour.days}</div>
+                                <div className="value">{tour.duration}</div>
                             </InfoCard>
                             <InfoCard>
                                 <FaMapMarkerAlt className="icon" size={24} />
                                 <div className="label">Tour Type</div>
-                                <div className="value">{tour.variant}</div>
+                                <div className="value">{tour.tour_type}</div>
                             </InfoCard>
                             <InfoCard>
                                 <FaUsers className="icon" size={24} />
                                 <div className="label">Group Size</div>
-                                <div className="value">{tour.peopleBooked}</div>
+                                <div className="value">{tour.group_size}</div>
                             </InfoCard>
                             <InfoCard>
                                 <FaUserFriends className="icon" size={24} />
                                 <div className="label">Ages</div>
-                                <div className="value">{tour.peopleBooked}</div>
+                                <div className="value">
+                                    {tour.age_min}-{tour.age_max}
+                                </div>
                             </InfoCard>
                             <InfoCard>
                                 <FaGlobe className="icon" size={24} />
                                 <div className="label">Languages</div>
-                                <div className="value">{tour.dayInfo}</div>
+                                <div className="value">{tour.language}</div>
                             </InfoCard>
                         </InfoCards>
 
                         <Section>
                             <h2>Tour Overview</h2>
-                            <p>{tour.description}</p>
+                            <p>{tour.about}</p>
                         </Section>
 
                         <Section>
@@ -751,18 +801,21 @@ export default function SearchPackageDetails() {
                         <Section>
                             <h2>Itinerary</h2>
                             <Itinerary>
-                                {itineraryDays.map((day) => (
-                                    <ItineraryDay key={day.day} active={day.active}>
-                                        <DayNumber active={day.active}>{day.day}</DayNumber>
+                                {tour.itineraries?.map((day) => (
+                                    <ItineraryDay key={day.day_number} active={day.day_number === 1}>
+                                        <DayNumber active={day.day_number === 1}>{day.day_number}</DayNumber>
                                         <DayContent>
                                             <h4>
-                                                Day {day.day}: {day.title}
+                                                Day {day.day_number}: {day.day_title}
                                             </h4>
                                             <p>{day.description}</p>
                                         </DayContent>
                                     </ItineraryDay>
                                 ))}
                             </Itinerary>
+                            <div className="price">
+                                {tour.currency} {tour.price}
+                            </div>
                         </Section>
 
                         <Section id="map">
@@ -925,9 +978,15 @@ export default function SearchPackageDetails() {
                             exit={{ scale: 0.8, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <CloseButton onClick={closeImageModal}>×</CloseButton>
-                            <PrevButton onClick={prevImage}>‹</PrevButton>
-                            <NextButton onClick={nextImage}>›</NextButton>
+                            <CloseButton variant="outline" size="sm" fullWidth={false} onClick={closeImageModal}>
+                                ×
+                            </CloseButton>
+                            <PrevButton fullWidth={false} size="sm" variant="outline" onClick={prevImage}>
+                                ‹
+                            </PrevButton>
+                            <NextButton variant="outline" fullWidth={false} size="sm" onClick={nextImage}>
+                                ›
+                            </NextButton>
                             <ModalImage src={images[selectedImageIndex]} alt="Tour image" />
                             <ImageCounter>
                                 {selectedImageIndex + 1} / {images.length}
