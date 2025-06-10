@@ -397,14 +397,16 @@ export default function SearchBar({
         onTravelersChange?.(parts.join(', ') || 'Travelers');
     };
 
-    const destinationOptions = regions.map((region) => ({
-        label: <span style={{ fontWeight: 600 }}>{region.name}</span>,
-        title: region.name,
-        options: region.cities.map((city) => ({
-            label: city,
-            value: city,
+    const destinationOptions = [
+        ...regions.map((region) => ({
+            label: <span style={{ fontWeight: 600 }}>{region.name}</span>,
+            title: region.name,
+            options: region.cities.map((city) => ({
+                label: city,
+                value: city,
+            })),
         })),
-    }));
+    ];
 
     const getDateValues = useMemo((): [dayjs.Dayjs, dayjs.Dayjs] | undefined => {
         if (!dates) return undefined;
@@ -534,6 +536,7 @@ export default function SearchBar({
                             (option?.label?.toString().toLowerCase() ?? '').includes(input.toLowerCase()) ||
                             (option?.value?.toString().toLowerCase() ?? '').includes(input.toLowerCase())
                         }
+                        notFoundContent={null}
                     />
                 </InputWrapper>
 

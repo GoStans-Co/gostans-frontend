@@ -4,7 +4,6 @@ import {
     FaStar,
     FaMapMarkerAlt,
     FaHeart,
-    FaShare,
     FaClock,
     FaUsers,
     FaGlobe,
@@ -13,6 +12,8 @@ import {
     FaTimes,
     FaChevronLeft,
     FaChevronRight,
+    FaArrowLeft,
+    FaArrowRight,
 } from 'react-icons/fa';
 import { DatePicker } from 'antd';
 import Button from '@/components/Common/Button';
@@ -23,6 +24,10 @@ import useApiServices from '@/services';
 import { tourDetailsAtom } from '@/atoms/tours';
 import { useRecoilValue } from 'recoil';
 import CopyLink from '@/components/CopyLink';
+import default_n1 from '@/assets/default/default_1.jpg';
+import default_n2 from '@/assets/default/default_2.jpg';
+import TourCard from '@/components/Tours/ToursCard';
+import { tours } from '@/data/mockData';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -72,7 +77,6 @@ const MapContainer = styled.div`
     align-items: center;
     justify-content: center;
     color: ${({ theme }) => theme.colors.lightText};
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="%23f0f0f0"/><text x="200" y="150" text-anchor="middle" fill="%23999" font-family="Arial" font-size="16">Map will be loaded here</text></svg>');
     background-size: cover;
     background-position: center;
 `;
@@ -100,9 +104,10 @@ const ReviewHeader = styled.div`
 
 const RelatedTours = styled.div`
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
-    overflow-x: auto;
+    // overflow-x: auto;
+    overflow: hidden;
 `;
 
 const Breadcrumb = styled.div`
@@ -183,7 +188,7 @@ const ImageGallery = styled.div`
     grid-template-columns: 2fr 1fr 1fr;
     grid-template-rows: 1fr 1fr;
     gap: 0.5rem;
-    height: 400px;
+    height: 520px;
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     overflow: hidden;
     width: 100%;
@@ -440,32 +445,6 @@ const ReviewDate = styled.span`
     color: ${({ theme }) => theme.colors.lightText};
 `;
 
-const TourCard = styled(Card)`
-    padding: 0;
-    overflow: hidden;
-
-    img {
-        width: 100%;
-        height: 150px;
-        object-fit: cover;
-    }
-
-    .content {
-        padding: 1rem;
-    }
-
-    .title {
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: ${({ theme }) => theme.colors.text};
-    }
-
-    .subtitle {
-        font-size: 12px;
-        color: ${({ theme }) => theme.colors.lightText};
-    }
-`;
-
 const ImageModalOverlay = styled(motion.div)`
     position: fixed;
     top: 0;
@@ -537,6 +516,14 @@ const ImageCounter = styled.div`
     font-size: 1rem;
 `;
 
+const NavigationButtons = styled.div`
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+`;
+
 export default function SearchPackageDetails() {
     const { packageId: id } = useParams<{ packageId: string }>();
     const { tours: toursService } = useApiServices();
@@ -547,33 +534,30 @@ export default function SearchPackageDetails() {
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(0);
+    const toursPerPage = 3;
 
     const tour = id ? tourDetailsCache[id]?.data : null;
 
     useEffect(() => {
+        if (!id) {
+            setIsLoading(false);
+            return;
+        }
+
+        const cachedTour = tourDetailsCache[id];
+        console.log('Cache check for id', id, ':', cachedTour);
+
+        if (cachedTour?.data) {
+            console.log('Using cached tour details');
+            setIsLoading(false);
+            return;
+        }
+
+        console.log('No valid cache found, making API call');
+        setIsLoading(true);
+
         const fetchTourDetails = async () => {
-            console.log('fetchTourDetails called with id:', id); // ✅ Debug log
-            console.log('tourDetailsCache:', tourDetailsCache); // ✅ Debug log
-
-            if (!id) {
-                setIsLoading(false);
-                return;
-            }
-
-            const cachedTour = tourDetailsCache[id];
-
-            console.log('cachedTour for id', id, ':', cachedTour);
-
-            if (cachedTour && cachedTour.data) {
-                console.log('Using cached tour details');
-                setIsLoading(false);
-                return;
-            }
-
-            setIsLoading(true);
-
-            console.log('No valid cache found, making API call');
-
             try {
                 const response = await toursService.getTourDetails(id);
                 console.log('Tour details fetched:', response);
@@ -585,7 +569,7 @@ export default function SearchPackageDetails() {
         };
 
         fetchTourDetails();
-    }, [id, tourDetailsCache, toursService]);
+    }, [id]);
 
     if (isLoading) {
         return (
@@ -619,7 +603,25 @@ export default function SearchPackageDetails() {
         );
     }
 
-    const images = tour.images?.map((img) => img.image) || [tour.main_image];
+    const filteredTours = tours.filter((tour) => {
+        if (tour.id === id) return false;
+        return tour.country.toLowerCase() === tour.country.toLowerCase();
+    });
+
+    const totalPages = Math.ceil(filteredTours.length / toursPerPage);
+
+    const images =
+        tour.images?.length > 0 ? tour.images.map((img) => img.image || default_n1) : [tour.main_image || default_n1];
+    const galleryImages = [...images];
+
+    const defaultImages = [default_n1, default_n2];
+    let defaultIndex = 0;
+
+    while (galleryImages.length < 5) {
+        galleryImages.push(defaultImages[defaultIndex % 2]);
+        defaultIndex++;
+    }
+
     const totalPrice = parseFloat(tour.price) * adults;
 
     const includedItems = [
@@ -647,14 +649,6 @@ export default function SearchPackageDetails() {
         },
     ];
 
-    const relatedTours = [
-        { id: 1, title: 'Uzbekistan, Khiva', subtitle: '100+ Tours', image: '/api/placeholder/200/150' },
-        { id: 2, title: 'Uzbekistan, Khiva', subtitle: '100+ Tours', image: '/api/placeholder/200/150' },
-        { id: 3, title: 'Uzbekistan, Khiva', subtitle: '100+ Tours', image: '/api/placeholder/200/150' },
-        { id: 4, title: 'Uzbekistan, Khiva', subtitle: '100+ Tours', image: '/api/placeholder/200/150' },
-        { id: 5, title: 'Uzbekistan, Khiva', subtitle: '100+ Tours', image: '/api/placeholder/200/150' },
-    ];
-
     const openImageModal = (index: number) => {
         setSelectedImageIndex(index);
         setShowImageModal(true);
@@ -673,6 +667,16 @@ export default function SearchPackageDetails() {
     const prevImage = () => {
         setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
     };
+
+    const handlePrevPage = () => {
+        setCurrentPage((prev) => Math.max(0, prev - 1));
+    };
+
+    const handleNextPage = () => {
+        setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+    };
+
+    const visibleTours = filteredTours.slice(currentPage * toursPerPage, (currentPage + 1) * toursPerPage);
 
     return (
         <PageContainer>
@@ -715,19 +719,19 @@ export default function SearchPackageDetails() {
                 <ImageSection>
                     <ImageGallery>
                         <MainImage onClick={() => openImageModal(0)}>
-                            <img src={images[0]} alt="Main tour image" />
+                            <img src={galleryImages[0]} alt="Main tour image" />
                         </MainImage>
                         <SideImage onClick={() => openImageModal(1)}>
-                            <img src={images[1]} alt="Tour image" />
+                            <img src={galleryImages[1]} alt="Tour image" />
                         </SideImage>
                         <SideImage onClick={() => openImageModal(2)}>
-                            <img src={images[2]} alt="Tour image" />
+                            <img src={galleryImages[2]} alt="Tour image" />
                         </SideImage>
                         <SideImage onClick={() => openImageModal(3)}>
-                            <img src={images[3]} alt="Tour image" />
+                            <img src={galleryImages[3]} alt="Tour image" />
                         </SideImage>
                         <SideImage onClick={() => openImageModal(4)}>
-                            <img src={images[4]} alt="Tour image" />
+                            <img src={galleryImages[4]} alt="Tour image" />
                             <SeeAllButton
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -813,9 +817,6 @@ export default function SearchPackageDetails() {
                                     </ItineraryDay>
                                 ))}
                             </Itinerary>
-                            <div className="price">
-                                {tour.currency} {tour.price}
-                            </div>
                         </Section>
 
                         <Section id="map">
@@ -873,18 +874,49 @@ export default function SearchPackageDetails() {
                                 </Button>
                             </div>
                         </Section>
-
                         <Section>
-                            <h2>Explore other options</h2>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    marginBottom: '1rem',
+                                }}
+                            >
+                                <h2>Explore other options</h2>
+                                <NavigationButtons>
+                                    <Button
+                                        variant="circle"
+                                        onClick={handlePrevPage}
+                                        disabled={currentPage === 0}
+                                        aria-label="Previous page"
+                                    >
+                                        <FaArrowLeft />
+                                    </Button>
+                                    <Button
+                                        variant="circle"
+                                        onClick={handleNextPage}
+                                        disabled={currentPage === totalPages - 1}
+                                        aria-label="Next page"
+                                    >
+                                        <FaArrowRight />
+                                    </Button>
+                                </NavigationButtons>
+                            </div>
                             <RelatedTours>
-                                {relatedTours.map((tour) => (
-                                    <TourCard key={tour.id}>
-                                        <img src={tour.image} alt={tour.title} />
-                                        <div className="content">
-                                            <div className="title">{tour.title}</div>
-                                            <div className="subtitle">{tour.subtitle}</div>
-                                        </div>
-                                    </TourCard>
+                                {visibleTours.map((tour) => (
+                                    <TourCard
+                                        buttonText="See more"
+                                        // variant="link"
+                                        key={tour.id}
+                                        id={tour.id}
+                                        title={tour.title}
+                                        description={tour.description}
+                                        price={tour.price}
+                                        image={tour.image}
+                                        country={tour.country}
+                                        status={'all'}
+                                    />
                                 ))}
                             </RelatedTours>
                         </Section>
@@ -987,9 +1019,9 @@ export default function SearchPackageDetails() {
                             <NextButton variant="outline" fullWidth={false} size="sm" onClick={nextImage}>
                                 ›
                             </NextButton>
-                            <ModalImage src={images[selectedImageIndex]} alt="Tour image" />
+                            <ModalImage src={galleryImages[selectedImageIndex]} alt="Tour image" />
                             <ImageCounter>
-                                {selectedImageIndex + 1} / {images.length}
+                                {selectedImageIndex + 1} / {galleryImages.length}
                             </ImageCounter>
                         </ImageModalContent>
                     </ImageModalOverlay>

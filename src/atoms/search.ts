@@ -51,7 +51,7 @@ export const searchResultsAtom = atom<Record<string, SearchCacheEntry>>({
 export const defaultSearchValuesAtom = atom<Partial<SearchData>>({
     key: 'defaultSearchValuesAtom',
     default: {
-        destination: 'Uzbekistan',
+        destination: '',
         dates: '02 Jan 2025 ~ 04 Jan 2025',
         travelers: '2 adults, 2 children',
         adults: 2,
