@@ -471,7 +471,7 @@ export default function SearchPackageList() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => navigate(`package/${tour.id}`)}
+                                            onClick={() => navigate(`/searchTrips/${tour.uuid}`)}
                                         >
                                             See details
                                         </Button>

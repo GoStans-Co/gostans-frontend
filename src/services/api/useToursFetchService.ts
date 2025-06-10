@@ -127,20 +127,25 @@ export const useToursFetchService = () => {
 
                 try {
                     const response = await fetchData({
-                        url: `/tours/${tourId}/details/`,
+                        url: `/tours/${tourId}/`,
                         method: 'GET',
                     });
 
+                    const backendResponse = response;
+                    const tourData = backendResponse.data;
+
                     const apiResponse: ApiResponse<TourDetailsResponse> = {
-                        data: response,
-                        statusCode: 200,
-                        message: 'success',
+                        data: tourData,
+                        statusCode: backendResponse.statuscode,
+                        message: backendResponse.message,
                     };
+
+                    console.log(`Fetched tour details for ID: ${id}, caching the response: ${tourData}`);
 
                     setTourDetailsCache((prev) => ({
                         ...prev,
                         [id]: {
-                            data: response,
+                            data: tourData,
                             lastFetch: Date.now(),
                         },
                     }));
