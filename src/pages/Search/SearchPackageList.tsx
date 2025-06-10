@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaMapMarkerAlt, FaHeart, FaStar, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
@@ -17,6 +17,7 @@ import FilterBar from '@/components/FilterBar';
 import NoDataFound from '@/components/Common/NoDataFound';
 import useApiServices from '@/services';
 import { TourListResponse } from '@/atoms/tours';
+import { motion } from 'framer-motion';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -183,11 +184,15 @@ const Price = styled.span`
 `;
 
 const TourDescription = styled.p`
-    color: ${({ theme }) => theme.colors.lightText};
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    line-height: 1.5;
-    margin-bottom: 1rem;
-    text-align: left;
+    color: #666;
+    font-size: 14px;
+    margin: 0.5rem 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
 `;
 
 const TourLocation = styled.div`
@@ -235,6 +240,23 @@ const RatingValue = styled.span`
 const BookedInfo = styled.span`
     color: ${({ theme }) => theme.colors.lightText};
     font-size: ${({ theme }) => theme.fontSizes.xs};
+`;
+
+const LoadingSpinner = styled(motion.div)`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
+    flex-direction: column;
+    gap: 1rem;
+`;
+
+const Spinner = styled(motion.div)`
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
 `;
 
 export default function SearchPackageList() {
@@ -387,10 +409,12 @@ export default function SearchPackageList() {
             if (searchData.dates) params.set('dates', searchData.dates);
             if (searchData.travelers) params.set('travelers', searchData.travelers);
 
-            navigate(`/searchPackage?${params.toString()}`, { replace: true });
-
-            // const results = await searchToursAPI({ ...searchData, ...searchFilters });
-            // setFilteredTours(results);
+            navigate(`/searchTrips?${params.toString()}`, { replace: true });
+            toursService.clearCache();
+            setCurrentPagination((prev) => ({ ...prev, currentPag: 1 }));
+            await fetchTours(1);
+        } catch (error) {
+            console.error('Search failed:', error);
         } finally {
             searchActions.setIsSearching(false);
         }
@@ -422,65 +446,70 @@ export default function SearchPackageList() {
                             Page {currentPagination.currentPage} of {currentPagination.totalPages} /
                             {currentPagination.totalCount} total results found
                         </ResultsCount>
-                        {uiState.isSearching && <span>Searching...</span>}
                     </ResultsHeader>
 
                     <ToursList>
                         {filteredTours.map((tour) => (
-                            <TourCard key={tour.id} variant="elevated">
-                                <TourImage>
-                                    <img src={tour.main_image || '/placeholder.jpg'} alt={tour.title} />
-                                    <FavoriteButton>
-                                        <FaHeart size={16} />
-                                    </FavoriteButton>
-                                </TourImage>
+                            <Link
+                                to={`/searchTrips/${tour.uuid}`}
+                                style={{ textDecoration: 'none', color: 'inherit' }}
+                                key={tour.id}
+                            >
+                                <TourCard key={tour.id} variant="elevated">
+                                    <TourImage>
+                                        <img src={tour.main_image || '/placeholder.jpg'} alt={tour.title} />
+                                        <FavoriteButton>
+                                            <FaHeart size={16} />
+                                        </FavoriteButton>
+                                    </TourImage>
 
-                                <TourContent>
-                                    <TourHeader>
-                                        <TourTitle>{tour.title}</TourTitle>
-                                        <TourPrice>
-                                            <Price>
-                                                {tour.currency} {tour.price}
-                                            </Price>
-                                        </TourPrice>
-                                    </TourHeader>
+                                    <TourContent>
+                                        <TourHeader>
+                                            <TourTitle>{tour.title}</TourTitle>
+                                            <TourPrice>
+                                                <Price>
+                                                    {tour.currency} {tour.price}
+                                                </Price>
+                                            </TourPrice>
+                                        </TourHeader>
 
-                                    <TourDescription>{tour.short_description}</TourDescription>
+                                        <TourDescription>{tour.short_description}</TourDescription>
 
-                                    <TourLocation>
-                                        <FaMapMarkerAlt size={14} />
-                                        <span>{tour.tour_type.name}</span>
-                                        <Button variant="text" size="sm">
-                                            Show on Map
-                                        </Button>
-                                    </TourLocation>
+                                        <TourLocation>
+                                            <FaMapMarkerAlt size={14} />
+                                            <span>{tour.tour_type.name}</span>
+                                            <Button variant="text" size="sm">
+                                                Show on Map
+                                            </Button>
+                                        </TourLocation>
 
-                                    <TourMeta>
-                                        <MetaLeft>
-                                            <BookedInfo>10K+ people booked</BookedInfo>
-                                            <Rating>
-                                                <RatingValue>4.5</RatingValue>
-                                                <RatingStars>
-                                                    {Array.from({ length: 5 }, (_, i) => (
-                                                        <FaStar key={i} size={12} color="#ffc107" />
-                                                    ))}
-                                                </RatingStars>
-                                                <span>(50 reviews)</span>
-                                            </Rating>
-                                        </MetaLeft>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => navigate(`/searchTrips/${tour.uuid}`)}
-                                        >
-                                            See details
-                                        </Button>
-                                    </TourMeta>
-                                </TourContent>
-                            </TourCard>
+                                        <TourMeta>
+                                            <MetaLeft>
+                                                <BookedInfo>10K+ people booked</BookedInfo>
+                                                <Rating>
+                                                    <RatingValue>4.5</RatingValue>
+                                                    <RatingStars>
+                                                        {Array.from({ length: 5 }, (_, i) => (
+                                                            <FaStar key={i} size={12} color="#ffc107" />
+                                                        ))}
+                                                    </RatingStars>
+                                                    <span>(50 reviews)</span>
+                                                </Rating>
+                                            </MetaLeft>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => navigate(`/searchTrips/${tour.uuid}`)}
+                                            >
+                                                See details
+                                            </Button>
+                                        </TourMeta>
+                                    </TourContent>
+                                </TourCard>
+                            </Link>
                         ))}
 
-                        {filteredTours.length === 0 ? (
+                        {!isLoading && filteredTours.length === 0 ? (
                             <NoDataFound
                                 type="search"
                                 onButtonClick={() => {
@@ -550,6 +579,22 @@ export default function SearchPackageList() {
                                     {currentPagination.totalCount} total results)
                                 </span> */}
                             </div>
+                        )}
+
+                        {isLoading && (
+                            <LoadingSpinner initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                <Spinner
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                />
+                                <motion.p
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                >
+                                    Searching...
+                                </motion.p>
+                            </LoadingSpinner>
                         )}
                     </ToursList>
                 </ResultsContainer>

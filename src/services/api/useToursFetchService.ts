@@ -116,13 +116,15 @@ export const useToursFetchService = () => {
                 const id = tourId.toString();
                 const cachedDetail = tourDetailsCache[id];
 
-                if (cachedDetail && isCacheValid(cachedDetail.lastFetch)) {
-                    console.log(`Using cached tour details for ID: ${id}`);
-                    return {
-                        data: cachedDetail.data,
-                        statusCode: 200,
-                        message: 'success',
-                    };
+                if (cachedDetail) {
+                    if (isCacheValid(cachedDetail.lastFetch)) {
+                        console.log(`Using cached tour details for ID: ${id}`);
+                        return {
+                            data: cachedDetail.data,
+                            statusCode: 200,
+                            message: 'success',
+                        };
+                    }
                 }
 
                 try {
