@@ -23,8 +23,8 @@ export const useSearchUIState = () => {
 };
 
 export const useSearchActions = () => {
-    const [searchData, setSearchData] = useRecoilState(searchDataAtom);
-    const [searchFilters, setSearchFilters] = useRecoilState(searchFiltersAtom);
+    const setSearchData = useSetRecoilState(searchDataAtom);
+    const setSearchFilters = useSetRecoilState(searchFiltersAtom);
     const [uiState, setUIState] = useRecoilState(searchUIStateAtom);
     const setSearchResults = useSetRecoilState(searchResultsAtom);
     const setCacheStatus = useSetRecoilState(searchCacheStatusAtom);

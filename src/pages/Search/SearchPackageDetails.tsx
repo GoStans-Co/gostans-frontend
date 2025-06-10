@@ -937,6 +937,7 @@ export default function SearchPackageDetails() {
                                     <FormGroup>
                                         <FormLabel>Date</FormLabel>
                                         <DatePicker
+                                            value={selectedDate}
                                             style={{ width: '100%', height: '48px' }}
                                             placeholder="04.13.2025"
                                             onChange={setSelectedDate}

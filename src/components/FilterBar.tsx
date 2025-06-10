@@ -14,8 +14,8 @@ import {
     FaUsers,
     FaMapMarkerAlt,
 } from 'react-icons/fa';
-import { SearchFilters } from '@/atoms/search';
 import { Checkbox } from 'antd';
+import { SearchFilters } from '@/types/search';
 
 export type FilterHandlers = {
     updateFilters: (updates: Partial<SearchFilters>) => void;
