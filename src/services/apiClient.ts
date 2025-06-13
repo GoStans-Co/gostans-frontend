@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 
-const API_BASE_URL = 'http://18.219.66.105:8000/api';
+const API_BASE_URL = 'https://api.gostans.com/api';
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
