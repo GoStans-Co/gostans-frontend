@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Button from '@/components/Common/Button';
 import { tours } from '@/data/mockData';
 import { Box } from 'lucide-react';
+import TripCard from '@/components/Card/TripCard';
 
 type TripStatus = 'all' | 'booked' | 'waiting' | 'complete' | 'cancelled';
 
@@ -52,124 +53,6 @@ const TripsList = styled.div`
     display: flex;
     flex-direction: column;
     gap: ${({ theme }) => theme.spacing.lg};
-`;
-
-const TripCard = styled.div`
-    display: flex;
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${({ theme }) => theme.borderRadius.md};
-    background-color: white;
-    overflow: hidden;
-    padding: ${({ theme }) => theme.spacing.lg};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
-
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-        flex-direction: column;
-    }
-`;
-
-const TripImage = styled.div<{ imageUrl: string }>`
-    width: 90px;
-    min-width: 90px;
-    height: 90px;
-    background-image: url(${(props) => props.imageUrl});
-    background-size: cover;
-    background-position: center;
-    border-radius: ${({ theme }) => theme.borderRadius.md};
-
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-        width: 90px;
-        height: 90px;
-        margin-bottom: ${({ theme }) => theme.spacing.md};
-    }
-`;
-
-const TripInfo = styled.div`
-    padding-left: ${({ theme }) => theme.spacing.lg};
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; /* Separates top info from bottom buttons */
-    min-height: 90px; /* Match image height */
-`;
-
-const TripHeader = styled.div`
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-        flex-direction: column;
-        gap: ${({ theme }) => theme.spacing.sm};
-    }
-`;
-
-const TripTitle = styled.h3`
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    color: ${({ theme }) => theme.colors.text};
-    margin: 0 0 ${({ theme }) => theme.spacing.xs} 0;
-    font-weight: 600;
-`;
-
-const TripDate = styled.p`
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    color: ${({ theme }) => theme.colors.lightText};
-    margin: 0;
-    line-height: 1.3;
-`;
-
-const TripPrice = styled.span`
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    font-weight: 700;
-    color: ${({ theme }) => theme.colors.primary};
-    margin-left: ${({ theme }) => theme.spacing.md};
-    white-space: nowrap;
-`;
-
-const StatusPill = styled.div<{ status: string }>`
-    margin-top: ${({ theme }) => theme.spacing.sm};
-    font-size: ${({ theme }) => theme.fontSizes.xs};
-    padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.sm}`};
-    border-radius: ${({ theme }) => theme.borderRadius.full};
-    display: inline-block;
-    font-weight: 500;
-
-    ${({ status, theme }) => {
-        switch (status) {
-            case 'awaiting':
-                return `
-                    background-color: #FFF4DE;
-                    color: #FFB82E;
-                `;
-            case 'booked':
-                return `
-                    background-color: #E6F7E6;
-                    color: #28A745;
-                `;
-            case 'all':
-                return `
-                    background-color: #E6F4FF;
-                    color: #0D7BFF;
-                `;
-            default:
-                return `
-                    background-color: ${theme.colors.lightBackground};
-                    color: ${theme.colors.text};
-                `;
-        }
-    }}
-`;
-
-const TripActions = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    gap: ${({ theme }) => theme.spacing.sm};
-    margin-top: auto;
-    padding-top: ${({ theme }) => theme.spacing.md};
-
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-        justify-content: flex-end;
-    }
 `;
 
 const EmptyState = styled.div`
@@ -278,44 +161,17 @@ export default function TripsPage() {
                     </FilterTabs>
                     <TripsList>
                         {filteredTrips.map((trip) => (
-                            <TripCard key={trip.id}>
-                                <TripImage imageUrl={trip.image} />
-                                <TripInfo>
-                                    <div>
-                                        <TripHeader>
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    alignItems: 'flex-start',
-                                                    width: '100%',
-                                                }}
-                                            >
-                                                <TripTitle>{trip.title}</TripTitle>
-                                                <TripDate>{trip.dayInfo || 'One Day Tour'}</TripDate>
-                                                <TripDate>{trip.date}</TripDate>
-                                            </div>
-                                            <TripPrice>${trip.price}</TripPrice>
-                                        </TripHeader>
-
-                                        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                                            {trip.status && (
-                                                <StatusPill
-                                                    status={trip.status === 'waiting' ? 'awaiting' : trip.status}
-                                                >
-                                                    {trip.status === 'waiting'
-                                                        ? 'Awaiting'
-                                                        : trip.status === 'booked'
-                                                          ? 'Booked'
-                                                          : trip.status}
-                                                </StatusPill>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <TripActions>{getTripActions(trip.status)}</TripActions>
-                                </TripInfo>
-                            </TripCard>
+                            <TripCard
+                                key={trip.id}
+                                id={trip.id}
+                                image={trip.image}
+                                title={trip.title}
+                                subtitle={trip.dayInfo || 'One Day Tour'}
+                                date={trip.date}
+                                price={trip.price}
+                                status={trip.status}
+                                actions={getTripActions(trip.status)}
+                            />
                         ))}
                     </TripsList>
                 </>

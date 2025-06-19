@@ -4,11 +4,15 @@ import Card from '@/components/Common/Card';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
 import { EnterInfoStepProps, Participant } from '@/types/cart';
+import { DatePicker } from 'antd';
+import dayjs from 'dayjs';
+import TripCard from '@/components/Card/TripCard';
 
 const StepContainer = styled.div`
     display: grid;
     grid-template-columns: 1fr 350px;
     gap: 2rem;
+    padding-bottom: 3rem;
 
     @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
         grid-template-columns: 1fr;
@@ -59,15 +63,46 @@ const FormRow = styled.div`
     }
 `;
 
+const DatePickerWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 49%;
+
+    label {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        font-weight: 500;
+        color: ${({ theme }) => theme.colors.text};
+        text-align: left;
+        margin-top: 0.6rem;
+    }
+
+    .ant-picker {
+        width: 100%;
+        height: 44px;
+        border-radius: ${({ theme }) => theme.borderRadius.md};
+        border: 1px solid ${({ theme }) => theme.colors.border};
+
+        &:hover {
+            border-color: ${({ theme }) => theme.colors.primary};
+        }
+
+        &.ant-picker-focused {
+            border-color: ${({ theme }) => theme.colors.primary};
+            box-shadow: 0 0 0 2px rgba(15, 40, 70, 0.1);
+        }
+    }
+`;
+
 const AddParticipantButton = styled(Button)`
     align-self: flex-start;
-    margin-top: 1rem;
+    margin-top: 0;
 `;
 
 const ButtonGroup = styled.div`
     display: flex;
     gap: 1rem;
-    margin-top: 2rem;
+    justify-content: space-between;
 `;
 
 const SidebarContent = styled.div`
@@ -118,12 +153,24 @@ const SelectWrapper = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    justify-content: center;
+    align-items: flex-start;
+    width: 100%;
 
     label {
         font-size: ${({ theme }) => theme.fontSizes.sm};
         font-weight: 500;
         color: ${({ theme }) => theme.colors.text};
     }
+`;
+
+const WarningBox = styled.div`
+    background-color: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    padding: 1rem;
+    color: #92400e;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 export default function EnterInfoStep({ cartItems, formData, onNext, onBack }: EnterInfoStepProps) {
@@ -179,7 +226,25 @@ export default function EnterInfoStep({ cartItems, formData, onNext, onBack }: E
     return (
         <StepContainer>
             <MainContent>
-                <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>Enter participant information</h2>
+                <TripCard
+                    id={cartItems[0]?.id || '1'}
+                    image={cartItems[0]?.image || '/api/placeholder/80/80'}
+                    title={cartItems[0]?.name || 'Samarkand city Tour (Individual)'}
+                    subtitle="One day trip"
+                    date="17 Apr 2025"
+                    variant="compact"
+                    imageSize="small"
+                    titleSize="large"
+                    showQuantityControls={true}
+                    quantity={1}
+                    onQuantityChange={(newQuantity) => {
+                        console.log('New quantity:', newQuantity);
+                    }}
+                />
+
+                {/* <h3 style={{ margin: '1.5rem 0 1rem 0', fontSize: '1.1rem', fontWeight: '600' }}>
+                    Participant details
+                </h3> */}
 
                 {participants.map((participant, index) => (
                     <ParticipantCard key={participant.id}>
@@ -221,6 +286,7 @@ export default function EnterInfoStep({ cartItems, formData, onNext, onBack }: E
                                     <option value="national-id">National ID</option>
                                 </Select>
                             </SelectWrapper>
+
                             <Input
                                 label="ID Number *"
                                 value={participant.idNumber}
@@ -229,19 +295,37 @@ export default function EnterInfoStep({ cartItems, formData, onNext, onBack }: E
                             />
                         </FormRow>
 
-                        <Input
-                            label="Date of Birth *"
-                            type="date"
-                            value={participant.dateOfBirth}
-                            onChange={(e) => updateParticipant(participant.id, 'dateOfBirth', e.target.value)}
-                            style={{ marginTop: '1rem' }}
-                        />
+                        <DatePickerWrapper>
+                            <label>Date of Birth *</label>
+                            <DatePicker
+                                value={participant.dateOfBirth ? dayjs(participant.dateOfBirth) : null}
+                                onChange={(date) =>
+                                    updateParticipant(
+                                        participant.id,
+                                        'dateOfBirth',
+                                        date ? date.format('YYYY-MM-DD') : '',
+                                    )
+                                }
+                                format="MM/DD/YYYY"
+                                placeholder="mm/dd/yyyy"
+                                style={{ width: '100%' }}
+                            />
+                        </DatePickerWrapper>
                     </ParticipantCard>
                 ))}
 
                 <AddParticipantButton variant="outline" onClick={addParticipant}>
                     + Add another participant
                 </AddParticipantButton>
+
+                <WarningBox>
+                    Once your info is submitted, it cannot be changed. Please double-check before proceeding.
+                </WarningBox>
+
+                <p style={{ fontSize: '0.9rem', color: '#666' }}>
+                    Your booking will be submitted once you go to payment. You can choose your payment method in the
+                    next step.
+                </p>
 
                 <ButtonGroup>
                     <Button variant="outline" onClick={onBack}>
