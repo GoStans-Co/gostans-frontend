@@ -92,7 +92,7 @@ const CheckboxRow = styled.div`
 const ButtonGroup = styled.div`
     display: flex;
     gap: 1rem;
-    margin-top: 2rem;
+    justify-content: space-between;
 `;
 
 const SidebarContent = styled.div`
@@ -165,7 +165,7 @@ export default function PaymentStep({ cartItems, formData, onComplete, onBack }:
     return (
         <StepContainer>
             <MainContent>
-                <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>Payment Information</h2>
+                {/* <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>Payment Information</h2> */}
 
                 <PaymentMethodCard>
                     <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', fontWeight: '600' }}>

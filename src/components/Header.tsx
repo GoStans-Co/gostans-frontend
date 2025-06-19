@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaGlobe, FaShoppingCart, FaBars, FaTimes, FaChevronDown, FaMoneyBill } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
@@ -268,6 +268,8 @@ export default function Header() {
     const currencyRef = useRef<HTMLDivElement>(null);
     const cartRef = useRef<HTMLAnchorElement>(null);
 
+    const navigate = useNavigate();
+
     const [showCountries, setShowCountries] = useState(false);
     const [showLanguage, setShowLanguage] = useState(false);
     const [showCurrency, setShowCurrency] = useState(false);
@@ -502,7 +504,8 @@ export default function Header() {
                     setCartItems((items) => items.filter((item) => item.id !== id));
                 }}
                 onGoToCart={() => {
-                    window.location.href = '/cart';
+                    navigate('/cart');
+                    setShowCart(false);
                 }}
             />
             <ModalAlert
