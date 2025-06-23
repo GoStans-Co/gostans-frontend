@@ -1,14 +1,4 @@
-export type CartItem = {
-    id: string;
-    name: string;
-    price: number;
-    quantity: number;
-    currency: string;
-    image: string;
-    description?: string;
-    date?: string;
-    duration?: string;
-};
+import { CartItem } from '@/atoms/cart';
 
 export type Participant = {
     id: string;

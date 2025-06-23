@@ -187,7 +187,7 @@ const StyledInput = styled.input<{
 const ErrorMessage = styled.span`
     color: ${({ theme }) => theme.colors.accent};
     font-size: ${({ theme }) => theme.fontSizes.sm};
-    margin-top: 0.25rem;
+    margin-top: 0;
 `;
 
 export default function Input({ label, icon, endIcon, error, inputConfig = {}, ...rest }: InputProps) {

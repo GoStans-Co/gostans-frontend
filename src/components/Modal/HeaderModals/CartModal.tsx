@@ -4,27 +4,19 @@ import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
 import styled from 'styled-components';
 import AtomicDropdownModal from '@/components/Common/AtomicDropdownElements';
-
-type CartItem = {
-    id: string;
-    name: string;
-    price: number;
-    currency: string;
-    image?: string;
-    quantity: number;
-};
+import { CartItem } from '@/atoms/cart';
 
 type CartModalProps = {
     isOpen: boolean;
     onClose: () => void;
     anchorElement?: HTMLElement | null;
     cartItems: CartItem[];
-    onUpdateQuantity: (id: string, quantity: number) => void;
-    onRemoveItem: (id: string) => void;
+    onUpdateQuantity: (tourId: string, quantity: number) => void;
+    onRemoveItem: (tourId: string) => void;
     onGoToCart: () => void;
 };
 
-const CartItem = styled.div`
+const CartItemContainer = styled.div`
     display: flex;
     align-items: center;
     gap: ${theme.spacing.md};
@@ -145,6 +137,7 @@ const EmptyCartMessage = styled.div`
     color: ${theme.colors.lightText};
     font-size: ${theme.fontSizes.sm};
 `;
+
 export default function CartModal({
     isOpen,
     onClose,
@@ -154,7 +147,7 @@ export default function CartModal({
     onRemoveItem,
     onGoToCart,
 }: CartModalProps) {
-    const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalPrice = cartItems.reduce((sum, item) => sum + Number(item.tourData.price) * item.quantity, 0);
     const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
     const handleGoToCart = () => {
@@ -185,36 +178,34 @@ export default function CartModal({
             ) : (
                 <>
                     {cartItems.map((item) => (
-                        <CartItem key={item.id}>
-                            <CartItemImage src={item.image} />
+                        <CartItemContainer key={item.tourId}>
+                            <CartItemImage src={item.tourData.mainImage ?? undefined} />
                             <CartItemDetails>
-                                <CartItemName>{item.name}</CartItemName>
-                                <CartItemPrice>
-                                    {item.currency} {item.price.toFixed(2)}
-                                </CartItemPrice>
+                                <CartItemName>{item.tourData.title}</CartItemName>
+                                <CartItemPrice>${parseFloat(item.tourData.price).toFixed(2)}</CartItemPrice>
                             </CartItemDetails>
                             <QuantityControls>
                                 <QuantityButton
-                                    onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                                    onClick={() => onUpdateQuantity(item.tourId, item.quantity - 1)}
                                     disabled={item.quantity <= 1}
                                 >
                                     <Minus size={12} />
                                 </QuantityButton>
                                 <QuantityDisplay>{item.quantity}</QuantityDisplay>
-                                <QuantityButton onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}>
+                                <QuantityButton onClick={() => onUpdateQuantity(item.tourId, item.quantity + 1)}>
                                     <Plus size={12} />
                                 </QuantityButton>
                             </QuantityControls>
-                            <RemoveButton onClick={() => onRemoveItem(item.id)}>
+                            <RemoveButton onClick={() => onRemoveItem(item.tourId)}>
                                 <X size={16} />
                             </RemoveButton>
-                        </CartItem>
+                        </CartItemContainer>
                     ))}
 
                     <CartFooter>
                         <CartTotal>
                             <span>Subtotal ({totalItems} items)</span>
-                            <span>€ {totalPrice.toFixed(2)}</span>
+                            <span>${totalPrice.toFixed(2)}</span>
                         </CartTotal>
                         <Button variant="primary" size="md" onClick={handleGoToCart} style={{ width: '100%' }}>
                             Go to cart

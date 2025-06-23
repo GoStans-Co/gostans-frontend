@@ -8,14 +8,14 @@ export type TourListResponse = {
     id: number;
     uuid: string;
     title: string;
-    short_description: string;
-    tour_type: {
+    shortDescription: string;
+    tourType: {
         id: number;
         name: string;
     };
     price: string;
     currency: 'USD' | 'EUR' | 'KRW';
-    main_image: string | null;
+    mainImage: string | null;
 };
 
 export type ToursListApiResponse = {
@@ -29,23 +29,23 @@ export type TourDetailsResponse = {
     id: number;
     uuid: string;
     title: string;
-    short_description: string;
-    tour_type: string;
+    shortDescription: string;
+    tourType: string;
     duration: DurationTypes;
     about: string;
     price: string;
     currency: CurrencyTypes;
-    trip_start_date: string | null;
-    trip_end_date: string | null;
+    tripStartDate: string | null;
+    tripEndDate: string | null;
     country: string;
     city: string;
-    group_size: number;
+    groupSize: number;
     language: LanguageTypes;
-    age_min: number;
-    age_max: number;
+    ageMin: number;
+    ageMax: number;
     partner: number;
     tags: string[];
-    main_image: string | null;
+    mainImage: string | null;
     created_at: string;
     images: Array<{
         id: number;
