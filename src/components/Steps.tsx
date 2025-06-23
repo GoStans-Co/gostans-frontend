@@ -1,4 +1,4 @@
-import React from 'react';
+import { CheckCircle2 } from 'lucide-react';
 import styled from 'styled-components';
 
 type CheckoutStep = 'cart' | 'checkout' | 'payment' | 'confirmation';
@@ -13,6 +13,12 @@ const StepItem = styled.div`
         flex: 0;
     }
     padding-bottom: 3rem;
+
+    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+        flex-direction: column;
+        width: 100%;
+        padding-bottom: 1rem;
+    }
 `;
 
 const StepContent = styled.div`
@@ -25,6 +31,13 @@ const StepContent = styled.div`
     align-items: center;
     margin-top: 0.75rem;
     width: max-content;
+
+    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+        position: static;
+        transform: none;
+        margin-top: 0.5rem;
+        text-align: center;
+    }
 `;
 
 const StepWrapper = styled.div`
@@ -42,17 +55,23 @@ const StepsContainer = styled.div`
     background-color: ${({ theme }) => theme.colors.lightBackground};
     max-width: 900px;
     margin: 0 auto;
+
+    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+        padding: 1rem 0.5rem;
+        flex-direction: column;
+        gap: 1rem;
+    }
 `;
 
 const StepCircle = styled.div<{ status: 'completed' | 'active' | 'pending' }>`
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
-    font-size: 16px;
+    font-weight: 400;
+    font-size: 12px;
     flex-shrink: 0;
     transition: all 0.3s ease;
 
@@ -87,13 +106,22 @@ const StepLine = styled.div<{ completed: boolean }>`
     margin: 0 1rem;
     background-color: ${({ completed, theme }) => (completed ? theme.colors.primary : theme.colors.border)};
     transition: background-color 0.3s ease;
+
+    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+        display: none;
+    }
 `;
 
 const StepTitle = styled.div<{ active: boolean }>`
-    font-size: ${({ theme }) => theme.fontSizes.md};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
     font-weight: ${({ active }) => (active ? '600' : '400')};
     color: ${({ active, theme }) => (active ? theme.colors.text : theme.colors.lightText)};
     white-space: nowrap;
+
+    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+        white-space: normal;
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+    }
 `;
 
 const StepDescription = styled.div`
@@ -103,27 +131,17 @@ const StepDescription = styled.div`
     white-space: nowrap;
 `;
 
-const CheckIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-            d="M16.667 5L7.5 14.167L3.333 10"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
-    </svg>
-);
+const CheckIconElement = () => <CheckCircle2 size={24} style={{ color: 'white' }} aria-label="Step completed" />;
 
-interface CustomStepsProps {
+type CustomStepsProps = {
     current: number;
     steps: Array<{
         title: string;
         description?: string;
     }>;
-}
+};
 
-export const CustomSteps: React.FC<CustomStepsProps> = ({ current, steps }) => {
+export default function CustomSteps({ current, steps }: CustomStepsProps) {
     return (
         <StepsContainer>
             {steps.map((step, index) => {
@@ -134,7 +152,7 @@ export const CustomSteps: React.FC<CustomStepsProps> = ({ current, steps }) => {
                     <StepItem key={index}>
                         <StepWrapper>
                             <StepCircle status={status}>
-                                {status === 'completed' ? <CheckIcon /> : index + 1}
+                                {status === 'completed' ? <CheckIconElement /> : index + 1}
                             </StepCircle>
                             <StepContent>
                                 <StepTitle active={status === 'active' || status === 'completed'}>
@@ -149,9 +167,8 @@ export const CustomSteps: React.FC<CustomStepsProps> = ({ current, steps }) => {
             })}
         </StepsContainer>
     );
-};
+}
 
-// Usage in your StepsWrapper component:
 export const StepsWrapper = ({
     currentStep,
     showConfirmation = false,

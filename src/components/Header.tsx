@@ -16,6 +16,8 @@ import LanguageModal from '@/components/Modal/HeaderModals/LanguageModal';
 import CurrencyModal from '@/components/Modal/HeaderModals/CurrencyModal';
 import CartModal from '@/components/Modal/HeaderModals/CartModal';
 import useApiServices from '@/services';
+import { useRecoilState } from 'recoil';
+import { cartAtom } from '@/atoms/cart';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -270,6 +272,8 @@ export default function Header() {
 
     const navigate = useNavigate();
 
+    const [cartItems, setCartItems] = useRecoilState(cartAtom);
+
     const [showCountries, setShowCountries] = useState(false);
     const [showLanguage, setShowLanguage] = useState(false);
     const [showCurrency, setShowCurrency] = useState(false);
@@ -292,9 +296,6 @@ export default function Header() {
         symbol: '$',
         flag: '🇺🇸',
     });
-    const [cartItems, setCartItems] = useState([
-        { id: '1', name: 'Samarkand City', price: 307.98, currency: '€', quantity: 1 },
-    ]);
 
     const userData = getUserData();
     const isLoggedIn = authState;
@@ -497,11 +498,13 @@ export default function Header() {
                 onClose={() => setShowCart(false)}
                 anchorElement={cartRef.current}
                 cartItems={cartItems}
-                onUpdateQuantity={(id, quantity) => {
-                    setCartItems((items) => items.map((item) => (item.id === id ? { ...item, quantity } : item)));
+                onUpdateQuantity={(tourId, quantity) => {
+                    setCartItems((items) =>
+                        items.map((item) => (item.tourId === tourId ? { ...item, quantity } : item)),
+                    );
                 }}
-                onRemoveItem={(id) => {
-                    setCartItems((items) => items.filter((item) => item.id !== id));
+                onRemoveItem={(tourId) => {
+                    setCartItems((items) => items.filter((item) => item.tourId !== tourId));
                 }}
                 onGoToCart={() => {
                     navigate('/cart');

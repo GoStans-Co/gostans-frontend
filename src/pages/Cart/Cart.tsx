@@ -5,10 +5,11 @@ import Card from '@/components/Common/Card';
 import Button from '@/components/Common/Button';
 import EnterInfoStep from '@/components/Cart/EnterInfoStep';
 import PaymentStep from '@/components/Cart/PaymentStep';
-import { CartItem, BookingFormData } from '@/types/cart';
+import { BookingFormData } from '@/types/cart';
 import { StepsWrapper } from '@/components/Steps';
 import TripCard from '@/components/Card/TripCard';
-import { tours } from '@/data/mockData';
+import { useRecoilState } from 'recoil';
+import { cartAtom } from '@/atoms/cart';
 
 type CheckoutStep = 'cart' | 'checkout' | 'payment' | 'confirmation';
 
@@ -97,6 +98,16 @@ const ConfirmationContainer = styled.div`
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 `;
 
+const OrderTitle = styled.h3`
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.primary};
+    margin-bottom: 1rem;
+    text-align: left;
+    align-self: flex-start;
+    width: 100%;
+`;
+
 export default function CartPage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -115,19 +126,7 @@ export default function CartPage() {
         setCurrentStep(getCurrentStep());
     }, [location.pathname]);
 
-    const toursData = tours.slice(0, 2).map((tour) => ({
-        id: tour.id,
-        name: tour.title,
-        description: tour.description,
-        price: tour.price,
-        quantity: 1,
-        currency: 'USD',
-        image: tour.image || '/api/placeholder/100/100',
-        date: tour.date,
-        duration: tour.dayInfo,
-    }));
-
-    const [items, setItems] = useState<CartItem[]>(toursData);
+    const [cartItems, setCartItems] = useRecoilState(cartAtom);
 
     const [formData, setFormData] = useState<BookingFormData>({
         participants: [],
@@ -135,8 +134,8 @@ export default function CartPage() {
         paymentMethod: undefined,
     });
 
-    const removeItem = (id: string) => {
-        setItems((prev) => prev.filter((item) => item.id !== id));
+    const removeItem = (tourId: string) => {
+        setCartItems((prev) => prev.filter((item) => item.tourId !== tourId));
     };
 
     const handleCheckout = () => {
@@ -162,11 +161,11 @@ export default function CartPage() {
         navigate('/cart/checkout');
     };
 
-    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = cartItems.reduce((sum, item) => sum + parseFloat(item.tourData.price) * item.quantity, 0);
     const tax = subtotal * 0.1; /* 10% tax rate */
     const total = subtotal + tax;
 
-    if (items.length === 0 && currentStep === 'cart') {
+    if (cartItems.length === 0 && currentStep === 'cart') {
         return (
             <Container>
                 <EmptyCart>
@@ -186,7 +185,7 @@ export default function CartPage() {
                 <Container>
                     <StepsWrapper currentStep={currentStep} />
                     <EnterInfoStep
-                        cartItems={items}
+                        cartItems={cartItems}
                         formData={formData}
                         onNext={handleInfoNext}
                         onBack={handleInfoBack}
@@ -199,7 +198,7 @@ export default function CartPage() {
                 <Container>
                     <StepsWrapper currentStep={currentStep} />
                     <PaymentStep
-                        cartItems={items}
+                        cartItems={cartItems}
                         formData={formData}
                         onComplete={handlePaymentComplete}
                         onBack={handlePaymentBack}
@@ -227,10 +226,11 @@ export default function CartPage() {
                                 borderRadius: '8px',
                             }}
                         >
-                            <h3 style={{ marginBottom: '1rem' }}>Order Summary</h3>
-                            {items.map((item) => (
-                                <div key={item.id} style={{ marginBottom: '0.5rem' }}>
-                                    {item.name} x{item.quantity} - ${(item.price * item.quantity).toFixed(2)}
+                            <OrderTitle>Order Summary</OrderTitle>
+                            {cartItems.map((item) => (
+                                <div key={item.tourId} style={{ marginBottom: '0.5rem' }}>
+                                    {item.tourData.title} x{item.quantity} - $
+                                    {(parseFloat(item.tourData.price) * item.quantity).toFixed(2)}
                                 </div>
                             ))}
                             <div
@@ -258,19 +258,19 @@ export default function CartPage() {
                     <StepsWrapper currentStep={currentStep} />
                     <CartGrid>
                         <CartItemsSection>
-                            {items.map((item) => (
+                            {cartItems.map((item) => (
                                 <TripCard
-                                    key={item.id}
-                                    id={item.id}
-                                    image={item.image || '/api/placeholder/100/100'}
-                                    title={item.name}
-                                    subtitle={item.description}
-                                    date={item.date || 'Date not specified'}
+                                    key={item.tourId}
+                                    id={item.tourId}
+                                    image={item.tourData.mainImage || '/api/placeholder/100/100'}
+                                    title={item.tourData.title}
+                                    subtitle={item.tourData.shortDescription}
+                                    date={item.selectedDate || 'Date not specified'}
                                     variant="default"
                                     customContent={
                                         <div style={{ marginTop: '0.5rem' }}>
                                             <span style={{ fontSize: '0.875rem', color: '#666' }}>
-                                                {item.duration || 'Duration not specified'}
+                                                {item.tourData.duration} • {item.adults} adults
                                             </span>
                                         </div>
                                     }
@@ -287,7 +287,11 @@ export default function CartPage() {
                                                 <Button variant="text" size="sm">
                                                     Edit
                                                 </Button>
-                                                <Button variant="text" size="sm" onClick={() => removeItem(item.id)}>
+                                                <Button
+                                                    variant="text"
+                                                    size="sm"
+                                                    onClick={() => removeItem(item.tourId)}
+                                                >
                                                     Remove
                                                 </Button>
                                             </div>
@@ -296,7 +300,7 @@ export default function CartPage() {
                                                 <span
                                                     style={{ fontSize: '1.25rem', fontWeight: '600', color: '#0F2846' }}
                                                 >
-                                                    ${(item.price * item.quantity).toFixed(2)}
+                                                    ${(parseFloat(item.tourData.price) * item.quantity).toFixed(2)}
                                                 </span>
                                             </div>
                                         </div>
@@ -307,11 +311,19 @@ export default function CartPage() {
 
                         <SidebarCard>
                             <SidebarContent>
-                                <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', fontWeight: '600' }}>
+                                <h3
+                                    style={{
+                                        margin: '0 0 1rem 0',
+                                        fontSize: '1.1rem',
+                                        fontWeight: '600',
+                                        alignSelf: 'flex-start',
+                                        display: 'flex',
+                                    }}
+                                >
                                     Order Summary
                                 </h3>
                                 <SummarySection>
-                                    <span>Subtotal ({items.length} items)</span>
+                                    <span>Subtotal ({cartItems.length} items)</span>
                                     <span>${subtotal.toFixed(2)}</span>
                                 </SummarySection>
                                 <SummarySection>
@@ -325,9 +337,9 @@ export default function CartPage() {
                                 <Button variant="primary" fullWidth onClick={handleCheckout}>
                                     Proceed to Checkout
                                 </Button>
-                                <Button variant="outline" fullWidth onClick={() => navigate('/')}>
+                                {/* <Button variant="outline" fullWidth onClick={() => navigate('/')}>
                                     Continue Shopping
-                                </Button>
+                                </Button> */}
                             </SidebarContent>
                         </SidebarCard>
                     </CartGrid>

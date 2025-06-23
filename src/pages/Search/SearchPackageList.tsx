@@ -457,7 +457,7 @@ export default function SearchPackageList() {
                             >
                                 <TourCard key={tour.id} variant="elevated">
                                     <TourImage>
-                                        <img src={tour.main_image || '/placeholder.jpg'} alt={tour.title} />
+                                        <img src={tour.mainImage || '/placeholder.jpg'} alt={tour.title} />
                                         <FavoriteButton>
                                             <FaHeart size={16} />
                                         </FavoriteButton>
@@ -473,11 +473,11 @@ export default function SearchPackageList() {
                                             </TourPrice>
                                         </TourHeader>
 
-                                        <TourDescription>{tour.short_description}</TourDescription>
+                                        <TourDescription>{tour.shortDescription}</TourDescription>
 
                                         <TourLocation>
                                             <FaMapMarkerAlt size={14} />
-                                            <span>{tour.tour_type.name}</span>
+                                            <span>{tour.tourType.name}</span>
                                             <Button variant="text" size="sm">
                                                 Show on Map
                                             </Button>
@@ -574,10 +574,6 @@ export default function SearchPackageList() {
                                 >
                                     <FaChevronRight />
                                 </Button>
-                                {/* <span style={{ marginLeft: '1rem', color: '#666', fontSize: '14px' }}>
-                                    Page {currentPagination.currentPage} of {currentPagination.totalPages} (
-                                    {currentPagination.totalCount} total results)
-                                </span> */}
                             </div>
                         )}
 

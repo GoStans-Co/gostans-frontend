@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import type { Dayjs } from 'dayjs';
 import {
     FaStar,
     FaMapMarkerAlt,
@@ -15,19 +16,20 @@ import {
     FaArrowLeft,
     FaArrowRight,
 } from 'react-icons/fa';
-import { DatePicker } from 'antd';
+import { DatePicker, message } from 'antd';
 import Button from '@/components/Common/Button';
 import Card from '@/components/Common/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'react-router-dom';
 import useApiServices from '@/services';
 import { tourDetailsAtom } from '@/atoms/tours';
-import { useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import CopyLink from '@/components/CopyLink';
 import default_n1 from '@/assets/default/default_1.jpg';
 import default_n2 from '@/assets/default/default_2.jpg';
 import TourCard from '@/components/Tours/ToursCard';
 import { tours } from '@/data/mockData';
+import { cartAtom } from '@/atoms/cart';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -526,15 +528,19 @@ const NavigationButtons = styled.div`
 
 export default function SearchPackageDetails() {
     const { packageId: id } = useParams<{ packageId: string }>();
-    const { tours: toursService } = useApiServices();
-    const tourDetailsCache = useRecoilValue(tourDetailsAtom);
-
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
     const [adults, setAdults] = useState(0);
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
+
+    const tourDetailsCache = useRecoilValue(tourDetailsAtom);
+    const [cart, setCart] = useRecoilState(cartAtom);
+    const [messageApi, contextHolder] = message.useMessage();
+
+    const { tours: toursService } = useApiServices();
+
     const toursPerPage = 3;
 
     const tour = id ? tourDetailsCache[id]?.data : null;
@@ -611,7 +617,7 @@ export default function SearchPackageDetails() {
     const totalPages = Math.ceil(filteredTours.length / toursPerPage);
 
     const images =
-        tour.images?.length > 0 ? tour.images.map((img) => img.image || default_n1) : [tour.main_image || default_n1];
+        tour.images?.length > 0 ? tour.images.map((img) => img.image || default_n1) : [tour.mainImage || default_n1];
     const galleryImages = [...images];
 
     const defaultImages = [default_n1, default_n2];
@@ -678,356 +684,405 @@ export default function SearchPackageDetails() {
 
     const visibleTours = filteredTours.slice(currentPage * toursPerPage, (currentPage + 1) * toursPerPage);
 
+    const handleAddToCart = () => {
+        const cartItem = {
+            tourId: tour.uuid,
+            tourData: tour,
+            quantity: 1,
+            selectedDate: selectedDate?.format('YYYY-MM-DD'),
+            adults: adults,
+            addedAt: Date.now(),
+        };
+
+        setCart((prev) => {
+            const existingIndex = prev.findIndex((item) => item.tourId === tour.uuid);
+            if (existingIndex >= 0) {
+                const updated = [...prev];
+                updated[existingIndex] = {
+                    ...updated[existingIndex],
+                    quantity: updated[existingIndex].quantity + 1,
+                };
+                console.log('Updated cart:', updated);
+                return updated;
+            }
+            console.log('Added to cart:', [...prev, cartItem]);
+            return [...prev, cartItem];
+        });
+
+        messageApi.success({
+            content: `Tour "${tour.title}" has been added to your cart.`,
+            style: { marginTop: '1vh' },
+            duration: 5,
+        });
+    };
+
     return (
-        <PageContainer>
-            <Header>
-                <Breadcrumb>
-                    <a href="/">Home</a> &gt; <a href="/uzbekistan">Uzbekistan</a> &gt; <span>Registan</span>
-                </Breadcrumb>
+        <>
+            {contextHolder}
+            <PageContainer>
+                <Header>
+                    <Breadcrumb>
+                        <a href="/">Home</a> &gt; <a href="/uzbekistan">Uzbekistan</a> &gt; <span>Registan</span>
+                    </Breadcrumb>
 
-                <TitleSection>
-                    <Title>{tour.title}</Title>
-                    <ActionButtons>
-                        <IconButton>
-                            <FaHeart />
-                        </IconButton>
-                        <IconButton>
-                            <CopyLink url={window.location.href} iconSize={16} showText={false} />
-                        </IconButton>
-                    </ActionButtons>
-                </TitleSection>
+                    <TitleSection>
+                        <Title>{tour.title}</Title>
+                        <ActionButtons>
+                            <IconButton>
+                                <FaHeart />
+                            </IconButton>
+                            <IconButton>
+                                <CopyLink url={window.location.href} iconSize={16} showText={false} />
+                            </IconButton>
+                        </ActionButtons>
+                    </TitleSection>
 
-                <MetaInfo>
-                    <Rating>
-                        <span>4.5</span>
-                        {[...Array(5)].map((_, i) => (
-                            <FaStar key={i} color="#ffc107" size={14} />
-                        ))}
-                        <span>(25 reviews)</span>
-                    </Rating>
-                    <span>•</span>
-                    <span>{tour.group_size}+ people booked</span>
-                    <span>•</span>
-                    <span>
-                        <FaMapMarkerAlt /> {tour.country}, {tour.city}
-                    </span>
-                    <a href="#map">Show on Map</a>
-                </MetaInfo>
-            </Header>
+                    <MetaInfo>
+                        <Rating>
+                            <span>4.5</span>
+                            {[...Array(5)].map((_, i) => (
+                                <FaStar key={i} color="#ffc107" size={14} />
+                            ))}
+                            <span>(25 reviews)</span>
+                        </Rating>
+                        <span>•</span>
+                        <span>{tour.groupSize}+ people booked</span>
+                        <span>•</span>
+                        <span>
+                            <FaMapMarkerAlt /> {tour.country}, {tour.city}
+                        </span>
+                        <a href="#map">Show on Map</a>
+                    </MetaInfo>
+                </Header>
 
-            <MainContent>
-                <ImageSection>
-                    <ImageGallery>
-                        <MainImage onClick={() => openImageModal(0)}>
-                            <img src={galleryImages[0]} alt="Main tour image" />
-                        </MainImage>
-                        <SideImage onClick={() => openImageModal(1)}>
-                            <img src={galleryImages[1]} alt="Tour image" />
-                        </SideImage>
-                        <SideImage onClick={() => openImageModal(2)}>
-                            <img src={galleryImages[2]} alt="Tour image" />
-                        </SideImage>
-                        <SideImage onClick={() => openImageModal(3)}>
-                            <img src={galleryImages[3]} alt="Tour image" />
-                        </SideImage>
-                        <SideImage onClick={() => openImageModal(4)}>
-                            <img src={galleryImages[4]} alt="Tour image" />
-                            <SeeAllButton
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    openImageModal(0);
-                                }}
-                            >
-                                See all
-                            </SeeAllButton>
-                        </SideImage>
-                    </ImageGallery>
-                </ImageSection>
-                <ContentSection>
-                    <LeftContent>
-                        <InfoCards>
-                            <InfoCard>
-                                <FaClock className="icon" size={24} />
-                                <div className="label">Duration</div>
-                                <div className="value">{tour.duration}</div>
-                            </InfoCard>
-                            <InfoCard>
-                                <FaMapMarkerAlt className="icon" size={24} />
-                                <div className="label">Tour Type</div>
-                                <div className="value">{tour.tour_type}</div>
-                            </InfoCard>
-                            <InfoCard>
-                                <FaUsers className="icon" size={24} />
-                                <div className="label">Group Size</div>
-                                <div className="value">{tour.group_size}</div>
-                            </InfoCard>
-                            <InfoCard>
-                                <FaUserFriends className="icon" size={24} />
-                                <div className="label">Ages</div>
-                                <div className="value">
-                                    {tour.age_min}-{tour.age_max}
-                                </div>
-                            </InfoCard>
-                            <InfoCard>
-                                <FaGlobe className="icon" size={24} />
-                                <div className="label">Languages</div>
-                                <div className="value">{tour.language}</div>
-                            </InfoCard>
-                        </InfoCards>
-
-                        <Section>
-                            <h2>Tour Overview</h2>
-                            <p>{tour.about}</p>
-                        </Section>
-
-                        <Section>
-                            <h2>Included / Excluded</h2>
-                            <IncludedExcluded>
-                                <div>
-                                    {includedItems.map((item, index) => (
-                                        <ListItem key={index} included>
-                                            <FaCheck className="icon" />
-                                            <span>{item}</span>
-                                        </ListItem>
-                                    ))}
-                                </div>
-                                <div>
-                                    {excludedItems.map((item, index) => (
-                                        <ListItem key={index}>
-                                            <FaTimes className="icon" />
-                                            <span>{item}</span>
-                                        </ListItem>
-                                    ))}
-                                </div>
-                            </IncludedExcluded>
-                        </Section>
-
-                        <Section>
-                            <h2>Itinerary</h2>
-                            <Itinerary>
-                                {tour.itineraries?.map((day) => (
-                                    <ItineraryDay key={day.day_number} active={day.day_number === 1}>
-                                        <DayNumber active={day.day_number === 1}>{day.day_number}</DayNumber>
-                                        <DayContent>
-                                            <h4>
-                                                Day {day.day_number}: {day.day_title}
-                                            </h4>
-                                            <p>{day.description}</p>
-                                        </DayContent>
-                                    </ItineraryDay>
-                                ))}
-                            </Itinerary>
-                        </Section>
-
-                        <Section id="map">
-                            <h2>Location</h2>
-                            <MapContainer>
-                                <p>Interactive Map Component</p>
-                            </MapContainer>
-                        </Section>
-                        <Section>
-                            <ReviewsSection>
-                                <h2>Reviews</h2>
-                                <Button variant="text" size="sm">
-                                    Read all reviews
-                                </Button>
-                            </ReviewsSection>
-                            <div
-                                style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: '1fr 1fr',
-                                    gap: '1rem',
-                                    marginBottom: '1rem',
-                                }}
-                            >
-                                {reviews.map((review, index) => (
-                                    <ReviewCard key={index} variant="outlined">
-                                        <ReviewHeader>
-                                            <div className="left-content">
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        justifyContent: 'space-between',
-                                                        gap: '12px',
-                                                    }}
-                                                >
-                                                    <Rating>
-                                                        {[...Array(5)].map((_, i) => (
-                                                            <FaStar key={i} color="#ffc107" size={14} />
-                                                        ))}
-                                                    </Rating>
-                                                    <ReviewerName>{review.name}</ReviewerName>
-                                                </div>
-                                            </div>
-                                            <ReviewDate>{review.date}</ReviewDate>
-                                        </ReviewHeader>
-                                        <p>{review.text}</p>
-                                    </ReviewCard>
-                                ))}
-                            </div>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
-                                <Button variant="outline" size="sm">
-                                    <FaChevronLeft />
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                    <FaChevronRight />
-                                </Button>
-                            </div>
-                        </Section>
-                        <Section>
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    marginBottom: '1rem',
-                                }}
-                            >
-                                <h2>Explore other options</h2>
-                                <NavigationButtons>
-                                    <Button
-                                        variant="circle"
-                                        onClick={handlePrevPage}
-                                        disabled={currentPage === 0}
-                                        aria-label="Previous page"
-                                    >
-                                        <FaArrowLeft />
-                                    </Button>
-                                    <Button
-                                        variant="circle"
-                                        onClick={handleNextPage}
-                                        disabled={currentPage === totalPages - 1}
-                                        aria-label="Next page"
-                                    >
-                                        <FaArrowRight />
-                                    </Button>
-                                </NavigationButtons>
-                            </div>
-                            <RelatedTours>
-                                {visibleTours.map((tour) => (
-                                    <TourCard
-                                        buttonText="See more"
-                                        // variant="link"
-                                        key={tour.id}
-                                        id={tour.id}
-                                        title={tour.title}
-                                        description={tour.description}
-                                        price={tour.price}
-                                        image={tour.image}
-                                        country={tour.country}
-                                        status={'all'}
-                                    />
-                                ))}
-                            </RelatedTours>
-                        </Section>
-                    </LeftContent>
-                    <RightSidebar>
-                        <PriceCard>
-                            <PriceHeader>
-                                <div className="from">From</div>
-                                <div className="price">${tour.price}</div>
-                            </PriceHeader>
-
-                            <BookingForm>
-                                <div
-                                    style={{
-                                        gap: '5px',
+                <MainContent>
+                    <ImageSection>
+                        <ImageGallery>
+                            <MainImage onClick={() => openImageModal(0)}>
+                                <img src={galleryImages[0]} alt="Main tour image" />
+                            </MainImage>
+                            <SideImage onClick={() => openImageModal(1)}>
+                                <img src={galleryImages[1]} alt="Tour image" />
+                            </SideImage>
+                            <SideImage onClick={() => openImageModal(2)}>
+                                <img src={galleryImages[2]} alt="Tour image" />
+                            </SideImage>
+                            <SideImage onClick={() => openImageModal(3)}>
+                                <img src={galleryImages[3]} alt="Tour image" />
+                            </SideImage>
+                            <SideImage onClick={() => openImageModal(4)}>
+                                <img src={galleryImages[4]} alt="Tour image" />
+                                <SeeAllButton
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        openImageModal(0);
                                     }}
                                 >
-                                    <FormGroup>
-                                        <FormLabel>Date</FormLabel>
-                                        <DatePicker
-                                            value={selectedDate}
-                                            style={{ width: '100%', height: '48px' }}
-                                            placeholder="04.13.2025"
-                                            onChange={setSelectedDate}
-                                        />
-                                    </FormGroup>
+                                    See all
+                                </SeeAllButton>
+                            </SideImage>
+                        </ImageGallery>
+                    </ImageSection>
+                    <ContentSection>
+                        <LeftContent>
+                            <InfoCards>
+                                <InfoCard>
+                                    <FaClock className="icon" size={24} />
+                                    <div className="label">Duration</div>
+                                    <div className="value">{tour.duration}</div>
+                                </InfoCard>
+                                <InfoCard>
+                                    <FaMapMarkerAlt className="icon" size={24} />
+                                    <div className="label">Tour Type</div>
+                                    <div className="value">{tour.tourType}</div>
+                                </InfoCard>
+                                <InfoCard>
+                                    <FaUsers className="icon" size={24} />
+                                    <div className="label">Group Size</div>
+                                    <div className="value">{tour.groupSize}</div>
+                                </InfoCard>
+                                <InfoCard>
+                                    <FaUserFriends className="icon" size={24} />
+                                    <div className="label">Ages</div>
+                                    <div className="value">
+                                        {tour.ageMin}-{tour.ageMax}
+                                    </div>
+                                </InfoCard>
+                                <InfoCard>
+                                    <FaGlobe className="icon" size={24} />
+                                    <div className="label">Languages</div>
+                                    <div className="value">{tour.language}</div>
+                                </InfoCard>
+                            </InfoCards>
 
-                                    <FormGroup>
-                                        <FormLabel>Adults</FormLabel>
-                                        <GuestSelector>
-                                            <span>Age 18+</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setAdults(Math.max(0, adults - 1))}
-                                                    style={{ width: '25px', height: '25px', padding: 0 }}
-                                                >
-                                                    -
-                                                </Button>
-                                                <span style={{ minWidth: '20px', textAlign: 'center' }}>{adults}</span>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => setAdults(adults + 1)}
-                                                    style={{ width: '25px', height: '25px', padding: 0 }}
-                                                >
-                                                    +
-                                                </Button>
-                                            </div>
-                                        </GuestSelector>
-                                    </FormGroup>
+                            <Section>
+                                <h2>Tour Overview</h2>
+                                <p>{tour.about}</p>
+                            </Section>
 
-                                    <Total>
-                                        <span className="label">Total:</span>
-                                        <span className="amount">${totalPrice.toFixed(2)}</span>
-                                    </Total>
+                            <Section>
+                                <h2>Included / Excluded</h2>
+                                <IncludedExcluded>
+                                    <div>
+                                        {includedItems.map((item, index) => (
+                                            <ListItem key={index} included>
+                                                <FaCheck className="icon" />
+                                                <span>{item}</span>
+                                            </ListItem>
+                                        ))}
+                                    </div>
+                                    <div>
+                                        {excludedItems.map((item, index) => (
+                                            <ListItem key={index}>
+                                                <FaTimes className="icon" />
+                                                <span>{item}</span>
+                                            </ListItem>
+                                        ))}
+                                    </div>
+                                </IncludedExcluded>
+                            </Section>
+
+                            <Section>
+                                <h2>Itinerary</h2>
+                                <Itinerary>
+                                    {tour.itineraries?.map((day) => (
+                                        <ItineraryDay key={day.day_number} active={day.day_number === 1}>
+                                            <DayNumber active={day.day_number === 1}>{day.day_number}</DayNumber>
+                                            <DayContent>
+                                                <h4>
+                                                    Day {day.day_number}: {day.day_title}
+                                                </h4>
+                                                <p>{day.description}</p>
+                                            </DayContent>
+                                        </ItineraryDay>
+                                    ))}
+                                </Itinerary>
+                            </Section>
+
+                            <Section id="map">
+                                <h2>Location</h2>
+                                <MapContainer>
+                                    <p>Interactive Map Component</p>
+                                </MapContainer>
+                            </Section>
+                            <Section>
+                                <ReviewsSection>
+                                    <h2>Reviews</h2>
+                                    <Button variant="text" size="sm">
+                                        Read all reviews
+                                    </Button>
+                                </ReviewsSection>
+                                <div
+                                    style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: '1fr 1fr',
+                                        gap: '1rem',
+                                        marginBottom: '1rem',
+                                    }}
+                                >
+                                    {reviews.map((review, index) => (
+                                        <ReviewCard key={index} variant="outlined">
+                                            <ReviewHeader>
+                                                <div className="left-content">
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            gap: '12px',
+                                                        }}
+                                                    >
+                                                        <Rating>
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <FaStar key={i} color="#ffc107" size={14} />
+                                                            ))}
+                                                        </Rating>
+                                                        <ReviewerName>{review.name}</ReviewerName>
+                                                    </div>
+                                                </div>
+                                                <ReviewDate>{review.date}</ReviewDate>
+                                            </ReviewHeader>
+                                            <p>{review.text}</p>
+                                        </ReviewCard>
+                                    ))}
                                 </div>
-
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        gap: '1rem',
+                                        marginTop: '1rem',
+                                    }}
+                                >
+                                    <Button variant="outline" size="sm">
+                                        <FaChevronLeft />
+                                    </Button>
+                                    <Button variant="outline" size="sm">
+                                        <FaChevronRight />
+                                    </Button>
+                                </div>
+                            </Section>
+                            <Section>
                                 <div
                                     style={{
                                         display: 'flex',
                                         justifyContent: 'space-between',
-                                        gap: '20px',
+                                        alignItems: 'center',
+                                        marginBottom: '1rem',
                                     }}
                                 >
-                                    <Button variant="outline" size="sm" style={{ width: '30%' }}>
-                                        🛒
-                                    </Button>
-
-                                    <Button variant="primary" size="lg" fullWidth={true}>
-                                        Book now
-                                    </Button>
+                                    <h2>Explore other options</h2>
+                                    <NavigationButtons>
+                                        <Button
+                                            variant="circle"
+                                            onClick={handlePrevPage}
+                                            disabled={currentPage === 0}
+                                            aria-label="Previous page"
+                                        >
+                                            <FaArrowLeft />
+                                        </Button>
+                                        <Button
+                                            variant="circle"
+                                            onClick={handleNextPage}
+                                            disabled={currentPage === totalPages - 1}
+                                            aria-label="Next page"
+                                        >
+                                            <FaArrowRight />
+                                        </Button>
+                                    </NavigationButtons>
                                 </div>
-                            </BookingForm>
-                        </PriceCard>
-                    </RightSidebar>
-                </ContentSection>
-            </MainContent>
+                                <RelatedTours>
+                                    {visibleTours.map((tour) => (
+                                        <TourCard
+                                            buttonText="See more"
+                                            // variant="link"
+                                            key={tour.id}
+                                            id={tour.id}
+                                            title={tour.title}
+                                            description={tour.description}
+                                            price={tour.price}
+                                            image={tour.image}
+                                            country={tour.country}
+                                            status={'all'}
+                                        />
+                                    ))}
+                                </RelatedTours>
+                            </Section>
+                        </LeftContent>
+                        <RightSidebar>
+                            <PriceCard>
+                                <PriceHeader>
+                                    <div className="from">From</div>
+                                    <div className="price">${tour.price}</div>
+                                </PriceHeader>
 
-            <AnimatePresence>
-                {showImageModal && (
-                    <ImageModalOverlay
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={closeImageModal}
-                    >
-                        <ImageModalContent
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.8, opacity: 0 }}
-                            onClick={(e) => e.stopPropagation()}
+                                <BookingForm>
+                                    <div
+                                        style={{
+                                            gap: '5px',
+                                        }}
+                                    >
+                                        <FormGroup>
+                                            <FormLabel>Date</FormLabel>
+                                            <DatePicker
+                                                value={selectedDate}
+                                                style={{ width: '100%', height: '48px' }}
+                                                placeholder="04.13.2025"
+                                                onChange={setSelectedDate}
+                                            />
+                                        </FormGroup>
+
+                                        <FormGroup>
+                                            <FormLabel>Adults</FormLabel>
+                                            <GuestSelector>
+                                                <span>Age 18+</span>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setAdults(Math.max(0, adults - 1))}
+                                                        style={{ width: '25px', height: '25px', padding: 0 }}
+                                                    >
+                                                        -
+                                                    </Button>
+                                                    <span style={{ minWidth: '20px', textAlign: 'center' }}>
+                                                        {adults}
+                                                    </span>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => setAdults(adults + 1)}
+                                                        style={{ width: '25px', height: '25px', padding: 0 }}
+                                                    >
+                                                        +
+                                                    </Button>
+                                                </div>
+                                            </GuestSelector>
+                                        </FormGroup>
+
+                                        <Total>
+                                            <span className="label">Total:</span>
+                                            <span className="amount">${totalPrice.toFixed(2)}</span>
+                                        </Total>
+                                    </div>
+
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            gap: '20px',
+                                        }}
+                                    >
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            style={{ width: '30%' }}
+                                            onClick={handleAddToCart}
+                                        >
+                                            🛒
+                                        </Button>
+
+                                        <Button variant="primary" size="lg" fullWidth={true}>
+                                            Book now
+                                        </Button>
+                                    </div>
+                                </BookingForm>
+                            </PriceCard>
+                        </RightSidebar>
+                    </ContentSection>
+                </MainContent>
+
+                <AnimatePresence>
+                    {showImageModal && (
+                        <ImageModalOverlay
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={closeImageModal}
                         >
-                            <CloseButton variant="outline" size="sm" fullWidth={false} onClick={closeImageModal}>
-                                ×
-                            </CloseButton>
-                            <PrevButton fullWidth={false} size="sm" variant="outline" onClick={prevImage}>
-                                ‹
-                            </PrevButton>
-                            <NextButton variant="outline" fullWidth={false} size="sm" onClick={nextImage}>
-                                ›
-                            </NextButton>
-                            <ModalImage src={galleryImages[selectedImageIndex]} alt="Tour image" />
-                            <ImageCounter>
-                                {selectedImageIndex + 1} / {galleryImages.length}
-                            </ImageCounter>
-                        </ImageModalContent>
-                    </ImageModalOverlay>
-                )}
-            </AnimatePresence>
-        </PageContainer>
+                            <ImageModalContent
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.8, opacity: 0 }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <CloseButton variant="outline" size="sm" fullWidth={false} onClick={closeImageModal}>
+                                    ×
+                                </CloseButton>
+                                <PrevButton fullWidth={false} size="sm" variant="outline" onClick={prevImage}>
+                                    ‹
+                                </PrevButton>
+                                <NextButton variant="outline" fullWidth={false} size="sm" onClick={nextImage}>
+                                    ›
+                                </NextButton>
+                                <ModalImage src={galleryImages[selectedImageIndex]} alt="Tour image" />
+                                <ImageCounter>
+                                    {selectedImageIndex + 1} / {galleryImages.length}
+                                </ImageCounter>
+                            </ImageModalContent>
+                        </ImageModalOverlay>
+                    )}
+                </AnimatePresence>
+            </PageContainer>
+        </>
     );
 }
