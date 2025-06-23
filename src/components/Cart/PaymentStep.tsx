@@ -3,7 +3,8 @@ import styled from 'styled-components';
 import Card from '@/components/Common/Card';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
-import { BookingFormData, CartItem } from '@/types/cart';
+import { BookingFormData } from '@/types/cart';
+import { CartItem } from '@/atoms/cart';
 
 const StepContainer = styled.div`
     display: grid;
@@ -157,7 +158,7 @@ export default function PaymentStep({ cartItems, formData, onComplete, onBack }:
         onComplete(paymentData);
     };
 
-    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = cartItems.reduce((sum, item) => sum + Number(item.tourData.price) * item.quantity, 0);
     const isCardPayment = paymentMethod === 'mastercard';
 
     const isFormValid =
@@ -276,15 +277,25 @@ export default function PaymentStep({ cartItems, formData, onComplete, onBack }:
 
             <SidebarCard>
                 <SidebarContent>
-                    <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', fontWeight: '600' }}>Order Summary</h3>
+                    <h3
+                        style={{
+                            margin: '0 0 1rem 0',
+                            fontSize: '1.1rem',
+                            fontWeight: '600',
+                            alignSelf: 'flex-start',
+                            display: 'flex',
+                        }}
+                    >
+                        Order Summary
+                    </h3>
 
                     <OrderSummary>
                         {cartItems.map((item) => (
-                            <SummaryItem key={item.id}>
+                            <SummaryItem key={item.tourData.id}>
                                 <span>
-                                    {item.name} x{item.quantity}
+                                    {item.tourData.title} x{item.quantity}
                                 </span>
-                                <span>${(item.price * item.quantity).toFixed(2)}</span>
+                                <span>${(Number(item.tourData.price) * item.quantity).toFixed(2)}</span>
                             </SummaryItem>
                         ))}
                     </OrderSummary>

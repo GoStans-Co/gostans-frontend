@@ -28,11 +28,11 @@ export const useToursFetchService = () => {
             getTours: async ({
                 search,
                 page = 1,
-                page_size = 10,
+                pageSize = 10,
             }: {
                 search?: string;
                 page?: number;
-                page_size?: number;
+                pageSize?: number;
             } = {}): Promise<ApiResponse<ToursListApiResponse>> => {
                 if (cacheStatus.loaded && isCacheValid(cacheStatus.lastFetch) && !search && page === 1) {
                     console.log('Using cached tours');
@@ -50,7 +50,7 @@ export const useToursFetchService = () => {
 
                 const params = new URLSearchParams();
                 params.append('page', page.toString());
-                params.append('page_size', page_size.toString());
+                params.append('pageSize', pageSize.toString());
                 if (search) params.append('search', search);
 
                 try {

@@ -37,7 +37,7 @@ const SidebarContainer = styled.div`
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     padding: ${({ theme }) => theme.spacing.lg};
-    margin: ${({ theme }) => theme.spacing.xl};
+    margin: ${({ theme }) => theme.spacing.lg} 0;
     position: sticky;
     top: ${({ theme }) => theme.spacing.md};
     height: 460px;
