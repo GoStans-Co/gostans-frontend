@@ -9,7 +9,6 @@ declare module 'styled-components' {
             };
             fontSize: {
                 displayLarge: string;
-                // Add more sizes
             };
             fontWeight: {
                 regular: number;
@@ -18,11 +17,9 @@ declare module 'styled-components' {
             };
             lineHeight: {
                 displayLarge: string;
-                // Add more line heights
             };
             letterSpacing: {
                 displayLarge: string;
-                // Add more letter spacing values
             };
             variants: {
                 displayBold: {

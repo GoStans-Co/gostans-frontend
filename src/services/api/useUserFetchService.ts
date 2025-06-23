@@ -6,15 +6,25 @@ import { useFetch } from '@/hooks/useFetch';
 
 export const CACHE_DURATION = 5 * 60 * 1000;
 
+export type Wishlist = {
+    id: string;
+    name: string;
+    description?: string;
+    itemsCount: number;
+    createdAt: string;
+    updatedAt: string;
+};
+
 export type UserProfile = {
     id: string;
     email: string;
     name: string;
     phone?: string;
-    avatar?: string;
-    created_at: string;
-    updated_at: string;
-    is_verified: boolean;
+    image?: string;
+    dateJoined: string;
+    updatedAt: string;
+    isVerified: boolean;
+    wishLists: Wishlist[];
 };
 
 export type UpdateUserData = {
@@ -73,7 +83,7 @@ export const useUserFetchService = () => {
                     updateUserProfileCache(response);
 
                     return {
-                        data: response,
+                        data: response.data,
                         statusCode: 200,
                         message: 'success',
                     };
@@ -97,7 +107,7 @@ export const useUserFetchService = () => {
                     updateUserProfileCache(response);
 
                     return {
-                        data: response,
+                        data: response.data,
                         statusCode: 200,
                         message: 'success',
                     };

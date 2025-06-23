@@ -1,6 +1,6 @@
 import { useRecoilState } from 'recoil';
 import { userProfileAtom, userCacheStatusAtom } from '@/atoms/auth';
-import { ApiResponse } from '@/types/fetch';
+import { ApiResponse, OtpResponse, VerifyOtpResponse } from '@/types/fetch';
 import { useMemo } from 'react';
 import { useFetch } from '@/hooks/useFetch';
 import useCookieAuth from '@/services/cookieAuthService';
@@ -107,7 +107,7 @@ export const useUserAuthService = () => {
                     const apiResponse = response as unknown as SocialLoginResponse;
                     const authData = apiResponse.data;
 
-                    if (authData && authData.access_token && authData.id) {
+                    if (authData && authData.accessToken && authData.id) {
                         const userForCookie = {
                             id: authData.id,
                             email: authData.email,
@@ -116,12 +116,12 @@ export const useUserAuthService = () => {
                             avatar: authData.imageURL,
                         };
 
-                        setAuthCookie(authData.access_token, userForCookie);
+                        setAuthCookie(authData.accessToken, userForCookie);
                         updateUserProfileCache(userForCookie);
 
                         return {
                             data: {
-                                token: authData.access_token,
+                                token: authData.accessToken,
                                 refresh: authData.refresh,
                                 user: userForCookie,
                             },
@@ -177,6 +177,51 @@ export const useUserAuthService = () => {
                     };
                 } catch (error: any) {
                     throw error;
+                }
+            },
+
+            sendOtp: async (phone: string): Promise<OtpResponse> => {
+                try {
+                    const response = await fetchData({
+                        url: '/auth/send-otp/',
+                        method: 'POST',
+                        data: { phone },
+                    });
+
+                    return {
+                        data: response.data,
+                        statusCode: response.statuscode || 200,
+                        message: response.message || 'OTP sent successfully',
+                    };
+                } catch (error: any) {
+                    throw {
+                        data: null,
+                        statusCode: error.response?.status || 500,
+                        message: error.message || 'Failed to send OTP',
+                    };
+                }
+            },
+
+            verifyOtp: async (phone: string, otp: string): Promise<VerifyOtpResponse> => {
+                try {
+                    const response = await fetchData({
+                        url: '/auth/verify-otp/',
+                        method: 'POST',
+                        data: { phone, otp },
+                    });
+
+                    return {
+                        data: { success: true },
+                        statusCode: response.statuscode || 200,
+                        message: response.message || 'OTP verified successfully',
+                    };
+                } catch (error: any) {
+                    console.error('Error verifying OTP:', error);
+                    return {
+                        data: { success: false },
+                        statusCode: error.response?.status || 500,
+                        message: error.message || 'OTP verification failed',
+                    };
                 }
             },
 
