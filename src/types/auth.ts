@@ -34,7 +34,7 @@ export type SocialAuthResponse = {
     name: string;
     phone: string;
     refresh: string;
-    access_token: string;
+    accessToken: string;
     imageURL: string;
     oauthProvider: string;
     oauthId: string;

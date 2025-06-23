@@ -32,28 +32,35 @@ type SidebarItemProps = {
 };
 
 const SidebarContainer = styled.div`
-    width: 280px;
+    width: 300px;
     background-color: ${({ theme }) => theme.colors.background};
-    border-right: 1px solid ${({ theme }) => theme.colors.border};
-    padding: ${({ theme }) => theme.spacing.xl};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    padding: ${({ theme }) => theme.spacing.lg};
+    margin: ${({ theme }) => theme.spacing.xl};
     position: sticky;
-    top: 0;
-    height: calc(100vh - 72px);
+    top: ${({ theme }) => theme.spacing.md};
+    height: 460px;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 200px);
     overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
 const ProfileSection = styled.div`
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    gap: ${({ theme }) => theme.spacing.md};
     margin-bottom: ${({ theme }) => theme.spacing.xl};
-    padding-bottom: ${({ theme }) => theme.spacing.xl};
+    padding-bottom: ${({ theme }) => theme.spacing.lg};
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
 const Avatar = styled.div<{ hasImage?: boolean }>`
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     background-color: ${({ theme }) => theme.colors.lightBackground};
     background-image: ${({ hasImage }) => (hasImage ? `url(${hasImage})` : 'none')};
@@ -62,11 +69,11 @@ const Avatar = styled.div<{ hasImage?: boolean }>`
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: ${({ theme }) => theme.spacing.md};
     overflow: hidden;
     position: relative;
     cursor: pointer;
     transition: transform 0.3s ease;
+    flex-shrink: 0;
 
     &:hover {
         transform: scale(1.05);
@@ -98,7 +105,9 @@ const HiddenFileInput = styled.input`
 `;
 
 const ProfileInfo = styled.div`
-    text-align: center;
+    text-align: left;
+    flex: 1;
+    min-width: 0;
 `;
 
 const ProfileName = styled.h3`
@@ -106,6 +115,9 @@ const ProfileName = styled.h3`
     font-weight: 500;
     margin: 0;
     margin-bottom: ${({ theme }) => theme.spacing.xs};
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 `;
 
 const JoinDate = styled.p`
@@ -212,7 +224,14 @@ export default function Sidebar({
                     onClick={() => onSectionChange(PageSection.FAVORITES)}
                 />
 
-                <div style={{ flexGrow: 1, minHeight: '120px' }}></div>
+                <div
+                    style={{
+                        borderTop: '1px solid #e5e5e5',
+                        margin: '10px 0',
+                        color: '#888',
+                        fontSize: '0.875rem',
+                    }}
+                ></div>
 
                 <SidebarItem icon={<LogOut />} label="Logout" href="/logout" onClick={handleLogout} />
             </NavSection>

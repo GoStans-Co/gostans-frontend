@@ -29,3 +29,11 @@ export type FetchOptions = {
     body?: any;
     headers?: Record<string, string>;
 };
+
+export type OtpData = {
+    otp: string;
+};
+
+export type OtpResponse = ApiResponse<OtpData> & {};
+
+export type VerifyOtpResponse = ApiResponse<{ success: boolean }> & {};

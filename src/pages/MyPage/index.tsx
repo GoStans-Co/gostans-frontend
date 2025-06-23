@@ -25,8 +25,8 @@ const PageContainer = styled.div`
 `;
 
 const SidebarContainer = styled.aside`
-    width: 280px;
-    min-width: 280px;
+    width: 340px;
+    min-width: 340px;
     flex-shrink: 0;
     border-right: 1px solid #e5e5e5;
     background: white;
@@ -63,12 +63,51 @@ export default function MyPage() {
         else setActiveSection(PageSection.PROFILE);
     }, [sectionParam]);
 
-    const userData = {
-        name: 'Kholikov Oybek',
-        email: 'example@example.com',
-        phone: '01012345678',
-        joinDate: 'Mar 2025',
-    };
+    const [userData, setUserData] = useState({
+        name: '',
+        dateJoined: '',
+        email: '',
+        image: '',
+        phone: '',
+    });
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const userResponse = await userService.getUserProfile();
+                if (userResponse.statusCode === 200) {
+                    const createdDate = new Date(userResponse.data.dateJoined);
+                    console.log('Fetched user data:', userResponse.data);
+                    setUserData({
+                        name: userResponse.data.name,
+                        dateJoined: !isNaN(createdDate.getTime()) ? createdDate.toLocaleDateString() : '2025-01-01',
+                        email: userResponse.data.email,
+                        image: userResponse.data.image || '',
+                        phone: userResponse.data.phone || '',
+                    });
+
+                    setProfileImage(userResponse.data.image || null);
+                } else {
+                    console.error('Failed to fetch user data:', userResponse);
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                messageApi.error({
+                    content: 'Failed to fetch user data. Please try again later.',
+                    duration: 3,
+                });
+                setUserData({
+                    name: '',
+                    dateJoined: '',
+                    email: '',
+                    image: '',
+                    phone: '',
+                });
+                setProfileImage(null);
+            }
+        };
+        fetchUserData();
+    }, []);
 
     const handleSectionChange = (section: PageSection) => {
         setActiveSection(section);
@@ -155,7 +194,7 @@ export default function MyPage() {
                 <SidebarContainer>
                     <Sidebar
                         userName={userData.name}
-                        joinDate={userData.joinDate}
+                        joinDate={userData.dateJoined}
                         activePage={activeSection}
                         onSectionChange={handleSectionChange}
                         handleLogout={showLogoutConfirmation}
