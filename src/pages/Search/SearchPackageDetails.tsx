@@ -526,6 +526,21 @@ const NavigationButtons = styled.div`
     margin-top: 0.5rem;
 `;
 
+const CartItemCount = styled.span`
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ff6b35;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    fontsize: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+
 export default function SearchPackageDetails() {
     const { packageId: id } = useParams<{ packageId: string }>();
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
@@ -1035,10 +1050,15 @@ export default function SearchPackageDetails() {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            style={{ width: '30%' }}
+                                            style={{ width: '30%', position: 'relative' }}
                                             onClick={handleAddToCart}
                                         >
-                                            🛒
+                                            🛒 +
+                                            {cart.length > 0 && (
+                                                <CartItemCount>
+                                                    {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                                                </CartItemCount>
+                                            )}
                                         </Button>
 
                                         <Button variant="primary" size="lg" fullWidth={true}>

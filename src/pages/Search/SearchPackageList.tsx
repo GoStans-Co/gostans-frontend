@@ -315,7 +315,7 @@ export default function SearchPackageList() {
             const response = await toursService.getTours({
                 search: searchData.destination,
                 page: page,
-                page_size: PAGE_SIZE,
+                pageSize: PAGE_SIZE,
             });
 
             if (response.statusCode === 200 && response.data?.results) {
