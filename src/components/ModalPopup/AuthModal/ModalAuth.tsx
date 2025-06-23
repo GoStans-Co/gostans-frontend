@@ -178,7 +178,6 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
 
     useEffect(() => {
         if (isAuthenticated()) {
-            setSuccess('Login successful!');
             const timer = setTimeout(() => {
                 onClose();
                 window.location.href = '/mypage';
@@ -209,12 +208,16 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 const result = await authService.login(credentials);
 
                 if (result) {
-                    setSuccess('Login successful!');
                     setTimeout(() => {
                         onClose();
                         window.location.href = '/mypage';
                     }, 500);
                 }
+                messageApi.success({
+                    content: 'You successfully logged in!',
+                    style: { marginTop: '1vh' },
+                    duration: 8,
+                });
             } else {
                 if (!name) throw new Error('Name is required');
                 if (!email) throw new Error('Email is required for signup');
@@ -222,23 +225,6 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 if (password !== confirmPassword) throw new Error('Passwords do not match');
 
                 setSignupStage(SignupStage.PHONE_VERIFICATION);
-
-                const signupData: SignUpData = {
-                    name,
-                    email,
-                    phone: phoneNumber,
-                    password,
-                };
-
-                const result = await authService.signUp(signupData);
-
-                if (result) {
-                    setSuccess('Account created successfully!');
-                    setTimeout(() => {
-                        onClose();
-                        window.location.href = '/mypage';
-                    }, 1000);
-                }
             }
         } catch (err) {
             messageApi.error({
@@ -274,26 +260,42 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     };
 
     const handlePhoneVerificationComplete = async (verifiedPhoneNumber: string) => {
+        setPhoneNumber(verifiedPhoneNumber);
+        setSignupStage(SignupStage.FORM);
+
+        messageApi.success({
+            content: 'Phone verified! Press signup to complete registration.',
+            duration: 5,
+        });
+    };
+
+    const handleFinalSignup = async () => {
         setIsLoading(true);
         try {
             const signupData: SignUpData = {
                 name,
                 email,
-                phone: verifiedPhoneNumber,
+                phone: phoneNumber,
                 password,
             };
 
             const result = await authService.signUp(signupData);
 
             if (result) {
-                setSuccess('Account created successfully!');
+                messageApi.success({
+                    content: 'Account created successfully!',
+                    duration: 3,
+                });
                 setTimeout(() => {
                     onClose();
+                    window.location.href = '/';
                 }, 1000);
             }
         } catch (err) {
-            console.error('Signup error:', err);
-            setSignupStage(SignupStage.FORM);
+            messageApi.error({
+                content: err instanceof Error ? err.message : 'Failed to create account',
+                duration: 4,
+            });
         } finally {
             setIsLoading(false);
         }
@@ -411,14 +413,22 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                             {activeTab === 'login' && (
                                 <ForgotPasswordLink href="#">Forgot Password?</ForgotPasswordLink>
                             )}
-                            <SubmitButton type="submit" disabled={isLoading}>
+                            <SubmitButton
+                                type={activeTab === 'signup' && phoneNumber ? 'button' : 'submit'}
+                                disabled={isLoading}
+                                onClick={activeTab === 'signup' && phoneNumber ? handleFinalSignup : undefined}
+                            >
                                 {isLoading
                                     ? activeTab === 'login'
                                         ? 'Logging in...'
-                                        : 'Signing up...'
+                                        : phoneNumber
+                                          ? 'Creating Account...'
+                                          : 'Proceeding...'
                                     : activeTab === 'login'
                                       ? 'Login'
-                                      : 'Sign Up'}
+                                      : phoneNumber
+                                        ? 'Complete Signup'
+                                        : 'Continue to Verification'}
                             </SubmitButton>
                         </Form>
                         <OrDivider>

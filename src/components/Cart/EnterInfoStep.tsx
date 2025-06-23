@@ -169,6 +169,8 @@ const WarningBox = styled.div`
     border: 1px solid #f59e0b;
     border-radius: ${({ theme }) => theme.borderRadius.md};
     padding: 1rem;
+    align-items: left;
+    display: flex;
     color: #92400e;
     font-size: ${({ theme }) => theme.fontSizes.sm};
 `;

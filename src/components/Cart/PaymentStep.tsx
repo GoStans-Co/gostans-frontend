@@ -9,6 +9,7 @@ const StepContainer = styled.div`
     display: grid;
     grid-template-columns: 1fr 350px;
     gap: 2rem;
+    padding-bottom: 3rem;
 
     @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
         grid-template-columns: 1fr;
