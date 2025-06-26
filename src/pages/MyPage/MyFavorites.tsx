@@ -1,35 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Button from '@/components/Common/Button';
-import { destinations } from '@/data/mockData';
 import { Heart, HeartOff } from 'lucide-react';
 import Card from '@/components/Common/Card';
-
-type FavoriteDestination = {
-    id: string;
-    name: string;
-    image: string;
-    location: string;
-    toursCount: number;
-};
+import { useRecoilValue } from 'recoil';
+import { wishlistAtom } from '@/atoms/wishlist';
+import useApiServices from '@/services';
 
 const FavoritesContainer = styled.div`
     width: 100%;
     max-width: 100%;
     padding: ${({ theme }) => theme.spacing.xl};
+    padding-left: ${({ theme }) => theme.spacing.xl};
 `;
 
 const PageTitle = styled.h1`
     font-size: ${({ theme }) => theme.fontSizes['2xl']};
     color: ${({ theme }) => theme.colors.primary};
-    margin-bottom: ${({ theme }) => theme.spacing.xl};
+    margin-bottom: ${({ theme }) => theme.spacing.sm};
     text-align: left;
 `;
 
 const FavoritesGrid = styled.div`
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-    gap: ${({ theme }) => theme.spacing.xs};
+    margin-left: 0;
+    padding-left: 0;
 `;
 
 const FavoriteImage = styled.div<{ imageUrl: string }>`
@@ -73,28 +69,43 @@ const FavoriteContent = styled.div`
     padding: ${({ theme }) => theme.spacing.lg};
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: flex-start;
     padding-left: 0;
+    padding-right: 0;
+    width: 100%;
 `;
 
 const FavoriteTitle = styled.h3`
     font-size: ${({ theme }) => theme.fontSizes.lg};
     margin: 0 0 ${({ theme }) => theme.spacing.xs};
     color: ${({ theme }) => theme.colors.text};
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
 `;
 
 const FavoriteLocation = styled.p`
     font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.lightText};
-    margin: 0 0 ${({ theme }) => theme.spacing.md};
+    margin: 0 0 ${({ theme }) => theme.spacing.xs};
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 `;
 
 const ToursCount = styled.p`
     font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.primary};
-    font-weight: 600;
+    font-weight: 300;
     margin: 0;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 `;
 
 const EmptyState = styled.div`
@@ -126,28 +137,45 @@ const EmptyText = styled.p`
     margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
 
-const initialFavorites = destinations.map((destination) => ({
-    ...destination,
-    location: destination.location || destination.name,
-    toursCount: destination.toursCount || 0,
-}));
-
 export default function FavoritesPage() {
-    const [favorites, setFavorites] = useState<FavoriteDestination[]>(initialFavorites);
-    const [showEmptyState, setShowEmptyState] = useState(false);
+    const wishlist = useRecoilValue(wishlistAtom);
+    const { wishlist: wishlistService } = useApiServices();
+    const [isLoading, setIsLoading] = useState(true);
 
-    const removeFavorite = (id: string) => {
-        setFavorites(favorites.filter((fav) => fav.id !== id));
-        if (favorites.length <= 1) {
-            setShowEmptyState(true);
+    useEffect(() => {
+        const loadWishlist = async () => {
+            try {
+                await wishlistService.getWishlist();
+            } catch (error) {
+                console.error('Failed to load wishlist:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadWishlist();
+    }, []);
+
+    const removeFavorite = async (tourUuid: string) => {
+        try {
+            await wishlistService.removeFromWishlist(tourUuid);
+        } catch (error) {
+            console.error('Failed to remove from wishlist:', error);
         }
     };
+
+    if (isLoading) {
+        return (
+            <FavoritesContainer>
+                <div style={{ textAlign: 'center', padding: '2rem' }}>Loading favorites...</div>
+            </FavoritesContainer>
+        );
+    }
 
     return (
         <FavoritesContainer>
             <PageTitle>Favorites</PageTitle>
 
-            {showEmptyState || favorites.length === 0 ? (
+            {wishlist.length === 0 ? (
                 <EmptyState>
                     <EmptyIcon>
                         <HeartOff size={64} />
@@ -161,32 +189,22 @@ export default function FavoritesPage() {
                 </EmptyState>
             ) : (
                 <FavoritesGrid>
-                    {favorites.map((favorite) => (
-                        <Card key={favorite.id} style={{ backgroundColor: '#f0f3f5' }}>
-                            <FavoriteImage imageUrl={favorite.image}>
-                                <HeartButton onClick={() => removeFavorite(favorite.id)}>
+                    {wishlist.map((favorite) => (
+                        <Card key={favorite.uuid} style={{ backgroundColor: '#f0f3f5', paddingLeft: '0' }}>
+                            <FavoriteImage imageUrl={favorite.mainImage}>
+                                <HeartButton onClick={() => removeFavorite(favorite.uuid)}>
                                     <Heart fill="currentColor" />
                                 </HeartButton>
                             </FavoriteImage>
                             <FavoriteContent>
-                                <FavoriteTitle>{favorite.name}</FavoriteTitle>
-                                <FavoriteLocation>{favorite.location}</FavoriteLocation>
-                                <ToursCount>{favorite.toursCount}+ Tours</ToursCount>
+                                <FavoriteTitle>{favorite.title}</FavoriteTitle>
+                                <FavoriteLocation>{favorite.city}</FavoriteLocation>
+                                <ToursCount>{favorite.tourType}</ToursCount>
                             </FavoriteContent>
                         </Card>
                     ))}
                 </FavoritesGrid>
             )}
-
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                <Button
-                    variant="outline"
-                    onClick={() => setShowEmptyState(!showEmptyState)}
-                    style={{ marginTop: '20px' }}
-                >
-                    Toggle Empty State (Demo)
-                </Button>
-            </div>
         </FavoritesContainer>
     );
 }

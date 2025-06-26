@@ -1,4 +1,4 @@
-import { useToursFetchService, useUserAuthService, useUserFetchService } from '@/services/api';
+import { useToursFetchService, useUserAuthService, useUserFetchService, useWishlistFetchService } from '@/services/api';
 
 /**
  * Centralized API Services Hook
@@ -8,10 +8,12 @@ export default function useApiServices() {
     const userAuthService = useUserAuthService();
     const toursService = useToursFetchService();
     const userService = useUserFetchService();
+    const wishListService = useWishlistFetchService();
 
     return {
         auth: userAuthService,
         tours: toursService,
         user: userService,
+        wishlist: wishListService,
     };
 }

@@ -23,13 +23,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'react-router-dom';
 import useApiServices from '@/services';
 import { tourDetailsAtom } from '@/atoms/tours';
-import { useRecoilState, useRecoilValue } from 'recoil';
+
 import CopyLink from '@/components/CopyLink';
 import default_n1 from '@/assets/default/default_1.jpg';
 import default_n2 from '@/assets/default/default_2.jpg';
 import TourCard from '@/components/Tours/ToursCard';
 import { tours } from '@/data/mockData';
 import { cartAtom } from '@/atoms/cart';
+import { useWishlistFetchService } from '@/services/api/useWishlistFetchService';
+import { wishlistAtom } from '@/atoms/wishlist';
+import { useRecoilValue, useRecoilState } from 'recoil';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -549,12 +552,14 @@ export default function SearchPackageDetails() {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
+    const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
 
     const tourDetailsCache = useRecoilValue(tourDetailsAtom);
     const [cart, setCart] = useRecoilState(cartAtom);
+    const wishlist = useRecoilValue(wishlistAtom);
     const [messageApi, contextHolder] = message.useMessage();
 
-    const { tours: toursService } = useApiServices();
+    const { tours: toursService, wishlist: wishlistService } = useApiServices();
 
     const toursPerPage = 3;
 
@@ -731,6 +736,30 @@ export default function SearchPackageDetails() {
         });
     };
 
+    const handleWishlistToggle = async () => {
+        if (!tour?.uuid) return;
+
+        setIsAddingToWishlist(true);
+        try {
+            if (wishlistService.isInWishlist(tour.uuid)) {
+                await wishlistService.removeFromWishlist(tour.uuid);
+                messageApi.success('Removed from favorites');
+            } else {
+                const response = await wishlistService.addToWishlist(tour.uuid);
+                if (response.data.status === 201) {
+                    messageApi.success('Added to favorites');
+                } else {
+                    messageApi.info('Already in favorites');
+                }
+            }
+        } catch (error) {
+            messageApi.error('Failed to update favorites');
+            console.error('Wishlist error:', error);
+        } finally {
+            setIsAddingToWishlist(false);
+        }
+    };
+
     return (
         <>
             {contextHolder}
@@ -743,7 +772,13 @@ export default function SearchPackageDetails() {
                     <TitleSection>
                         <Title>{tour.title}</Title>
                         <ActionButtons>
-                            <IconButton>
+                            <IconButton
+                                onClick={handleWishlistToggle}
+                                disabled={isAddingToWishlist}
+                                style={{
+                                    color: wishlistService.isInWishlist(tour.uuid) ? '#ef4444' : '#64748b',
+                                }}
+                            >
                                 <FaHeart />
                             </IconButton>
                             <IconButton>
