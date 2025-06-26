@@ -30,7 +30,6 @@ import default_n2 from '@/assets/default/default_2.jpg';
 import TourCard from '@/components/Tours/ToursCard';
 import { tours } from '@/data/mockData';
 import { cartAtom } from '@/atoms/cart';
-import { useWishlistFetchService } from '@/services/api/useWishlistFetchService';
 import { wishlistAtom } from '@/atoms/wishlist';
 import { useRecoilValue, useRecoilState } from 'recoil';
 
@@ -111,7 +110,6 @@ const RelatedTours = styled.div`
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
-    // overflow-x: auto;
     overflow: hidden;
 `;
 
@@ -1004,7 +1002,6 @@ export default function SearchPackageDetails() {
                                     {visibleTours.map((tour) => (
                                         <TourCard
                                             buttonText="See more"
-                                            // variant="link"
                                             key={tour.id}
                                             id={tour.id}
                                             title={tour.title}

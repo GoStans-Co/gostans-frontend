@@ -17,7 +17,6 @@ export function useDropdownModal(
     const modalRef = useRef<HTMLDivElement>(null);
     const { modalWidth, modalHeight, gap = 8, alignment = 'left' } = options;
 
-    // Position calculation effect
     useEffect(() => {
         if (isOpen && anchorElement) {
             const rect = anchorElement.getBoundingClientRect();
@@ -25,7 +24,6 @@ export function useDropdownModal(
             let top = rect.bottom + gap;
             let left = alignment === 'right' ? rect.right - modalWidth : rect.left;
 
-            // Boundary checks
             if (left + modalWidth > window.innerWidth) {
                 left = window.innerWidth - modalWidth - 16;
             }
