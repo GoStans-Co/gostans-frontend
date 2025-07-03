@@ -30,7 +30,6 @@ import default_n2 from '@/assets/default/default_2.jpg';
 import TourCard from '@/components/Tours/ToursCard';
 import { tours } from '@/data/mockData';
 import { cartAtom } from '@/atoms/cart';
-import { wishlistAtom } from '@/atoms/wishlist';
 import { useRecoilValue, useRecoilState } from 'recoil';
 
 const PageContainer = styled.div`
@@ -554,7 +553,6 @@ export default function SearchPackageDetails() {
 
     const tourDetailsCache = useRecoilValue(tourDetailsAtom);
     const [cart, setCart] = useRecoilState(cartAtom);
-    const wishlist = useRecoilValue(wishlistAtom);
     const [messageApi, contextHolder] = message.useMessage();
 
     const { tours: toursService, wishlist: wishlistService } = useApiServices();

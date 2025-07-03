@@ -10,10 +10,13 @@ import { LoginCredentials, SignUpData, SocialLoginData } from '@/types/auth';
 import PhoneVerification from '@/components/ModalPopup/AuthModal/PhoneVerification';
 import { message } from 'antd';
 import useApiServices from '@/services';
+import PasswordComponent from '@/components/ModalPopup/AuthModal/PasswordComponent';
 
 enum SignupStage {
     FORM = 'form',
+    PASSWORD = 'password',
     PHONE_VERIFICATION = 'phone_verification',
+    COMPLETE = 'complete',
 }
 
 type ModalAuthProps = {
@@ -180,7 +183,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         if (isAuthenticated()) {
             const timer = setTimeout(() => {
                 onClose();
-                window.location.href = '/mypage';
+                window.location.href = '/';
             }, 1000);
             return () => clearTimeout(timer);
         }
@@ -210,7 +213,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 if (result) {
                     setTimeout(() => {
                         onClose();
-                        window.location.href = '/mypage';
+                        window.location.href = '/';
                     }, 500);
                 }
                 messageApi.success({
@@ -219,12 +222,11 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     duration: 8,
                 });
             } else {
+                /* for signup only, we validate name and email, then go to password step */
                 if (!name) throw new Error('Name is required');
                 if (!email) throw new Error('Email is required for signup');
-                if (!password) throw new Error('Password is required');
-                if (password !== confirmPassword) throw new Error('Passwords do not match');
 
-                setSignupStage(SignupStage.PHONE_VERIFICATION);
+                setSignupStage(SignupStage.PASSWORD);
             }
         } catch (err) {
             messageApi.error({
@@ -235,7 +237,6 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             setIsLoading(false);
         }
     };
-
     const handleSocialLogin = async (provider: string, credential?: string) => {
         setIsLoading(true);
         try {
@@ -250,7 +251,10 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             const result = await authService.socialLogin(socialData);
 
             if (result) {
-                setSuccess(`${provider} login successful!`);
+                messageApi.success({
+                    content: `Login with ${provider} is successful!`,
+                    duration: 3,
+                });
             }
         } catch (err) {
             console.error('Social login error:', err);
@@ -259,9 +263,15 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         }
     };
 
+    const handlePasswordComplete = (password: string, confirmPassword: string) => {
+        setPassword(password);
+        setConfirmPassword(confirmPassword);
+        setSignupStage(SignupStage.PHONE_VERIFICATION);
+    };
+
     const handlePhoneVerificationComplete = async (verifiedPhoneNumber: string) => {
         setPhoneNumber(verifiedPhoneNumber);
-        setSignupStage(SignupStage.FORM);
+        setSignupStage(SignupStage.COMPLETE);
 
         messageApi.success({
             content: 'Phone verified! Press signup to complete registration.',
@@ -308,8 +318,14 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 {success && <div style={{ color: 'green', textAlign: 'center', marginBottom: '1rem' }}>{success}</div>}
                 {signupStage === SignupStage.PHONE_VERIFICATION ? (
                     <PhoneVerification
-                        onBack={() => setSignupStage(SignupStage.FORM)}
+                        onBack={() => setSignupStage(SignupStage.PASSWORD)}
                         onComplete={handlePhoneVerificationComplete}
+                        loading={isLoading}
+                    />
+                ) : signupStage === SignupStage.PASSWORD ? (
+                    <PasswordComponent
+                        onBack={() => setSignupStage(SignupStage.FORM)}
+                        onContinue={handlePasswordComplete}
                         loading={isLoading}
                     />
                 ) : (
@@ -345,45 +361,16 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                                     required={(activeTab === 'login' && !phoneNumber) || activeTab === 'signup'}
                                     inputConfig={{ noBorder: true }}
                                 />
-                            </InputField>{' '}
-                            <Input
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                inputConfig={{ noBorder: true }}
-                                endIcon={
-                                    showPassword ? (
-                                        <Eye
-                                            size={20}
-                                            onClick={() => setShowPassword(false)}
-                                            style={{
-                                                cursor: 'pointer',
-                                                color: '#666',
-                                                strokeWidth: 2,
-                                            }}
-                                        />
-                                    ) : (
-                                        <EyeOff
-                                            size={20}
-                                            onClick={() => setShowPassword(true)}
-                                            style={{
-                                                cursor: 'pointer',
-                                                color: '#666',
-                                                strokeWidth: 2,
-                                            }}
-                                        />
-                                    )
-                                }
-                            />
-                            {activeTab === 'signup' && (
+                            </InputField>
+
+                            {/* Only show password field for login */}
+                            {activeTab === 'login' && (
                                 <Input
                                     type={showPassword ? 'text' : 'password'}
-                                    placeholder="Confirm Password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    required={activeTab === 'signup'}
+                                    placeholder="Password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
                                     inputConfig={{ noBorder: true }}
                                     endIcon={
                                         showPassword ? (
@@ -410,25 +397,33 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                                     }
                                 />
                             )}
+
                             {activeTab === 'login' && (
                                 <ForgotPasswordLink href="#">Forgot Password?</ForgotPasswordLink>
                             )}
+
                             <SubmitButton
-                                type={activeTab === 'signup' && phoneNumber ? 'button' : 'submit'}
+                                type={
+                                    activeTab === 'signup' && signupStage === SignupStage.COMPLETE ? 'button' : 'submit'
+                                }
                                 disabled={isLoading}
-                                onClick={activeTab === 'signup' && phoneNumber ? handleFinalSignup : undefined}
+                                onClick={
+                                    activeTab === 'signup' && signupStage === SignupStage.COMPLETE
+                                        ? handleFinalSignup
+                                        : undefined
+                                }
                             >
                                 {isLoading
                                     ? activeTab === 'login'
                                         ? 'Logging in...'
-                                        : phoneNumber
+                                        : signupStage === SignupStage.COMPLETE
                                           ? 'Creating Account...'
-                                          : 'Proceeding...'
+                                          : 'Processing...'
                                     : activeTab === 'login'
                                       ? 'Login'
-                                      : phoneNumber
+                                      : signupStage === SignupStage.COMPLETE
                                         ? 'Complete Signup'
-                                        : 'Continue to Verification'}
+                                        : 'Continue'}
                             </SubmitButton>
                         </Form>
                         <OrDivider>

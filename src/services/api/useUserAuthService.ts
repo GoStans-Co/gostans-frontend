@@ -126,7 +126,7 @@ export const useUserAuthService = () => {
                                 user: userForCookie,
                             },
                             statusCode: 200,
-                            message: 'Social login successful',
+                            message: '',
                         };
                     } else {
                         throw new Error('Invalid response structure');
