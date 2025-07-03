@@ -12,7 +12,7 @@ export type WishlistResponse = {
 };
 
 export type WishlistAddResponse = {
-    status: number;
+    statuscode: number;
     message: string;
     data: {
         tour_uuid: string;

@@ -18,6 +18,10 @@ import NoDataFound from '@/components/Common/NoDataFound';
 import useApiServices from '@/services';
 import { TourListResponse } from '@/atoms/tours';
 import { motion } from 'framer-motion';
+import useFavorite from '@/hooks/useFavorite';
+import useModal from '@/hooks/useModal';
+import useCookieAuth from '@/services/cookieAuthService';
+import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -262,14 +266,18 @@ const Spinner = styled(motion.div)`
 export default function SearchPackageList() {
     const navigate = useNavigate();
     const { tours: toursService } = useApiServices();
+    const { isAuthenticated } = useCookieAuth();
 
     const searchData = useSearchData();
     const uiState = useSearchUIState();
     const searchActions = useSearchActions();
     const searchFilters = useSearchFilters();
     const filterActions = useFilterActions();
+    const { toggleWishlistWithTour, getHeartColor, isProcessing, contextHolder } = useFavorite();
 
     const { getCachedResults, isCacheValid } = useSearchCache();
+
+    const { openModal, closeModal } = useModal();
 
     const [filteredTours, setFilteredTours] = useState<TourListResponse[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -286,6 +294,7 @@ export default function SearchPackageList() {
         minPrice: '',
         maxPrice: '',
     });
+    const [isLoginAlertOpen, setIsLoginAlertOpen] = useState(false);
 
     const PAGE_SIZE = 10;
 
@@ -309,6 +318,7 @@ export default function SearchPackageList() {
                 return;
             }
         }
+
         console.log('Fetching fresh data for page:', page);
         setIsLoading(true);
         try {
@@ -399,6 +409,28 @@ export default function SearchPackageList() {
         }
     };
 
+    const openLoginModal = (initialTab: 'login' | 'signup' = 'login') => {
+        openModal('login-modal', <ModalAuth onClose={() => closeModal('login-modal')} initialTab={initialTab} />);
+    };
+
+    const handleWishlistClick = async (tourUuid: string, e: React.MouseEvent) => {
+        if (!isAuthenticated()) {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsLoginAlertOpen(true);
+            return;
+        }
+
+        /* we first find the tour data */
+        const tourData = filteredTours.find((t) => t.uuid === tourUuid);
+        await toggleWishlistWithTour(tourUuid, tourData, e);
+    };
+
+    const handleLoginConfirm = () => {
+        setIsLoginAlertOpen(false);
+        openLoginModal('login');
+    };
+
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
         searchActions.setIsSearching(true);
@@ -421,180 +453,202 @@ export default function SearchPackageList() {
     };
 
     return (
-        <PageContainer>
-            <SearchContainer>
-                <SearchBar
-                    data={searchData}
-                    handlers={{
-                        onDestinationChange: searchActions.handleDestinationChange,
-                        onDatesChange: searchActions.handleDatesChange,
-                        onTravelersChange: searchActions.handleTravelersChange,
-                        onTravelerCountChange: searchActions.handleTravelerCountChange,
-                        onSubmit: handleSearch,
-                    }}
-                    showTravelersDropdown={uiState.showTravelersDropdown}
-                    onTravelersDropdownToggle={searchActions.handleTravelersDropdownToggle}
-                />
-            </SearchContainer>
+        <>
+            {contextHolder}
+            <PageContainer>
+                <SearchContainer>
+                    <SearchBar
+                        data={searchData}
+                        handlers={{
+                            onDestinationChange: searchActions.handleDestinationChange,
+                            onDatesChange: searchActions.handleDatesChange,
+                            onTravelersChange: searchActions.handleTravelersChange,
+                            onTravelerCountChange: searchActions.handleTravelerCountChange,
+                            onSubmit: handleSearch,
+                        }}
+                        showTravelersDropdown={uiState.showTravelersDropdown}
+                        onTravelersDropdownToggle={searchActions.handleTravelersDropdownToggle}
+                    />
+                </SearchContainer>
 
-            <ContentContainer>
-                <FilterBar filters={searchFilters} handlers={filterActions} totalResults={filteredTours.length} />
+                <ContentContainer>
+                    <FilterBar filters={searchFilters} handlers={filterActions} totalResults={filteredTours.length} />
 
-                <ResultsContainer>
-                    <ResultsHeader>
-                        <ResultsCount>
-                            Page {currentPagination.currentPage} of {currentPagination.totalPages} /
-                            {currentPagination.totalCount} total results found
-                        </ResultsCount>
-                    </ResultsHeader>
+                    <ResultsContainer>
+                        <ResultsHeader>
+                            <ResultsCount>
+                                Page {currentPagination.currentPage} of {currentPagination.totalPages} /
+                                {currentPagination.totalCount} total results found
+                            </ResultsCount>
+                        </ResultsHeader>
 
-                    <ToursList>
-                        {filteredTours.map((tour) => (
-                            <Link
-                                to={`/searchTrips/${tour.uuid}`}
-                                style={{ textDecoration: 'none', color: 'inherit' }}
-                                key={tour.id}
-                            >
-                                <TourCard key={tour.id} variant="elevated">
-                                    <TourImage>
-                                        <img src={tour.mainImage || '/placeholder.jpg'} alt={tour.title} />
-                                        <FavoriteButton>
-                                            <FaHeart size={16} />
-                                        </FavoriteButton>
-                                    </TourImage>
-
-                                    <TourContent>
-                                        <TourHeader>
-                                            <TourTitle>{tour.title}</TourTitle>
-                                            <TourPrice>
-                                                <Price>
-                                                    {tour.currency} {tour.price}
-                                                </Price>
-                                            </TourPrice>
-                                        </TourHeader>
-
-                                        <TourDescription>{tour.shortDescription}</TourDescription>
-
-                                        <TourLocation>
-                                            <FaMapMarkerAlt size={14} />
-                                            <span>{tour.tourType.name}</span>
-                                            <Button variant="text" size="sm">
-                                                Show on Map
-                                            </Button>
-                                        </TourLocation>
-
-                                        <TourMeta>
-                                            <MetaLeft>
-                                                <BookedInfo>10K+ people booked</BookedInfo>
-                                                <Rating>
-                                                    <RatingValue>4.5</RatingValue>
-                                                    <RatingStars>
-                                                        {Array.from({ length: 5 }, (_, i) => (
-                                                            <FaStar key={i} size={12} color="#ffc107" />
-                                                        ))}
-                                                    </RatingStars>
-                                                    <span>(50 reviews)</span>
-                                                </Rating>
-                                            </MetaLeft>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => navigate(`/searchTrips/${tour.uuid}`)}
-                                            >
-                                                See details
-                                            </Button>
-                                        </TourMeta>
-                                    </TourContent>
-                                </TourCard>
-                            </Link>
-                        ))}
-
-                        {!isLoading && filteredTours.length === 0 ? (
-                            <NoDataFound
-                                type="search"
-                                onButtonClick={() => {
-                                    filterActions.clearAllFilters();
-                                    searchActions.resetSearch();
-                                }}
-                            />
-                        ) : (
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    gap: '1rem',
-                                    marginTop: '2rem',
-                                    padding: '1rem',
-                                }}
-                            >
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handlePrevious}
-                                    disabled={!currentPagination.hasPrevious || isLoading}
+                        <ToursList>
+                            {filteredTours.map((tour) => (
+                                <Link
+                                    to={`/searchTrips/${tour.uuid}`}
+                                    style={{ textDecoration: 'none', color: 'inherit' }}
+                                    key={tour.id}
                                 >
-                                    <FaChevronLeft />
-                                </Button>
-
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                    {Array.from({ length: Math.min(5, currentPagination.totalPages) }, (_, i) => {
-                                        const pageNumber =
-                                            Math.max(
-                                                1,
-                                                Math.min(
-                                                    currentPagination.totalPages - 4,
-                                                    currentPagination.currentPage - 2,
-                                                ),
-                                            ) + i;
-                                        if (pageNumber > currentPagination.totalPages) return null;
-
-                                        return (
-                                            <Button
-                                                key={pageNumber}
-                                                variant={
-                                                    currentPagination.currentPage === pageNumber ? 'primary' : 'outline'
-                                                }
-                                                size="sm"
-                                                onClick={() => handlePageChange(pageNumber)}
-                                                disabled={isLoading || currentPagination.currentPage === pageNumber}
-                                                style={{ minWidth: '40px' }}
+                                    <TourCard key={tour.id} variant="elevated">
+                                        <TourImage>
+                                            <img src={tour.mainImage || '/placeholder.jpg'} alt={tour.title} />
+                                            <FavoriteButton
+                                                onClick={(e) => handleWishlistClick(tour.uuid, e)}
+                                                disabled={isProcessing(tour.uuid)}
+                                                style={{
+                                                    color: getHeartColor(tour.uuid),
+                                                }}
                                             >
-                                                {pageNumber}
-                                            </Button>
-                                        );
-                                    })}
-                                </div>
+                                                <FaHeart size={16} />
+                                            </FavoriteButton>
+                                        </TourImage>
 
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleNext}
-                                    disabled={!currentPagination.hasNext || isLoading}
-                                >
-                                    <FaChevronRight />
-                                </Button>
-                            </div>
-                        )}
+                                        <TourContent>
+                                            <TourHeader>
+                                                <TourTitle>{tour.title}</TourTitle>
+                                                <TourPrice>
+                                                    <Price>
+                                                        {tour.currency} {tour.price}
+                                                    </Price>
+                                                </TourPrice>
+                                            </TourHeader>
 
-                        {isLoading && (
-                            <LoadingSpinner initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                <Spinner
-                                    animate={{ rotate: 360 }}
-                                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                            <TourDescription>{tour.shortDescription}</TourDescription>
+
+                                            <TourLocation>
+                                                <FaMapMarkerAlt size={14} />
+                                                <span>{tour.tourType.name}</span>
+                                                <Button variant="text" size="sm">
+                                                    Show on Map
+                                                </Button>
+                                            </TourLocation>
+
+                                            <TourMeta>
+                                                <MetaLeft>
+                                                    <BookedInfo>10K+ people booked</BookedInfo>
+                                                    <Rating>
+                                                        <RatingValue>4.5</RatingValue>
+                                                        <RatingStars>
+                                                            {Array.from({ length: 5 }, (_, i) => (
+                                                                <FaStar key={i} size={12} color="#ffc107" />
+                                                            ))}
+                                                        </RatingStars>
+                                                        <span>(50 reviews)</span>
+                                                    </Rating>
+                                                </MetaLeft>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => navigate(`/searchTrips/${tour.uuid}`)}
+                                                >
+                                                    See details
+                                                </Button>
+                                            </TourMeta>
+                                        </TourContent>
+                                    </TourCard>
+                                </Link>
+                            ))}
+
+                            {!isLoading && filteredTours.length === 0 ? (
+                                <NoDataFound
+                                    type="search"
+                                    onButtonClick={() => {
+                                        filterActions.clearAllFilters();
+                                        searchActions.resetSearch();
+                                    }}
                                 />
-                                <motion.p
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.2 }}
+                            ) : (
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                        gap: '1rem',
+                                        marginTop: '2rem',
+                                        padding: '1rem',
+                                    }}
                                 >
-                                    Searching...
-                                </motion.p>
-                            </LoadingSpinner>
-                        )}
-                    </ToursList>
-                </ResultsContainer>
-            </ContentContainer>
-        </PageContainer>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handlePrevious}
+                                        disabled={!currentPagination.hasPrevious || isLoading}
+                                    >
+                                        <FaChevronLeft />
+                                    </Button>
+
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        {Array.from({ length: Math.min(5, currentPagination.totalPages) }, (_, i) => {
+                                            const pageNumber =
+                                                Math.max(
+                                                    1,
+                                                    Math.min(
+                                                        currentPagination.totalPages - 4,
+                                                        currentPagination.currentPage - 2,
+                                                    ),
+                                                ) + i;
+                                            if (pageNumber > currentPagination.totalPages) return null;
+
+                                            return (
+                                                <Button
+                                                    key={pageNumber}
+                                                    variant={
+                                                        currentPagination.currentPage === pageNumber
+                                                            ? 'primary'
+                                                            : 'outline'
+                                                    }
+                                                    size="sm"
+                                                    onClick={() => handlePageChange(pageNumber)}
+                                                    disabled={isLoading || currentPagination.currentPage === pageNumber}
+                                                    style={{ minWidth: '40px' }}
+                                                >
+                                                    {pageNumber}
+                                                </Button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleNext}
+                                        disabled={!currentPagination.hasNext || isLoading}
+                                    >
+                                        <FaChevronRight />
+                                    </Button>
+                                </div>
+                            )}
+
+                            {isLoading && (
+                                <LoadingSpinner initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                                    <Spinner
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                    />
+                                    <motion.p
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.2 }}
+                                    >
+                                        Searching...
+                                    </motion.p>
+                                </LoadingSpinner>
+                            )}
+                        </ToursList>
+                    </ResultsContainer>
+                </ContentContainer>
+            </PageContainer>
+            <ModalAlert
+                isOpen={isLoginAlertOpen}
+                onClose={() => setIsLoginAlertOpen(false)}
+                title="Login Required"
+                message="Please login to add items to your favorites."
+                type="info"
+                showCancel={true}
+                confirmText="Login"
+                cancelText="Cancel"
+                onConfirm={handleLoginConfirm}
+            />
+        </>
     );
 }
