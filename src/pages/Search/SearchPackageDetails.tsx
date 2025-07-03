@@ -31,6 +31,7 @@ import TourCard from '@/components/Tours/ToursCard';
 import { tours } from '@/data/mockData';
 import { cartAtom } from '@/atoms/cart';
 import { useRecoilValue, useRecoilState } from 'recoil';
+import useFavorite from '@/hooks/useFavorite';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -549,13 +550,14 @@ export default function SearchPackageDetails() {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
-    const [isAddingToWishlist, setIsAddingToWishlist] = useState(false);
 
     const tourDetailsCache = useRecoilValue(tourDetailsAtom);
     const [cart, setCart] = useRecoilState(cartAtom);
-    const [messageApi, contextHolder] = message.useMessage();
+    const [messageApi] = message.useMessage();
 
-    const { tours: toursService, wishlist: wishlistService } = useApiServices();
+    const { toggleWishlistWithTour, getHeartColor, isProcessing, contextHolder } = useFavorite();
+
+    const { tours: toursService } = useApiServices();
 
     const toursPerPage = 3;
 
@@ -646,16 +648,6 @@ export default function SearchPackageDetails() {
 
     const totalPrice = parseFloat(tour.price) * adults;
 
-    const includedItems = [
-        'Lorem Ipsum is simply dummy text of the printing',
-        'Lorem Ipsum is simply dummy text of the printing',
-    ];
-
-    const excludedItems = [
-        'Lorem Ipsum is simply dummy text of the printing',
-        'Lorem Ipsum is simply dummy text of the printing',
-    ];
-
     const reviews = [
         {
             name: 'Oybek',
@@ -734,26 +726,7 @@ export default function SearchPackageDetails() {
 
     const handleWishlistToggle = async () => {
         if (!tour?.uuid) return;
-
-        setIsAddingToWishlist(true);
-        try {
-            if (wishlistService.isInWishlist(tour.uuid)) {
-                await wishlistService.removeFromWishlist(tour.uuid);
-                messageApi.success('Removed from favorites');
-            } else {
-                const response = await wishlistService.addToWishlist(tour.uuid);
-                if (response.data.status === 201) {
-                    messageApi.success('Added to favorites');
-                } else {
-                    messageApi.info('Already in favorites');
-                }
-            }
-        } catch (error) {
-            messageApi.error('Failed to update favorites');
-            console.error('Wishlist error:', error);
-        } finally {
-            setIsAddingToWishlist(false);
-        }
+        await toggleWishlistWithTour(tour.uuid, tour);
     };
 
     return (
@@ -770,9 +743,9 @@ export default function SearchPackageDetails() {
                         <ActionButtons>
                             <IconButton
                                 onClick={handleWishlistToggle}
-                                disabled={isAddingToWishlist}
+                                disabled={isProcessing(tour.uuid)}
                                 style={{
-                                    color: wishlistService.isInWishlist(tour.uuid) ? '#ef4444' : '#64748b',
+                                    color: getHeartColor(tour.uuid),
                                 }}
                             >
                                 <FaHeart />
@@ -870,20 +843,30 @@ export default function SearchPackageDetails() {
                                 <h2>Included / Excluded</h2>
                                 <IncludedExcluded>
                                     <div>
-                                        {includedItems.map((item, index) => (
+                                        {tour.includedItem?.map((item, index) => (
                                             <ListItem key={index} included>
                                                 <FaCheck className="icon" />
-                                                <span>{item}</span>
+                                                <span>{item.text}</span>
                                             </ListItem>
-                                        ))}
+                                        )) || (
+                                            <ListItem included>
+                                                <FaCheck className="icon" />
+                                                <span>No included items available</span>
+                                            </ListItem>
+                                        )}
                                     </div>
                                     <div>
-                                        {excludedItems.map((item, index) => (
+                                        {tour.excludedItem?.map((item, index) => (
                                             <ListItem key={index}>
                                                 <FaTimes className="icon" />
-                                                <span>{item}</span>
+                                                <span>{item.text}</span>
                                             </ListItem>
-                                        ))}
+                                        )) || (
+                                            <ListItem>
+                                                <FaTimes className="icon" />
+                                                <span>No excluded items available</span>
+                                            </ListItem>
+                                        )}
                                     </div>
                                 </IncludedExcluded>
                             </Section>
@@ -1078,21 +1061,25 @@ export default function SearchPackageDetails() {
                                         }}
                                     >
                                         <Button
-                                            variant="outline"
-                                            size="sm"
-                                            style={{ width: '30%', position: 'relative' }}
+                                            variant="primary"
+                                            size="lg"
+                                            fullWidth={true}
                                             onClick={handleAddToCart}
+                                            disabled={cart.some((item) => item.tourId === tour.uuid)}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px',
+                                                position: 'relative',
+                                            }}
                                         >
-                                            🛒 +
+                                            Select Package
                                             {cart.length > 0 && (
                                                 <CartItemCount>
                                                     {cart.reduce((sum, item) => sum + item.quantity, 0)}
                                                 </CartItemCount>
                                             )}
-                                        </Button>
-
-                                        <Button variant="primary" size="lg" fullWidth={true}>
-                                            Book now
                                         </Button>
                                     </div>
                                 </BookingForm>

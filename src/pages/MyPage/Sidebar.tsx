@@ -1,6 +1,6 @@
 import { AlignVerticalSpaceAround, Camera, LogOut, TreePine, User } from 'lucide-react';
 import React from 'react';
-import { FaViacoin } from 'react-icons/fa';
+import { FaArrowRight, FaCartPlus, FaMapMarkedAlt, FaMapPin, FaUser, FaUserAlt, FaViacoin } from 'react-icons/fa';
 import styled from 'styled-components';
 
 enum PageSection {
@@ -204,21 +204,21 @@ export default function Sidebar({
             <NavSection>
                 <SidebarItem
                     active={activePage === 'profile'}
-                    icon={<User />}
+                    icon={<FaUser />}
                     label="Personal Info"
                     href="/mypage"
                     onClick={() => onSectionChange(PageSection.PROFILE)}
                 />
                 <SidebarItem
                     active={activePage === 'trips'}
-                    icon={<TreePine />}
+                    icon={<FaMapMarkedAlt />}
                     label="Trips"
                     href="/mypage/trips"
                     onClick={() => onSectionChange(PageSection.TRIPS)}
                 />
                 <SidebarItem
                     active={activePage === 'favorites'}
-                    icon={<FaViacoin />}
+                    icon={<FaCartPlus />}
                     label="Favorites"
                     href="/mypage/favorites"
                     onClick={() => onSectionChange(PageSection.FAVORITES)}
@@ -233,7 +233,7 @@ export default function Sidebar({
                     }}
                 ></div>
 
-                <SidebarItem icon={<LogOut />} label="Logout" href="/" onClick={handleLogout} />
+                <SidebarItem icon={<FaArrowRight />} label="Logout" href="/" onClick={handleLogout} />
             </NavSection>
         </SidebarContainer>
     );

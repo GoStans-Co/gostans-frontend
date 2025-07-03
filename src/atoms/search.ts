@@ -53,9 +53,9 @@ export const defaultSearchValuesAtom = atom<Partial<SearchData>>({
     default: {
         destination: '',
         dates: '02 Jan 2025 ~ 04 Jan 2025',
-        travelers: '2 adults, 2 children',
-        adults: 2,
-        children: 2,
+        travelers: '1 adults, 0 children',
+        adults: 1,
+        children: 0,
         infants: 0,
     },
 });

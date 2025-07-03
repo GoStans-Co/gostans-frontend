@@ -65,6 +65,12 @@ export type TourDetailsResponse = {
         age_category: string;
         price: string;
     }>;
+    includedItem: Array<{
+        text: string;
+    }>;
+    excludedItem: Array<{
+        text: string;
+    }>;
 };
 
 export type CacheStatus = {
