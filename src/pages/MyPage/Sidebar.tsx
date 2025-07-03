@@ -1,6 +1,6 @@
-import { AlignVerticalSpaceAround, Camera, LogOut, TreePine, User } from 'lucide-react';
+import { AlignVerticalSpaceAround, Camera } from 'lucide-react';
 import React from 'react';
-import { FaArrowRight, FaCartPlus, FaMapMarkedAlt, FaMapPin, FaUser, FaUserAlt, FaViacoin } from 'react-icons/fa';
+import { FaArrowRight, FaCartPlus, FaMapMarkedAlt, FaUser } from 'react-icons/fa';
 import styled from 'styled-components';
 
 enum PageSection {

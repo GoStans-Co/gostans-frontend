@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaGlobe, FaShoppingCart, FaBars, FaTimes, FaMoneyBill, FaChevronDown } from 'react-icons/fa';
+import { FaGlobe, FaShoppingCart, FaBars, FaTimes, FaMoneyBill } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
 import useModal from '@/hooks/useModal';
@@ -222,33 +222,6 @@ const LeftSection = styled.div`
     display: flex;
     align-items: center;
     gap: 1rem;
-`;
-
-const CountrySelector = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    padding: 6px 12px;
-    border: 0.4px solid ${({ theme }) => theme.colors.border};
-    border-radius: 25px;
-    transition: all 0.2s ease;
-    font-size: 14px;
-    color: ${({ theme }) => theme.colors.text};
-
-    &:hover {
-        background-color: ${({ theme }) => theme.colors.lightBackground};
-        border-color: ${({ theme }) => theme.colors.primary};
-    }
-
-    svg {
-        transition: transform 0.2s ease;
-        color: ${({ theme }) => theme.colors.lightText};
-    }
-
-    &:hover svg {
-        color: ${({ theme }) => theme.colors.primary};
-    }
 `;
 
 export default function Header() {

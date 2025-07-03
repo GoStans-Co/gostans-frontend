@@ -282,6 +282,9 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const handleFinalSignup = async () => {
         setIsLoading(true);
         try {
+            if (password !== confirmPassword) {
+                throw new Error('Passwords do not match');
+            }
             const signupData: SignUpData = {
                 name,
                 email,
