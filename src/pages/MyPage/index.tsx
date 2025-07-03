@@ -117,11 +117,14 @@ export default function MyPage() {
     const handleSectionLogout = useCallback(async () => {
         try {
             await authService.logout();
+            window.location.href = '/';
         } catch (error) {
             console.error('Logout error:', error);
             /* if logout fails, we force to remove cookies */
             removeAuthCookie();
             window.location.href = '/';
+        } finally {
+            setIsLogoutModalOpen(false);
         }
     }, [authService, removeAuthCookie]);
 

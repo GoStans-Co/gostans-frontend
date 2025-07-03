@@ -233,7 +233,7 @@ export default function Sidebar({
                     }}
                 ></div>
 
-                <SidebarItem icon={<LogOut />} label="Logout" href="/logout" onClick={handleLogout} />
+                <SidebarItem icon={<LogOut />} label="Logout" href="/" onClick={handleLogout} />
             </NavSection>
         </SidebarContainer>
     );

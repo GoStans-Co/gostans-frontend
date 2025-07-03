@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import Button from '@/components/Common/Button';
 import { Heart, HeartOff } from 'lucide-react';
 import Card from '@/components/Common/Card';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { wishlistAtom } from '@/atoms/wishlist';
 import useApiServices from '@/services';
 
@@ -140,6 +140,8 @@ const EmptyText = styled.p`
 export default function FavoritesPage() {
     const wishlist = useRecoilValue(wishlistAtom);
     const { wishlist: wishlistService } = useApiServices();
+    const setWishlist = useSetRecoilState(wishlistAtom);
+
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -158,6 +160,7 @@ export default function FavoritesPage() {
     const removeFavorite = async (tourUuid: string) => {
         try {
             await wishlistService.removeFromWishlist(tourUuid);
+            setWishlist((prev) => prev.filter((item) => item.uuid !== tourUuid));
         } catch (error) {
             console.error('Failed to remove from wishlist:', error);
         }

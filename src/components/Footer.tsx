@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
+import goStansLogo from '@/assets/gostans.svg';
 
 const FooterContainer = styled.footer`
     background-color: white;
@@ -148,7 +149,9 @@ export default function Footer() {
         <FooterContainer>
             <FooterContent>
                 <FooterColumn>
-                    <FooterLogo to="/">GoStans</FooterLogo>
+                    <FooterLogo to="/">
+                        <img src={goStansLogo} alt="Go Stans Logo" style={{ height: '40px' }} />
+                    </FooterLogo>
                     <FooterDescription>
                         Discover the best of Asia with our curated tours and travel experiences. Let us help you create
                         unforgettable memories.
@@ -232,7 +235,7 @@ export default function Footer() {
                         <ContactIcon>
                             <FaEnvelope />
                         </ContactIcon>
-                        <div>info@xploreasian.com</div>
+                        <div>info@gostans.com</div>
                     </ContactItem>
                 </FooterColumn>
             </FooterContent>

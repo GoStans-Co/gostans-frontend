@@ -87,10 +87,15 @@ export const useWishlistFetchService = () => {
     const removeFromWishlist = async (tourUuid: string): Promise<void> => {
         try {
             setWishlist((prev) => prev.filter((tour) => tour.uuid !== tourUuid));
+            const accessToken = localStorage.getItem('access_token');
 
             await fetchData({
-                url: `/wishlist/remove/${tourUuid}/`,
+                url: `/wishlist/delete/${tourUuid}/`,
                 method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json',
+                },
             });
         } catch (error: unknown) {
             await getWishlist();

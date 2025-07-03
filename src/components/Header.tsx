@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaGlobe, FaShoppingCart, FaBars, FaTimes, FaChevronDown, FaMoneyBill } from 'react-icons/fa';
+import { FaGlobe, FaShoppingCart, FaBars, FaTimes, FaMoneyBill, FaChevronDown } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
 import useModal from '@/hooks/useModal';
@@ -342,11 +342,11 @@ export default function Header() {
             <HeaderContent>
                 <LeftSection>
                     <Logo to="/">GoStans</Logo>
-                    <CountrySelector ref={countryRef} onClick={() => setShowCountries(true)}>
+                    {/* <CountrySelector ref={countryRef} onClick={() => setShowCountries(true)}>
                         <span style={{ fontSize: '18px' }}>{selectedCountry.flag}</span>
                         <span>{selectedCountry.name}</span>
                         <FaChevronDown size={12} />
-                    </CountrySelector>
+                    </CountrySelector> */}
                 </LeftSection>
 
                 <MobileMenuButton onClick={toggleMenu}>
@@ -383,7 +383,7 @@ export default function Header() {
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <Button
+                                {/* <Button
                                     variant="outline"
                                     onClick={() => {
                                         openLoginModal('signup');
@@ -392,7 +392,7 @@ export default function Header() {
                                     style={{ width: '100%' }}
                                 >
                                     Sign up
-                                </Button>
+                                </Button> */}
                                 <Button
                                     variant="primary"
                                     onClick={() => {
@@ -454,9 +454,9 @@ export default function Header() {
                         </>
                     ) : (
                         <AuthButtons>
-                            <Button variant="outline" onClick={() => openLoginModal('signup')}>
+                            {/* <Button variant="outline" onClick={() => openLoginModal('signup')}>
                                 Sign up
-                            </Button>
+                            </Button> */}
                             <Button variant="primary" onClick={() => openLoginModal('login')}>
                                 Login
                             </Button>
