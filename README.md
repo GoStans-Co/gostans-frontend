@@ -52,3 +52,11 @@ export default tseslint.config({
     },
 });
 ```
+
+## License
+
+This project is licensed under a custom **NonCommercial License** based on the MIT License.
+
+You are free to use, modify, and share this software **only for non-commercial purposes**.
+
+📩 For commercial use, contact: gostans.com@gmail.com
