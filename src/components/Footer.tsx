@@ -40,12 +40,14 @@ const FooterDescription = styled.p`
     margin-bottom: 1.5rem;
     line-height: 1.6;
     opacity: 0.8;
+    text-align: left;
 `;
 
 const FooterHeading = styled.h3`
     font-size: ${({ theme }) => theme.fontSizes.lg};
     margin-bottom: 1.5rem;
     font-weight: 600;
+    text-align: left;
 `;
 
 const FooterNavList = styled.ul`
@@ -57,6 +59,7 @@ const FooterNavList = styled.ul`
 const FooterNavItem = styled.li`
     opacity: 0.8;
     transition: opacity 0.3s ease;
+    text-align: left;
 
     &:hover {
         opacity: 1;
