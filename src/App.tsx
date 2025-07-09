@@ -8,6 +8,13 @@ import { RecoilRoot } from 'recoil';
 import { CookiesProvider } from 'react-cookie';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { router } from '@/routes/routes';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
+
+const initialOptions = {
+    clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID || 'test',
+    currency: 'USD',
+    intent: 'capture',
+};
 
 export default function App() {
     return (
@@ -17,7 +24,9 @@ export default function App() {
                     <ThemeProvider theme={theme}>
                         <ModalProvider>
                             <GlobalStyles />
-                            <RouterProvider router={router} />
+                            <PayPalScriptProvider options={initialOptions}>
+                                <RouterProvider router={router} />
+                            </PayPalScriptProvider>
                         </ModalProvider>
                     </ThemeProvider>
                 </RecoilRoot>

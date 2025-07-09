@@ -16,6 +16,7 @@ export type TourListResponse = {
     price: string;
     currency: 'USD' | 'EUR' | 'KRW';
     mainImage: string | null;
+    isLiked: boolean;
 };
 
 export type ToursListApiResponse = {
@@ -23,6 +24,7 @@ export type ToursListApiResponse = {
     next: string | null;
     previous: string | null;
     results: TourListResponse[];
+    totalPages: number;
 };
 
 export type TourDetailsResponse = {
@@ -47,6 +49,7 @@ export type TourDetailsResponse = {
     tags: string[];
     mainImage: string | null;
     created_at: string;
+    isLiked: boolean;
     images: Array<{
         id: number;
         image: string;
@@ -85,9 +88,9 @@ export type TourDetailsCache = {
     };
 };
 
-export const toursAtom = atom<TourListResponse[]>({
-    key: 'toursAtom',
-    default: [],
+export const toursDataAtom = atom<ToursListApiResponse | null>({
+    key: 'toursDataAtom',
+    default: null,
 });
 
 export const toursCacheStatusAtom = atom<CacheStatus>({
