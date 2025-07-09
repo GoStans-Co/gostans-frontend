@@ -55,7 +55,15 @@ const routes: RouteObject[] = [
             },
             {
                 path: 'cart/*',
-                element: withSuspense(React.lazy(() => import('@/pages/Cart/Cart'))),
+                element: withProtection(React.lazy(() => import('@/pages/Cart/Cart'))),
+            },
+            {
+                path: 'payment-success/return',
+                element: withSuspense(React.lazy(() => import('@/pages/Checkout/Return/PaymentReturn'))),
+            },
+            {
+                path: 'payment-cancel/return',
+                element: withSuspense(React.lazy(() => import('@/pages/Checkout/Cancel/PaymentCancel'))),
             },
         ],
     },

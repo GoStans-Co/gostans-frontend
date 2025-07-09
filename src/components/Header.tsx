@@ -37,9 +37,10 @@ const HeaderContent = styled.div`
 `;
 
 const Logo = styled(Link)`
-    font-size: ${({ theme }) => theme.fontSizes['2xl']};
-    font-weight: 700;
-    color: ${({ theme }) => theme.colors.primary};
+    font-size: 24px;
+    font-weight: bold;
+    color: ${theme.colors.primary};
+    text-decoration: none;
 `;
 
 const Nav = styled.nav<{ isOpen: boolean }>`
@@ -228,16 +229,8 @@ export default function Header() {
     const { openModal, closeModal } = useModal();
     const { auth: authService } = useApiServices();
     const { isAuthenticated, getUserData, removeAuthCookie } = useCookieAuth();
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const userButtonRef = useRef<HTMLButtonElement>(null);
-
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isUserModalOpen, setIsUserModalOpen] = useState(false);
-    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-
-    const [authState, setAuthState] = useState(isAuthenticated());
-
     const countryRef = useRef<HTMLDivElement>(null);
     const languageRef = useRef<HTMLDivElement>(null);
     const currencyRef = useRef<HTMLDivElement>(null);
@@ -251,6 +244,17 @@ export default function Header() {
     const [showLanguage, setShowLanguage] = useState(false);
     const [showCurrency, setShowCurrency] = useState(false);
     const [showCart, setShowCart] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+    const [authState, setAuthState] = useState(isAuthenticated());
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        type: 'logout' | 'loginRequired' | null;
+    }>({
+        isOpen: false,
+        type: null,
+    });
 
     const [selectedCountry, setSelectedCountry] = useState({
         code: 'UZ',
@@ -306,7 +310,7 @@ export default function Header() {
     };
 
     const showLogoutConfirmation = () => {
-        setIsLogoutModalOpen(true);
+        setModalConfig({ isOpen: true, type: 'logout' });
         setIsUserModalOpen(false);
     };
 
@@ -314,12 +318,9 @@ export default function Header() {
         <HeaderContainer>
             <HeaderContent>
                 <LeftSection>
-                    <Logo to="/">GoStans</Logo>
-                    {/* <CountrySelector ref={countryRef} onClick={() => setShowCountries(true)}>
-                        <span style={{ fontSize: '18px' }}>{selectedCountry.flag}</span>
-                        <span>{selectedCountry.name}</span>
-                        <FaChevronDown size={12} />
-                    </CountrySelector> */}
+                    <Logo as={Link} to="/">
+                        GoStans
+                    </Logo>
                 </LeftSection>
 
                 <MobileMenuButton onClick={toggleMenu}>
@@ -356,16 +357,6 @@ export default function Header() {
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {/* <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        openLoginModal('signup');
-                                        setIsMenuOpen(false);
-                                    }}
-                                    style={{ width: '100%' }}
-                                >
-                                    Sign up
-                                </Button> */}
                                 <Button
                                     variant="primary"
                                     onClick={() => {
@@ -427,9 +418,6 @@ export default function Header() {
                         </>
                     ) : (
                         <AuthButtons>
-                            {/* <Button variant="outline" onClick={() => openLoginModal('signup')}>
-                                Sign up
-                            </Button> */}
                             <Button variant="primary" onClick={() => openLoginModal('login')}>
                                 Login
                             </Button>
@@ -471,29 +459,40 @@ export default function Header() {
                 onClose={() => setShowCart(false)}
                 anchorElement={cartRef.current}
                 cartItems={cartItems}
-                onUpdateQuantity={(tourId, quantity) => {
-                    setCartItems((items) =>
-                        items.map((item) => (item.tourId === tourId ? { ...item, quantity } : item)),
-                    );
-                }}
                 onRemoveItem={(tourId) => {
                     setCartItems((items) => items.filter((item) => item.tourId !== tourId));
                 }}
                 onGoToCart={() => {
-                    navigate('/cart');
-                    setShowCart(false);
+                    if (isAuthenticated()) {
+                        navigate('/cart');
+                        setShowCart(false);
+                    } else {
+                        setModalConfig({ isOpen: true, type: 'loginRequired' });
+                        setShowCart(false);
+                    }
                 }}
             />
             <ModalAlert
-                isOpen={isLogoutModalOpen}
-                onClose={() => setIsLogoutModalOpen(false)}
-                title="Confirm Logout"
-                message="Are you sure you want to logout?"
-                type="warning"
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ isOpen: false, type: null })}
+                title={modalConfig.type === 'logout' ? 'Confirm Logout' : 'Login Required'}
+                message={
+                    modalConfig.type === 'logout'
+                        ? 'Are you sure you want to logout?'
+                        : 'Please login to continue to your cart and complete your booking.'
+                }
+                type={modalConfig.type === 'logout' ? 'warning' : 'info'}
                 showCancel={true}
-                confirmText="Logout"
+                confirmText={modalConfig.type === 'logout' ? 'Logout' : 'Login'}
                 cancelText="Cancel"
-                onConfirm={handleLogout}
+                onConfirm={() => {
+                    if (modalConfig.type === 'logout') {
+                        handleLogout();
+                    } else {
+                        setModalConfig({ isOpen: false, type: null });
+                        openLoginModal('login');
+                    }
+                }}
             />
         </HeaderContainer>
     );

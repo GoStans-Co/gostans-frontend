@@ -17,15 +17,26 @@ export type CardDetails = {
     saveCard: boolean;
 };
 
-type PaymentMethod = 'mastercard' | 'apple-pay' | 'visa-pay';
+type PaymentMethod = 'mastercard' | 'apple-pay' | 'visa-pay' | 'paypal' | 'google-pay' | 'bank-transfer';
+
+export type PaymentDetails = {
+    orderId: string;
+    payerId: string;
+    payerEmail: string;
+    payerName: string;
+    amount: string;
+    currency: string;
+    status: string;
+    transactionId: string;
+};
 
 export type BookingFormData = {
-    participants: Participant[];
-    cardDetails?: CardDetails;
-    email?: string;
-    phone?: string;
-    specialRequests?: string;
+    participants: any[];
+    cardDetails?: any;
     paymentMethod?: PaymentMethod;
+    paymentDetails?: PaymentDetails;
+    cartItems?: CartItem[];
+    totalAmount?: number;
 };
 
 export type EnterInfoStepProps = {
@@ -33,4 +44,7 @@ export type EnterInfoStepProps = {
     formData: BookingFormData;
     onNext: (data: Partial<BookingFormData>) => void;
     onBack: () => void;
+    totalGuests?: number;
+    guestCounts?: { [itemId: string]: { adults: number; children: number; infants: number } };
+    calculateTotal: () => number;
 };
