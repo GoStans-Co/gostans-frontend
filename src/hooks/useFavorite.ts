@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { message } from 'antd';
 import useApiServices from '@/services';
 import { wishlistAtom } from '@/atoms/wishlist';
 import useCookieAuth from '@/services/cookieAuthService';
@@ -12,7 +11,6 @@ export default function useFavorite() {
 
     const { isAuthenticated } = useCookieAuth();
 
-    const [messageApi, contextHolder] = message.useMessage();
     const [isAddingToWishlist, setIsAddingToWishlist] = useState<string | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
 
@@ -33,6 +31,7 @@ export default function useFavorite() {
     const isInWishlist = (tourUuid: string): boolean => {
         return wishlist.some((item) => item.uuid === tourUuid);
     };
+
     const toggleWishlistWithTour = async (tourUuid: string, tourData?: any, e?: React.MouseEvent) => {
         if (e) {
             e.preventDefault();
@@ -40,35 +39,29 @@ export default function useFavorite() {
         }
 
         if (!tourUuid) {
-            messageApi.error('Tour ID is required');
             return false;
         }
 
         setIsAddingToWishlist(tourUuid);
 
         try {
-            const isCurrentlyInWishlist = isInWishlist(tourUuid);
+            const response = await wishlistService.addToWishlist(tourUuid);
 
-            if (isCurrentlyInWishlist) {
-                await wishlistService.removeFromWishlist(tourUuid);
-                setWishlist((prev) => prev.filter((item) => item.uuid !== tourUuid));
-                messageApi.success('Removed from favorites');
-            } else {
-                const response = await wishlistService.addToWishlist(tourUuid);
+            if (response.data.statuscode === 201 || response.data.statuscode === 200) {
+                if (tourData) {
+                    const updatedTourData = { ...tourData, isLiked: !tourData.isLiked };
 
-                if (response.data.statuscode === 201) {
-                    if (tourData) {
-                        setWishlist((prev) => [...prev, tourData]);
+                    if (updatedTourData.isLiked) {
+                        setWishlist((prev) => [...prev.filter((item) => item.uuid !== tourUuid), updatedTourData]);
                     } else {
-                        /* fallback to fetch wishlist if tourData is not provided */
-                        await wishlistService.getWishlist();
+                        setWishlist((prev) => prev.filter((item) => item.uuid !== tourUuid));
                     }
-                    messageApi.success('Added to favorites');
+                } else {
+                    await wishlistService.getWishlist();
                 }
             }
             return true;
         } catch (error) {
-            messageApi.error('Failed to update favorites');
             console.error('Wishlist error:', error);
             return false;
         } finally {
@@ -80,7 +73,10 @@ export default function useFavorite() {
         return await toggleWishlistWithTour(tourUuid);
     };
 
-    const getHeartColor = (tourUuid: string): string => {
+    const getHeartColor = (tourUuid: string, tourData?: any): string => {
+        if (tourData && typeof tourData.isLiked === 'boolean') {
+            return tourData.isLiked ? '#ef4444' : '#64748b';
+        }
         return isInWishlist(tourUuid) ? '#ef4444' : '#64748b';
     };
 
@@ -97,8 +93,5 @@ export default function useFavorite() {
         toggleFavorite,
         getHeartColor,
         isProcessing,
-
-        contextHolder,
-        messageApi,
     };
 }

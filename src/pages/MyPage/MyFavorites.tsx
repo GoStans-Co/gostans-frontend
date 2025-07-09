@@ -6,6 +6,7 @@ import Card from '@/components/Common/Card';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { wishlistAtom } from '@/atoms/wishlist';
 import useApiServices from '@/services';
+import { message } from 'antd';
 
 const FavoritesContainer = styled.div`
     width: 100%;
@@ -141,6 +142,7 @@ export default function FavoritesPage() {
     const wishlist = useRecoilValue(wishlistAtom);
     const { wishlist: wishlistService } = useApiServices();
     const setWishlist = useSetRecoilState(wishlistAtom);
+    const [messageApi, contextHolder] = message.useMessage();
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -161,6 +163,7 @@ export default function FavoritesPage() {
         try {
             await wishlistService.removeFromWishlist(tourUuid);
             setWishlist((prev) => prev.filter((item) => item.uuid !== tourUuid));
+            messageApi.success('Removed successfully!');
         } catch (error) {
             console.error('Failed to remove from wishlist:', error);
         }
@@ -175,39 +178,44 @@ export default function FavoritesPage() {
     }
 
     return (
-        <FavoritesContainer>
-            <PageTitle>Favorites</PageTitle>
+        <>
+            {contextHolder}
+            <FavoritesContainer>
+                <PageTitle>Favorites</PageTitle>
 
-            {wishlist.length === 0 ? (
-                <EmptyState>
-                    <EmptyIcon>
-                        <HeartOff size={64} />
-                    </EmptyIcon>
-                    <EmptyTitle>No favorites yet!</EmptyTitle>
-                    <EmptyText>
-                        You haven't added any destinations to your favorites yet. Explore our destinations and save your
-                        favorites!
-                    </EmptyText>
-                    <Button variant="primary">Explore destinations</Button>
-                </EmptyState>
-            ) : (
-                <FavoritesGrid>
-                    {wishlist.map((favorite) => (
-                        <Card key={favorite.uuid} style={{ backgroundColor: '#f0f3f5', paddingLeft: '0' }}>
-                            <FavoriteImage imageUrl={favorite.mainImage}>
-                                <HeartButton onClick={() => removeFavorite(favorite.uuid)}>
-                                    <Heart fill="currentColor" />
-                                </HeartButton>
-                            </FavoriteImage>
-                            <FavoriteContent>
-                                <FavoriteTitle>{favorite.title}</FavoriteTitle>
-                                <FavoriteLocation>{favorite.city}</FavoriteLocation>
-                                <ToursCount>{favorite.tourType}</ToursCount>
-                            </FavoriteContent>
-                        </Card>
-                    ))}
-                </FavoritesGrid>
-            )}
-        </FavoritesContainer>
+                {wishlist.length === 0 ? (
+                    <EmptyState>
+                        <EmptyIcon>
+                            <HeartOff size={64} />
+                        </EmptyIcon>
+                        <EmptyTitle>No favorites yet!</EmptyTitle>
+                        <EmptyText>
+                            You haven't added any destinations to your favorites yet. Explore our destinations and save
+                            your favorites!
+                        </EmptyText>
+                        <Button variant="primary" onClick={() => (window.location.href = '/destinations')}>
+                            Explore destinations
+                        </Button>
+                    </EmptyState>
+                ) : (
+                    <FavoritesGrid>
+                        {wishlist.map((favorite) => (
+                            <Card key={favorite.uuid} style={{ backgroundColor: '#f0f3f5', paddingLeft: '0' }}>
+                                <FavoriteImage imageUrl={favorite.mainImage}>
+                                    <HeartButton onClick={() => removeFavorite(favorite.uuid)}>
+                                        <Heart fill="currentColor" />
+                                    </HeartButton>
+                                </FavoriteImage>
+                                <FavoriteContent>
+                                    <FavoriteTitle>{favorite.title}</FavoriteTitle>
+                                    <FavoriteLocation>{favorite.city}</FavoriteLocation>
+                                    <ToursCount>{favorite.tourType}</ToursCount>
+                                </FavoriteContent>
+                            </Card>
+                        ))}
+                    </FavoritesGrid>
+                )}
+            </FavoritesContainer>
+        </>
     );
 }
