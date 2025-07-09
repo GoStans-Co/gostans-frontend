@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Card from '@/components/Common/Card';
 import Button from '@/components/Common/Button';
@@ -7,12 +7,15 @@ import { EnterInfoStepProps, Participant } from '@/types/cart';
 import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
 import TripCard from '@/components/Card/TripCard';
+import OrderSummary from '../Payment/OrderSummary';
 
 const StepContainer = styled.div`
     display: grid;
-    grid-template-columns: 1fr 350px;
+    grid-template-columns: 1fr 400px;
     gap: 2rem;
     padding-bottom: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
 
     @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
         grid-template-columns: 1fr;
@@ -23,13 +26,6 @@ const MainContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-`;
-
-const SidebarCard = styled(Card)`
-    background-color: white;
-    position: sticky;
-    top: 2rem;
-    height: fit-content;
 `;
 
 const ParticipantCard = styled(Card)`
@@ -111,35 +107,6 @@ const ButtonGroup = styled.div`
     justify-content: space-between;
 `;
 
-const SidebarContent = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-`;
-
-const OrderSummary = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-`;
-
-const SummaryItem = styled.div`
-    display: flex;
-    justify-content: space-between;
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    color: ${({ theme }) => theme.colors.lightText};
-`;
-
-const TotalSection = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    font-weight: 600;
-    padding: 1rem 0;
-    border-top: 1px solid ${({ theme }) => theme.colors.border};
-`;
-
 const Select = styled.select`
     width: 100%;
     padding: 0.75rem;
@@ -181,25 +148,47 @@ const WarningBox = styled.div`
     font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
-export default function EnterInfoStep({ cartItems, formData, onNext, onBack }: EnterInfoStepProps) {
+export default function EnterInfoStep({
+    cartItems,
+    formData,
+    guestCounts,
+    calculateTotal,
+    onNext,
+    onBack,
+}: EnterInfoStepProps) {
     const [participants, setParticipants] = useState<Participant[]>(
         formData.participants.length > 0
             ? formData.participants
-            : [
-                  {
-                      id: '1',
-                      firstName: '',
-                      lastName: '',
-                      idType: 'passport',
-                      idNumber: '',
-                      dateOfBirth: '',
-                  },
-              ],
+            : [{ id: '1', firstName: '', lastName: '', idType: 'passport', idNumber: '', dateOfBirth: '' }],
     );
 
     const [validationErrors, setValidationErrors] = useState<{ [participantId: string]: { [field: string]: string } }>(
         {},
     );
+
+    useEffect(() => {
+        if (guestCounts && formData.participants.length === 0) {
+            let totalPeople = 0;
+            Object.values(guestCounts).forEach((counts) => {
+                totalPeople += counts.adults + counts.children;
+            });
+
+            if (totalPeople > participants.length) {
+                const newParticipants = [];
+                for (let i = 0; i < totalPeople; i++) {
+                    newParticipants.push({
+                        id: (i + 1).toString(),
+                        firstName: '',
+                        lastName: '',
+                        idType: 'passport',
+                        idNumber: '',
+                        dateOfBirth: '',
+                    });
+                }
+                setParticipants(newParticipants);
+            }
+        }
+    }, [guestCounts]);
 
     const addParticipant = () => {
         const newParticipant: Participant = {
@@ -254,7 +243,7 @@ export default function EnterInfoStep({ cartItems, formData, onNext, onBack }: E
         }
     };
 
-    const subtotal = cartItems.reduce((sum, item) => sum + Number(item.tourData.price) * item.quantity, 0);
+    const total = calculateTotal();
 
     const validateParticipant = (participant: Participant) => {
         const errors: { [field: string]: string } = {};
@@ -284,7 +273,7 @@ export default function EnterInfoStep({ cartItems, formData, onNext, onBack }: E
                     title={cartItems[0]?.tourData.title || 'Samarkand city Tour (Individual)'}
                     subtitle={cartItems[0]?.tourData.tourType || 'One day trip'}
                     date={cartItems[0]?.selectedDate || '17 Apr 2025'}
-                    price={subtotal}
+                    price={total}
                     variant="compact"
                     imageSize="small"
                     titleSize="large"
@@ -394,11 +383,6 @@ export default function EnterInfoStep({ cartItems, formData, onNext, onBack }: E
                     Once your info is submitted, it cannot be changed. Please double-check before proceeding.
                 </WarningBox>
 
-                <p style={{ fontSize: '0.9rem', color: '#666' }}>
-                    Your booking will be submitted once you go to payment. You can choose your payment method in the
-                    next step.
-                </p>
-
                 <ButtonGroup>
                     <Button variant="outline" onClick={onBack}>
                         Back
@@ -408,38 +392,7 @@ export default function EnterInfoStep({ cartItems, formData, onNext, onBack }: E
                     </Button>
                 </ButtonGroup>
             </MainContent>
-
-            <SidebarCard>
-                <SidebarContent>
-                    <h3
-                        style={{
-                            margin: '0 0 1rem 0',
-                            fontSize: '1.1rem',
-                            fontWeight: '600',
-                            alignSelf: 'flex-start',
-                            display: 'flex',
-                        }}
-                    >
-                        Order Summary
-                    </h3>
-
-                    <OrderSummary>
-                        {cartItems.map((item) => (
-                            <SummaryItem key={item.tourData.id}>
-                                <span>
-                                    {item.tourData.title} x{item.quantity}
-                                </span>
-                                <span>${(Number(item.tourData.price) * item.quantity).toFixed(2)}</span>
-                            </SummaryItem>
-                        ))}
-                    </OrderSummary>
-
-                    <TotalSection>
-                        <span>Total:</span>
-                        <span>${subtotal.toFixed(2)}</span>
-                    </TotalSection>
-                </SidebarContent>
-            </SidebarCard>
+            <OrderSummary cartItems={cartItems} total={total} showButton={false} />
         </StepContainer>
     );
 }

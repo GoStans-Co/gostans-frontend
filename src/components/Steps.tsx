@@ -3,6 +3,14 @@ import styled from 'styled-components';
 
 type CheckoutStep = 'cart' | 'checkout' | 'payment' | 'confirmation';
 
+type CustomStepsProps = {
+    current: number;
+    steps: Array<{
+        title: string;
+        description?: string;
+    }>;
+};
+
 const StepItem = styled.div`
     display: flex;
     align-items: center;
@@ -133,14 +141,6 @@ const StepDescription = styled.div`
 
 const CheckIconElement = () => <CheckCircle2 size={24} style={{ color: 'white' }} aria-label="Step completed" />;
 
-type CustomStepsProps = {
-    current: number;
-    steps: Array<{
-        title: string;
-        description?: string;
-    }>;
-};
-
 export default function CustomSteps({ current, steps }: CustomStepsProps) {
     return (
         <StepsContainer>
@@ -176,7 +176,12 @@ export const StepsWrapper = ({
     currentStep: CheckoutStep;
     showConfirmation?: boolean;
 }) => {
-    const steps = [{ title: 'Choose booking' }, { title: 'Enter Info' }, { title: 'Payment' }];
+    const steps = [
+        { title: 'Choose booking' },
+        { title: 'Enter Info' },
+        { title: 'Payment' },
+        { title: 'Confirmation' },
+    ];
 
     if (showConfirmation) {
         steps.push({ title: 'Confirmation' });
