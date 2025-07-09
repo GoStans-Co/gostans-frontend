@@ -4,7 +4,7 @@ import { useMemo, useRef } from 'react';
 import { useFetch } from '@/hooks/useFetch';
 import { activeBookingsAtom, bookingCacheAtom } from '@/atoms/booking';
 
-export const BOOKING_CACHE_DURATION = 10 * 60 * 1000; 
+export const BOOKING_CACHE_DURATION = 10 * 60 * 1000;
 
 export type Participant = {
     firstName: string;
@@ -16,7 +16,7 @@ export type Participant = {
 
 export type PaymentCreateRequest = {
     amount: number;
-    currency?: string; 
+    currency?: string;
     tour_uuid: string;
     participants: Participant[];
 };
@@ -315,7 +315,7 @@ export const useBookingFetchService = () => {
                         method: 'POST',
                     });
 
-s                    setBookingCache({ loaded: false, lastFetch: null });
+                    setBookingCache({ loaded: false, lastFetch: null });
 
                     return {
                         data: undefined as any,
@@ -345,7 +345,6 @@ s                    setBookingCache({ loaded: false, lastFetch: null });
                         data: { reason },
                     });
 
-                    
                     setBookingCache({ loaded: false, lastFetch: null });
 
                     return {

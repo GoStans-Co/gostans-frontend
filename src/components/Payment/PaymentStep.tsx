@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
 import { useValidation } from '@/hooks/useValidation';
-import securitySvg from '@/assets/security.svg';
+import securitySvg from '@/assets/cards/security.svg';
 import masterCard from '@/assets/cards/mastercard.svg';
 import visaCard from '@/assets/cards/visa.svg';
 import paypalIcon from '@/assets/cards/paypal.svg';

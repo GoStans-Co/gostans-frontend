@@ -1,4 +1,4 @@
-import { ShoppingCart, Plus, Minus, X } from 'lucide-react';
+import { ShoppingCart, X } from 'lucide-react';
 import { ModalHeader, ModalTitle } from '@/components/Common/DropdownElemStyles';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
