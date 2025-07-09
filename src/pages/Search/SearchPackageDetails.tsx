@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import type { Dayjs } from 'dayjs';
 import {
@@ -20,18 +20,20 @@ import { DatePicker, message } from 'antd';
 import Button from '@/components/Common/Button';
 import Card from '@/components/Common/Card';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useApiServices from '@/services';
 import { tourDetailsAtom } from '@/atoms/tours';
-
 import CopyLink from '@/components/CopyLink';
 import default_n1 from '@/assets/default/default_1.jpg';
 import default_n2 from '@/assets/default/default_2.jpg';
 import TourCard from '@/components/Tours/ToursCard';
 import { tours } from '@/data/mockData';
 import { cartAtom } from '@/atoms/cart';
-import { useRecoilValue, useRecoilState } from 'recoil';
+import { useRecoilValue, useRecoilState, useSetRecoilState } from 'recoil';
 import useFavorite from '@/hooks/useFavorite';
+import useCookieAuth from '@/services/cookieAuthService';
+import useModal from '@/hooks/useModal';
+import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -236,9 +238,11 @@ const ContentSection = styled.div`
 const RightSidebar = styled.div`
     position: -webkit-sticky;
     position: sticky;
-    top: 20px;
     height: fit-content;
     z-index: 10;
+    top: 100px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
 `;
 
 const PriceCard = styled(Card)`
@@ -401,16 +405,6 @@ const FormLabel = styled.label`
     text-align: left;
 `;
 
-const GuestSelector = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem;
-    border: 1px solid #d9d9d9;
-    border-radius: 6px;
-    background: white;
-`;
-
 const Total = styled.div`
     display: flex;
     justify-content: space-between;
@@ -542,22 +536,79 @@ const CartItemCount = styled.span`
     justify-content: center;
 `;
 
+const TourDetailsSection = styled.div`
+    padding: 1rem;
+    background-color: ${({ theme }) => theme.colors.lightBackground};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    margin-bottom: 1rem;
+`;
+
+const TourDetailsTitle = styled.div`
+    font-size: 14px;
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    text-align: left;
+`;
+
+const TourDetailsContent = styled.div`
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 3rem;
+    color: ${({ theme }) => theme.colors.lightText};
+
+    div {
+        margin-bottom: 0.5rem;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .label {
+        font-weight: 400;
+        color: ${({ theme }) => theme.colors.lightText};
+    }
+
+    .value {
+        color: ${({ theme }) => theme.colors.secondary};
+        font-weight: 500;
+    }
+`;
+
 export default function SearchPackageDetails() {
     const { packageId: id } = useParams<{ packageId: string }>();
+    const navigate = useNavigate();
+
+    const { toggleWishlistWithTour, getHeartColor, isProcessing } = useFavorite();
+
+    const tourDetailsCache = useRecoilValue(tourDetailsAtom);
+    const setTourDetailsCache = useSetRecoilState(tourDetailsAtom);
+    const [cart, setCart] = useRecoilState(cartAtom);
+
+    const { tours: toursService } = useApiServices();
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
-    const [adults, setAdults] = useState(0);
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
+    const [messageApi, contextHolder] = message.useMessage();
+    const [modalConfig, setModalConfig] = useState<{
+        isOpen: boolean;
+        type: 'wishlist-login' | 'select-package-login' | 'date-confirmation' | null;
+    }>({
+        isOpen: false,
+        type: null,
+    });
 
-    const tourDetailsCache = useRecoilValue(tourDetailsAtom);
-    const [cart, setCart] = useRecoilState(cartAtom);
-    const [messageApi] = message.useMessage();
+    const { isAuthenticated } = useCookieAuth();
+    const { openModal, closeModal } = useModal();
 
-    const { toggleWishlistWithTour, getHeartColor, isProcessing, contextHolder } = useFavorite();
-
-    const { tours: toursService } = useApiServices();
+    const hasInitialized = useRef(false);
 
     const toursPerPage = 3;
 
@@ -569,17 +620,21 @@ export default function SearchPackageDetails() {
             return;
         }
 
+        if (hasInitialized.current) return;
+
         const cachedTour = tourDetailsCache[id];
         console.log('Cache check for id', id, ':', cachedTour);
 
         if (cachedTour?.data) {
             console.log('Using cached tour details');
             setIsLoading(false);
+            hasInitialized.current = true;
             return;
         }
 
         console.log('No valid cache found, making API call');
         setIsLoading(true);
+        hasInitialized.current = true;
 
         const fetchTourDetails = async () => {
             try {
@@ -587,12 +642,17 @@ export default function SearchPackageDetails() {
                 console.log('Tour details fetched:', response);
             } catch (error) {
                 console.error('Error fetching tour details:', error);
+                hasInitialized.current = false;
             } finally {
                 setIsLoading(false);
             }
         };
 
         fetchTourDetails();
+    }, [id, tourDetailsCache]);
+
+    useEffect(() => {
+        hasInitialized.current = false;
     }, [id]);
 
     if (isLoading) {
@@ -646,7 +706,7 @@ export default function SearchPackageDetails() {
         defaultIndex++;
     }
 
-    const totalPrice = parseFloat(tour.price) * adults;
+    const totalPrice = parseFloat(tour.price);
 
     const reviews = [
         {
@@ -692,13 +752,40 @@ export default function SearchPackageDetails() {
 
     const visibleTours = filteredTours.slice(currentPage * toursPerPage, (currentPage + 1) * toursPerPage);
 
-    const handleAddToCart = () => {
+    const handleBookingAction = () => {
+        const isInCart = cart.some((item) => item.tourId === tour.uuid);
+
+        if (isInCart) {
+            if (isAuthenticated()) {
+                navigate('/cart');
+            } else {
+                setModalConfig({
+                    isOpen: true,
+                    type: 'select-package-login',
+                });
+            }
+        } else {
+            const cartItem = {
+                tourId: tour.uuid,
+                tourData: tour,
+                quantity: 1,
+                selectedDate: selectedDate?.format('YYYY-MM-DD'),
+                adults: 1,
+                addedAt: Date.now(),
+            };
+
+            setCart((prev) => [...prev, cartItem]);
+            messageApi.success(`Tour "${tour.title}" added to your cart!`);
+        }
+    };
+
+    const handleConfirmedAddToCart = () => {
         const cartItem = {
             tourId: tour.uuid,
             tourData: tour,
             quantity: 1,
             selectedDate: selectedDate?.format('YYYY-MM-DD'),
-            adults: adults,
+            adults: 1,
             addedAt: Date.now(),
         };
 
@@ -710,24 +797,106 @@ export default function SearchPackageDetails() {
                     ...updated[existingIndex],
                     quantity: updated[existingIndex].quantity + 1,
                 };
-                console.log('Updated cart:', updated);
                 return updated;
             }
-            console.log('Added to cart:', [...prev, cartItem]);
             return [...prev, cartItem];
         });
 
-        messageApi.success({
-            content: `Tour "${tour.title}" has been added to your cart.`,
-            style: { marginTop: '1vh' },
-            duration: 5,
-        });
+        messageApi.success(`Tour "${tour.title}" added to your cart!`);
+
+        setModalConfig({ isOpen: false, type: null });
+        navigate('/cart');
+    };
+
+    const handleModalConfirm = () => {
+        switch (modalConfig.type) {
+            case 'wishlist-login':
+            case 'select-package-login':
+                setModalConfig({ isOpen: false, type: null });
+                openLoginModal('login');
+                break;
+            case 'date-confirmation':
+                handleConfirmedAddToCart();
+                break;
+            default:
+                setModalConfig({ isOpen: false, type: null });
+        }
+    };
+
+    const getModalContent = () => {
+        switch (modalConfig.type) {
+            case 'wishlist-login':
+                return {
+                    title: 'Login Required',
+                    message: 'Please login to add items to your favorites.',
+                    type: 'info' as const,
+                    confirmText: 'Login',
+                };
+            case 'select-package-login':
+                return {
+                    title: 'Login Required',
+                    message: 'Please login to continue to your cart and complete your booking.',
+                    type: 'info' as const,
+                    confirmText: 'Login',
+                };
+            case 'date-confirmation':
+                return {
+                    title: 'Confirm Package Selection',
+                    message: 'Are you sure you want to continue to the payment section?',
+                    type: 'warning' as const,
+                    confirmText: 'Continue',
+                };
+            default:
+                return {
+                    title: '',
+                    message: '',
+                    type: 'info' as const,
+                    confirmText: 'OK',
+                };
+        }
     };
 
     const handleWishlistToggle = async () => {
-        if (!tour?.uuid) return;
-        await toggleWishlistWithTour(tour.uuid, tour);
+        if (!isAuthenticated()) {
+            setModalConfig({
+                isOpen: true,
+                type: 'wishlist-login',
+            });
+            return;
+        }
+
+        if (!tour?.uuid || !id) return;
+
+        const wasLiked = tour?.isLiked || false;
+        const success = await toggleWishlistWithTour(tour.uuid, tour);
+
+        if (success) {
+            setTourDetailsCache((prev) => ({
+                ...prev,
+                [id]: {
+                    ...prev[id],
+                    data: {
+                        ...prev[id].data,
+                        isLiked: !prev[id].data.isLiked,
+                    },
+                },
+            }));
+
+            if (wasLiked) {
+                messageApi.success('Removed from favorites');
+            } else {
+                messageApi.success('Added to favorites');
+            }
+        } else {
+            messageApi.error('Failed to update favorites');
+        }
     };
+
+    const openLoginModal = (initialTab: 'login' | 'signup' = 'login') => {
+        openModal('login-modal', <ModalAuth onClose={() => closeModal('login-modal')} initialTab={initialTab} />);
+    };
+
+    const modalContent = getModalContent();
 
     return (
         <>
@@ -743,9 +912,9 @@ export default function SearchPackageDetails() {
                         <ActionButtons>
                             <IconButton
                                 onClick={handleWishlistToggle}
-                                disabled={isProcessing(tour.uuid)}
+                                disabled={isProcessing(tour?.uuid)}
                                 style={{
-                                    color: getHeartColor(tour.uuid),
+                                    color: getHeartColor(tour?.uuid, tour),
                                 }}
                             >
                                 <FaHeart />
@@ -830,7 +999,9 @@ export default function SearchPackageDetails() {
                                 <InfoCard>
                                     <FaGlobe className="icon" size={24} />
                                     <div className="label">Languages</div>
-                                    <div className="value">{tour.language}</div>
+                                    <div className="value" style={{ whiteSpace: 'pre-line' }}>
+                                        {tour.language || 'Not specified'}
+                                    </div>
                                 </InfoCard>
                             </InfoCards>
 
@@ -1004,11 +1175,7 @@ export default function SearchPackageDetails() {
                                 </PriceHeader>
 
                                 <BookingForm>
-                                    <div
-                                        style={{
-                                            gap: '5px',
-                                        }}
-                                    >
+                                    <div style={{ gap: '5px' }}>
                                         <FormGroup>
                                             <FormLabel>Date</FormLabel>
                                             <DatePicker
@@ -1019,33 +1186,21 @@ export default function SearchPackageDetails() {
                                             />
                                         </FormGroup>
 
-                                        <FormGroup>
-                                            <FormLabel>Adults</FormLabel>
-                                            <GuestSelector>
-                                                <span>Age 18+</span>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => setAdults(Math.max(0, adults - 1))}
-                                                        style={{ width: '25px', height: '25px', padding: 0 }}
-                                                    >
-                                                        -
-                                                    </Button>
-                                                    <span style={{ minWidth: '20px', textAlign: 'center' }}>
-                                                        {adults}
-                                                    </span>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => setAdults(adults + 1)}
-                                                        style={{ width: '25px', height: '25px', padding: 0 }}
-                                                    >
-                                                        +
-                                                    </Button>
+                                        <TourDetailsSection>
+                                            <TourDetailsTitle>Tour Details:</TourDetailsTitle>
+                                            <TourDetailsContent>
+                                                <div>
+                                                    <span className="label">Duration:</span>{' '}
+                                                    <span className="value">{tour.duration}</span>
                                                 </div>
-                                            </GuestSelector>
-                                        </FormGroup>
+                                                <div>
+                                                    <span className="label">Ages:</span>{' '}
+                                                    <span className="value">
+                                                        {tour.ageMin}-{tour.ageMax} years
+                                                    </span>
+                                                </div>
+                                            </TourDetailsContent>
+                                        </TourDetailsSection>
 
                                         <Total>
                                             <span className="label">Total:</span>
@@ -1064,8 +1219,7 @@ export default function SearchPackageDetails() {
                                             variant="primary"
                                             size="lg"
                                             fullWidth={true}
-                                            onClick={handleAddToCart}
-                                            disabled={cart.some((item) => item.tourId === tour.uuid)}
+                                            onClick={handleBookingAction}
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
@@ -1074,7 +1228,9 @@ export default function SearchPackageDetails() {
                                                 position: 'relative',
                                             }}
                                         >
-                                            Select Package
+                                            {cart.some((item) => item.tourId === tour.uuid)
+                                                ? 'Continue to Checkout'
+                                                : 'Select Package'}
                                             {cart.length > 0 && (
                                                 <CartItemCount>
                                                     {cart.reduce((sum, item) => sum + item.quantity, 0)}
@@ -1120,6 +1276,17 @@ export default function SearchPackageDetails() {
                     )}
                 </AnimatePresence>
             </PageContainer>
+            <ModalAlert
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ isOpen: false, type: null })}
+                title={modalContent.title}
+                message={modalContent.message}
+                type={modalContent.type}
+                showCancel={true}
+                confirmText={modalContent.confirmText}
+                cancelText="Cancel"
+                onConfirm={handleModalConfirm}
+            />
         </>
     );
 }

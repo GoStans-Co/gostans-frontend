@@ -2,8 +2,8 @@ import {
     tourDetailsAtom,
     TourDetailsResponse,
     TourListResponse,
-    toursAtom,
     toursCacheStatusAtom,
+    toursDataAtom,
     ToursListApiResponse,
 } from '@/atoms/tours';
 import { useFetch } from '@/hooks/useFetch';
@@ -19,7 +19,7 @@ export const isCacheValid = (lastFetch: number | null): boolean => {
 
 export const useToursFetchService = () => {
     const { execute: fetchData } = useFetch();
-    const [tours, setTours] = useRecoilState(toursAtom);
+    const [toursData, setToursData] = useRecoilState(toursDataAtom);
     const [cacheStatus, setCacheStatus] = useRecoilState(toursCacheStatusAtom);
     const [tourDetailsCache, setTourDetailsCache] = useRecoilState(tourDetailsAtom);
 
@@ -29,20 +29,17 @@ export const useToursFetchService = () => {
                 search,
                 page = 1,
                 pageSize = 10,
+                all = false,
             }: {
                 search?: string;
                 page?: number;
                 pageSize?: number;
+                all?: boolean;
             } = {}): Promise<ApiResponse<ToursListApiResponse>> => {
-                if (cacheStatus.loaded && isCacheValid(cacheStatus.lastFetch) && !search && page === 1) {
-                    console.log('Using cached tours');
+                if (cacheStatus.loaded && isCacheValid(cacheStatus.lastFetch) && !search && page === 1 && toursData) {
+                    console.log('Using cached tours with correct count:', toursData.count);
                     return {
-                        data: {
-                            count: tours.length,
-                            next: null,
-                            previous: null,
-                            results: tours,
-                        },
+                        data: toursData,
                         statusCode: 200,
                         message: 'success',
                     };
@@ -51,41 +48,38 @@ export const useToursFetchService = () => {
                 const params = new URLSearchParams();
                 params.append('page', page.toString());
                 params.append('pageSize', pageSize.toString());
+                if (all) params.append('all', 'true');
                 if (search) params.append('search', search);
 
                 try {
                     const response = await fetchData({
-                        url: `/tours/?${params.toString()}`,
+                        url: `/tours/list/?${params.toString()}`,
                         method: 'GET',
                     });
 
-                    const backendResponse = response;
-                    const toursData = backendResponse.data;
-
                     const apiResponse: ApiResponse<ToursListApiResponse> = {
-                        data: toursData,
-                        statusCode: backendResponse.statuscode,
-                        message: backendResponse.message,
+                        data: response.data || response,
+                        statusCode: response.statusCode || 200,
+                        message: response.message || 'success',
                     };
 
-                    if (toursData?.results && !search && page === 1) {
-                        setTours(toursData.results);
+                    /* then we cache data for page 1 without search */
+                    if (apiResponse.data?.results && !search && page === 1) {
+                        setToursData(apiResponse.data);
                         setCacheStatus({ loaded: true, lastFetch: Date.now() });
+                        console.log('Cached tours data with count:', apiResponse.data.count);
                     }
 
                     return apiResponse;
-                } catch (error: any) {
-                    return {
-                        data: { count: 0, next: null, previous: null, results: [] },
-                        statusCode: error.response?.status || 500,
-                        message: error.message || 'Failed to fetch tours',
-                    };
+                } catch (error) {
+                    console.error('Tours fetch error:', error);
+                    throw error;
                 }
             },
 
             getTourById: async (id: string | number): Promise<ApiResponse<TourListResponse>> => {
                 const tourId = id.toString();
-                const cachedTour = tours.find((tour) => tour.id.toString() === tourId);
+                const cachedTour = toursData?.results?.find((tour) => tour.id.toString() === tourId);
 
                 if (cachedTour && cacheStatus.loaded) {
                     console.log(`Using cached tour data for ID: ${tourId}`);
@@ -96,71 +90,47 @@ export const useToursFetchService = () => {
                     };
                 }
 
-                try {
-                    const response = await fetchData({
-                        url: `/tours/${id}/`,
-                        method: 'GET',
-                    });
-
-                    return {
-                        data: response,
-                        statusCode: 200,
-                        message: 'success',
-                    };
-                } catch (error: any) {
-                    throw error;
-                }
+                return fetchData({
+                    url: `/tours/${id}/`,
+                    method: 'GET',
+                });
             },
 
             getTourDetails: async (tourId: string | number): Promise<ApiResponse<TourDetailsResponse>> => {
                 const id = tourId.toString();
                 const cachedDetail = tourDetailsCache[id];
 
-                if (cachedDetail) {
-                    if (isCacheValid(cachedDetail.lastFetch)) {
-                        console.log(`Using cached tour details for ID: ${id}`);
-                        return {
-                            data: cachedDetail.data,
-                            statusCode: 200,
-                            message: 'success',
-                        };
-                    }
+                if (cachedDetail && isCacheValid(cachedDetail.lastFetch)) {
+                    console.log(`Using cached tour details for ID: ${id}`);
+                    return {
+                        data: cachedDetail.data,
+                        statusCode: 200,
+                        message: 'success',
+                    };
                 }
 
-                try {
-                    const response = await fetchData({
-                        url: `/tours/${tourId}/`,
-                        method: 'GET',
-                    });
+                const response = await fetchData({
+                    url: `/tours/detail/${tourId}/`,
+                    method: 'GET',
+                });
 
-                    const backendResponse = response;
-                    const tourData = backendResponse.data;
-
-                    const apiResponse: ApiResponse<TourDetailsResponse> = {
-                        data: tourData,
-                        statusCode: backendResponse.statuscode,
-                        message: backendResponse.message,
-                    };
-
-                    console.log(`Fetched tour details for ID: ${id}, caching the response: ${tourData}`);
-
+                /* here we cache the response */
+                if (response.statusCode === 200) {
                     setTourDetailsCache((prev) => ({
                         ...prev,
                         [id]: {
-                            data: tourData,
+                            data: response.data,
                             lastFetch: Date.now(),
                         },
                     }));
-
                     console.log(`Tour details cached for ID: ${id}`);
-                    return apiResponse;
-                } catch (error: any) {
-                    throw error;
                 }
+
+                return response;
             },
 
             clearCache: () => {
-                setTours([]);
+                setToursData(null);
                 setTourDetailsCache({});
                 setCacheStatus({ loaded: false, lastFetch: null });
                 console.log('Tours cache cleared');
@@ -171,7 +141,10 @@ export const useToursFetchService = () => {
                 setTourDetailsCache({});
                 console.log('Tours force refresh triggered');
             },
+
+            getCachedTours: () => toursData?.results || [],
+            getCachedCount: () => toursData?.count || 0,
         }),
-        [fetchData, tours, cacheStatus, tourDetailsCache, setTours, setCacheStatus, setTourDetailsCache],
+        [fetchData, toursData, cacheStatus, tourDetailsCache, setToursData, setCacheStatus, setTourDetailsCache],
     );
 };

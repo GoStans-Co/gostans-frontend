@@ -76,7 +76,7 @@ export const useUserFetchService = () => {
 
                 try {
                     const response = await fetchData({
-                        url: '/auth/profile/',
+                        url: '/user/profile/',
                         method: 'GET',
                     });
 
@@ -99,7 +99,7 @@ export const useUserFetchService = () => {
             updateUserProfile: async (userData: UpdateUserData): Promise<ApiResponse<UserProfile>> => {
                 try {
                     const response = await fetchData({
-                        url: '/auth/profile/',
+                        url: '/user/profile/',
                         method: 'PUT',
                         data: userData,
                     });
@@ -119,7 +119,7 @@ export const useUserFetchService = () => {
             changePassword: async (passwordData: ChangePasswordData): Promise<ApiResponse<void>> => {
                 try {
                     await fetchData({
-                        url: '/auth/change-password/',
+                        url: '/user/change-password/',
                         method: 'POST',
                         data: passwordData,
                     });
@@ -137,7 +137,7 @@ export const useUserFetchService = () => {
             deleteAccount: async (): Promise<ApiResponse<void>> => {
                 try {
                     await fetchData({
-                        url: '/auth/profile/',
+                        url: '/user/profile/',
                         method: 'DELETE',
                     });
 
@@ -162,7 +162,7 @@ export const useUserFetchService = () => {
                     formData.append('image', imageFile);
 
                     const response = await fetchData({
-                        url: '/auth/updateimage/',
+                        url: '/user/update-image/',
                         method: 'PATCH',
                         data: formData,
                     });
@@ -182,7 +182,7 @@ export const useUserFetchService = () => {
             verifyEmail: async (token: string): Promise<ApiResponse<void>> => {
                 try {
                     await fetchData({
-                        url: '/auth/verify-email/',
+                        url: '/auth/verify-otp/',
                         method: 'POST',
                         data: { token },
                     });

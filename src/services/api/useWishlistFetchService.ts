@@ -36,7 +36,7 @@ export const useWishlistFetchService = () => {
             params.append('page_size', pageSize.toString());
 
             const response = await fetchData({
-                url: `/wishlist/?${params.toString()}`,
+                url: `/user/wishlist/?${params.toString()}`,
                 method: 'GET',
             });
 
@@ -64,7 +64,7 @@ export const useWishlistFetchService = () => {
     const addToWishlist = async (tourUuid: string): Promise<ApiResponse<WishlistAddResponse>> => {
         try {
             const response = await fetchData({
-                url: `/wishlist/add/${tourUuid}/`,
+                url: `/user/wishlist/add/${tourUuid}/`,
                 method: 'POST',
             });
 
@@ -90,7 +90,7 @@ export const useWishlistFetchService = () => {
             const accessToken = localStorage.getItem('access_token');
 
             await fetchData({
-                url: `/wishlist/delete/${tourUuid}/`,
+                url: `/user/wishlist/delete/${tourUuid}/`,
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${accessToken}`,

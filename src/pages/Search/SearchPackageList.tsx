@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaMapMarkerAlt, FaHeart, FaStar, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
@@ -22,6 +22,7 @@ import useFavorite from '@/hooks/useFavorite';
 import useModal from '@/hooks/useModal';
 import useCookieAuth from '@/services/cookieAuthService';
 import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
+import { message } from 'antd';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -273,9 +274,10 @@ export default function SearchPackageList() {
     const searchActions = useSearchActions();
     const searchFilters = useSearchFilters();
     const filterActions = useFilterActions();
-    const { toggleWishlistWithTour, getHeartColor, isProcessing, contextHolder } = useFavorite();
+    const { toggleWishlistWithTour, getHeartColor, isProcessing } = useFavorite();
 
     const { getCachedResults, isCacheValid } = useSearchCache();
+    const hasInitialized = useRef(false);
 
     const { openModal, closeModal } = useModal();
 
@@ -295,6 +297,7 @@ export default function SearchPackageList() {
         maxPrice: '',
     });
     const [isLoginAlertOpen, setIsLoginAlertOpen] = useState(false);
+    const [messageApi, contextHolder] = message.useMessage();
 
     const PAGE_SIZE = 10;
 
@@ -326,9 +329,12 @@ export default function SearchPackageList() {
                 search: searchData.destination,
                 page: page,
                 pageSize: PAGE_SIZE,
+                all: false,
             });
 
-            if (response.statusCode === 200 && response.data?.results) {
+            console.log('API response:', response);
+
+            if (response.data?.results) {
                 let filtered = response.data.results;
 
                 if (searchFilters.minPrice) {
@@ -347,7 +353,8 @@ export default function SearchPackageList() {
                     pageSize: PAGE_SIZE,
                 };
 
-                /* buyerda existing search codedan foydanalanib cache qilamiz */
+                console.log('Pagination info:', paginationInfo);
+
                 searchActions.cacheSearchResults(cacheKey, filtered, {
                     ...searchData,
                     ...searchFilters,
@@ -356,6 +363,9 @@ export default function SearchPackageList() {
 
                 setFilteredTours(filtered);
                 setCurrentPagination(paginationInfo);
+            } else {
+                console.log('No results found');
+                setFilteredTours([]);
             }
         } catch (error) {
             console.error('Error fetching tours:', error);
@@ -366,17 +376,31 @@ export default function SearchPackageList() {
     };
 
     useEffect(() => {
-        fetchTours(1);
+        if (!hasInitialized.current) {
+            hasInitialized.current = true;
+            console.log('Initial load of SearchPackageList');
+
+            const currentSearchParams = {
+                destination: searchData.destination,
+                minPrice: searchFilters.minPrice,
+                maxPrice: searchFilters.maxPrice,
+            };
+
+            setLastSearchParams(currentSearchParams);
+            fetchTours(1);
+            return;
+        }
     }, []);
 
     useEffect(() => {
+        if (!hasInitialized.current) return;
+
         const currentSearchParams = {
             destination: searchData.destination,
             minPrice: searchFilters.minPrice,
             maxPrice: searchFilters.maxPrice,
         };
 
-        /* buyerda search params o'zgarganini tekshiramiz */
         if (
             currentSearchParams.destination !== lastSearchParams.destination ||
             currentSearchParams.minPrice !== lastSearchParams.minPrice ||
@@ -421,9 +445,24 @@ export default function SearchPackageList() {
             return;
         }
 
-        /* we first find the tour data */
         const tourData = filteredTours.find((t) => t.uuid === tourUuid);
-        await toggleWishlistWithTour(tourUuid, tourData, e);
+        const wasLiked = tourData?.isLiked || false;
+
+        const success = await toggleWishlistWithTour(tourUuid, tourData, e);
+
+        if (success && tourData) {
+            setFilteredTours((prev) =>
+                prev.map((tour) => (tour.uuid === tourUuid ? { ...tour, isLiked: !tour.isLiked } : tour)),
+            );
+
+            if (wasLiked) {
+                messageApi.info('Removed from favorites');
+            } else {
+                messageApi.success('Added to favorites');
+            }
+        } else if (!success) {
+            messageApi.error('Failed to update favorites');
+        }
     };
 
     const handleLoginConfirm = () => {
@@ -442,9 +481,6 @@ export default function SearchPackageList() {
             if (searchData.travelers) params.set('travelers', searchData.travelers);
 
             navigate(`/searchTrips?${params.toString()}`, { replace: true });
-            toursService.clearCache();
-            setCurrentPagination((prev) => ({ ...prev, currentPag: 1 }));
-            await fetchTours(1);
         } catch (error) {
             console.error('Search failed:', error);
         } finally {
@@ -496,7 +532,7 @@ export default function SearchPackageList() {
                                                 onClick={(e) => handleWishlistClick(tour.uuid, e)}
                                                 disabled={isProcessing(tour.uuid)}
                                                 style={{
-                                                    color: getHeartColor(tour.uuid),
+                                                    color: getHeartColor(tour.uuid, tour),
                                                 }}
                                             >
                                                 <FaHeart size={16} />
