@@ -13,7 +13,7 @@ const Main = styled.main`
     flex: 1;
     width: 100%;
     max-width: 100%;
-    overflow-x: auto;
+    // overflow-x: auto;
 `;
 
 export default function MainLayout() {

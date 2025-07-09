@@ -11,7 +11,6 @@ type CartModalProps = {
     onClose: () => void;
     anchorElement?: HTMLElement | null;
     cartItems: CartItem[];
-    onUpdateQuantity: (tourId: string, quantity: number) => void;
     onRemoveItem: (tourId: string) => void;
     onGoToCart: () => void;
 };
@@ -61,43 +60,6 @@ const CartItemPrice = styled.span`
     font-weight: ${theme.typography.fontWeight.bold};
 `;
 
-const QuantityControls = styled.div`
-    display: flex;
-    align-items: center;
-    gap: ${theme.spacing.xs};
-`;
-
-const QuantityButton = styled.button`
-    width: 24px;
-    height: 24px;
-    border: 1px solid ${theme.colors.border};
-    border-radius: ${theme.borderRadius.sm};
-    background: ${theme.colors.background};
-    color: ${theme.colors.text};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: ${theme.transitions.default};
-
-    &:hover {
-        background: ${theme.colors.lightBackground};
-        border-color: ${theme.colors.primary};
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-`;
-
-const QuantityDisplay = styled.span`
-    min-width: 30px;
-    text-align: center;
-    font-size: ${theme.fontSizes.sm};
-    font-weight: ${theme.typography.fontWeight.medium};
-`;
-
 const RemoveButton = styled.button`
     width: 24px;
     height: 24px;
@@ -143,7 +105,6 @@ export default function CartModal({
     onClose,
     anchorElement,
     cartItems,
-    onUpdateQuantity,
     onRemoveItem,
     onGoToCart,
 }: CartModalProps) {
@@ -184,18 +145,6 @@ export default function CartModal({
                                 <CartItemName>{item.tourData.title}</CartItemName>
                                 <CartItemPrice>${parseFloat(item.tourData.price).toFixed(2)}</CartItemPrice>
                             </CartItemDetails>
-                            <QuantityControls>
-                                <QuantityButton
-                                    onClick={() => onUpdateQuantity(item.tourId, item.quantity - 1)}
-                                    disabled={item.quantity <= 1}
-                                >
-                                    <Minus size={12} />
-                                </QuantityButton>
-                                <QuantityDisplay>{item.quantity}</QuantityDisplay>
-                                <QuantityButton onClick={() => onUpdateQuantity(item.tourId, item.quantity + 1)}>
-                                    <Plus size={12} />
-                                </QuantityButton>
-                            </QuantityControls>
                             <RemoveButton onClick={() => onRemoveItem(item.tourId)}>
                                 <X size={16} />
                             </RemoveButton>
