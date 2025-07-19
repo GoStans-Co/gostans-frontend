@@ -6,6 +6,10 @@ import Card from '@/components/Common/Card';
 const SectionContainer = styled.section`
     padding-top: 2rem;
     padding-bottom: 2rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 1rem;
+    }
 `;
 
 const SectionHeader = styled.div`
@@ -16,15 +20,28 @@ const SectionHeader = styled.div`
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+    padding: 0;
+    gap: 1rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 0;
+        margin-bottom: 1rem;
+    }
 `;
 
 const SectionTitle = styled.h2`
     font-size: 2rem;
     font-weight: 700;
     color: ${({ theme }) => theme.colors.text};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        font-size: 1.75rem;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 1.5rem;
     }
 `;
 
@@ -38,12 +55,27 @@ const ViewAllLink = styled(Link)`
     &:hover {
         text-decoration: underline;
     }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 0.875rem;
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
 `;
 
 const SectionSubtitle = styled.p`
     color: ${({ theme }) => theme.colors.lightText};
     max-width: 1200px;
     margin: 0 auto 2rem;
+    text-align: left;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 0.875rem;
+        text-align: left;
+    }
 `;
 
 const AccommodationsGrid = styled.div`
@@ -53,12 +85,13 @@ const AccommodationsGrid = styled.div`
     max-width: 1200px;
     margin: 0 auto;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-        grid-template-columns: repeat(2, 1fr);
+    ${({ theme }) => theme.responsive.maxMobile} {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-        grid-template-columns: 1fr;
+    ${({ theme }) => theme.responsive.tablet} {
+        grid-template-columns: repeat(2, 1fr);
     }
 `;
 

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { theme } from '@/styles/theme';
 import { User, BookOpen, Heart, LogOut } from 'lucide-react';
 import useCookieAuth from '@/services/cache/cookieAuthService';
-import { DropdownModal, ModalOverlay } from '@/components/Common/DropdownElemStyles';
+import { ModalOverlay } from '@/components/Common/DropdownElemStyles';
 import { useApiServices } from '@/services/api';
 
 type UserProfileModalProps = {
@@ -12,6 +12,32 @@ type UserProfileModalProps = {
     anchorElement?: HTMLElement | null;
     onLogout?: () => void;
 };
+
+const UserDropdownModal = styled.div<{
+    position: { top: number; left: number };
+}>`
+    position: fixed;
+    top: ${({ position }) => position.top}px;
+    left: ${({ position }) => position.left}px;
+    background: ${theme.colors.background};
+    border-radius: ${theme.borderRadius.lg};
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border: 1px solid ${theme.colors.border};
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    overflow: visible;
+    z-index: 1001;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        top: ${({ position }) => position.top}px !important;
+        left: ${({ position }) => position.left}px !important;
+        transform: none !important;
+        width: 220px !important;
+        min-width: 220px;
+        max-width: 220px;
+    }
+`;
 
 const MenuItemButton = styled.button<{ isLogout?: boolean }>`
     width: 100%;
@@ -74,18 +100,29 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
     useEffect(() => {
         if (isOpen && anchorElement) {
             const rect = anchorElement.getBoundingClientRect();
-            const modalWidth = 200;
-            const modalHeight = 300;
+            const modalWidth = window.innerWidth <= 767 ? 220 : 200;
+            const modalHeight = 200;
 
             let top = rect.bottom + 8;
             let left = rect.right - modalWidth;
 
-            if (left + modalWidth > window.innerWidth) {
-                left = window.innerWidth - modalWidth - 16;
-            }
+            if (window.innerWidth <= 767) {
+                left = rect.left + rect.width / 2 - modalWidth / 2;
 
-            if (left < 16) {
-                left = 16;
+                if (left + modalWidth > window.innerWidth - 16) {
+                    left = window.innerWidth - modalWidth - 16;
+                }
+                if (left < 16) {
+                    left = 16;
+                }
+            } else {
+                /* for desktop aligning the modal to the right of the profile image */
+                if (left + modalWidth > window.innerWidth) {
+                    left = window.innerWidth - modalWidth - 16;
+                }
+                if (left < 16) {
+                    left = 16;
+                }
             }
 
             if (top + modalHeight > window.innerHeight) {
@@ -153,8 +190,7 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
 
     return (
         <ModalOverlay isOpen={isOpen} onClick={onClose}>
-            <DropdownModal ref={modalRef} position={position} onClick={(e) => e.stopPropagation()}>
-                {' '}
+            <UserDropdownModal ref={modalRef} position={position} onClick={(e) => e.stopPropagation()}>
                 <MenuItemButton onClick={handlePersonalInfo}>
                     <User />
                     Personal Info
@@ -172,7 +208,7 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
                     <LogOut />
                     {isLoggingOut ? 'Logging out...' : 'Logout'}
                 </MenuItemButton>
-            </DropdownModal>
+            </UserDropdownModal>
         </ModalOverlay>
     );
 }

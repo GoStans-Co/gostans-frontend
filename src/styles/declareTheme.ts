@@ -38,6 +38,16 @@ declare module 'styled-components' {
                 };
             };
         };
+        responsive: {
+            mobile: string;
+            tablet: string;
+            laptop: string;
+            desktop: string;
+            maxMobile: string;
+            minTablet: string;
+            minLaptop: string;
+            minDesktop: string;
+        };
         colors: {
             primary: string;
             grayBackground: string;

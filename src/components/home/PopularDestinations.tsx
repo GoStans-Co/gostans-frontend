@@ -6,25 +6,47 @@ import { useState } from 'react';
 const SectionContainer = styled.section`
     padding-top: 2rem;
     padding-bottom: 2rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
 `;
 
 const SectionHeader = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+    padding: 0;
+    gap: 1rem;
+
+    ${({ theme }) => theme.responsive.minDesktop} {
+        margin-bottom: 2rem;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 0;
+        margin-bottom: 2rem;
+    }
 `;
 
 const SectionTitle = styled.h2`
     font-size: 2rem;
     font-weight: 700;
     color: ${({ theme }) => theme.colors.text};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        font-size: 1.75rem;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 1.5rem;
     }
 `;
 
@@ -34,82 +56,118 @@ const ViewAllLink = styled(Link)`
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-shrink: 0;
+    white-space: nowrap;
 
     &:hover {
         text-decoration: underline;
     }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 0.875rem;
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
 `;
 
 const DestinationsGrid = styled.div`
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 1.5rem;
+    display: flex;
+    gap: 2rem;
     max-width: 1200px;
     margin: 0 auto;
+    overflow-x: auto;
+    padding: 0;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.xl}) {
-        grid-template-columns: repeat(4, 1fr);
+    &::-webkit-scrollbar {
+        height: 6px;
     }
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-        grid-template-columns: repeat(3, 1fr);
+    &::-webkit-scrollbar-track {
+        background: ${({ theme }) => theme.colors.lightBackground};
+        border-radius: 3px;
     }
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        grid-template-columns: repeat(2, 1fr);
+    &::-webkit-scrollbar-thumb {
+        background: ${({ theme }) => theme.colors.border};
+        border-radius: 3px;
     }
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-        grid-template-columns: 1fr;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: 1rem;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        scrollbar-width: none;
+    }
+`;
+
+const MobileDestinationItem = styled.div`
+    flex: 0 0 auto;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex: 0 0 45%;
+        scroll-snap-align: start;
     }
 `;
 
 const TabsContainer = styled.div`
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     margin-bottom: 2rem;
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
     overflow-x: auto;
-    padding-bottom: 0.5rem;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: 0.5rem;
+    }
 
     &::-webkit-scrollbar {
-        height: 4px;
+        display: none;
     }
 
-    &::-webkit-scrollbar-track {
-        background: ${({ theme }) => theme.colors.lightBackground};
-        border-radius: 10px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background: ${({ theme }) => theme.colors.border};
-        border-radius: 10px;
-    }
+    scrollbar-width: none;
 `;
 
 const Tab = styled.button<{ active: boolean }>`
-    padding: 0.5rem 1.5rem;
-    border-radius: 9999px;
+    padding: 0.375rem 1rem;
+    border-radius: 20px;
     font-weight: 500;
+    font-size: 0.875rem;
     white-space: nowrap;
+    border: none;
     background-color: ${({ active, theme }) => (active ? theme.colors.primary : theme.colors.lightBackground)};
     color: ${({ active }) => (active ? 'white' : 'inherit')};
     transition: all ${({ theme }) => theme.transitions.default};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 0.3rem 0.8rem;
+        font-size: 0.8rem;
+    }
 
     &:hover {
         background-color: ${({ active, theme }) => (active ? theme.colors.primary : theme.colors.border)};
     }
 
     &:focus {
-        outline: none; /* Remove outline on focus state */
-        box-shadow: none; /* Remove any box shadow on focus */
+        outline: none;
+        box-shadow: none;
     }
 
     &:active {
-        outline: none; /* Remove outline on active state */
-        border: none; /* Ensure no border on active state */
+        outline: none;
+        border: none;
     }
 `;
 
@@ -184,14 +242,15 @@ export default function PopularDestinations({ destinations }: PopularDestination
 
             <DestinationsGrid>
                 {filteredDestinations.map((destination) => (
-                    <DestinationCard
-                        shape="oval"
-                        key={destination.id}
-                        id={destination.id}
-                        name={destination.name}
-                        image={destination.image}
-                        toursCount={destination.toursCount}
-                    />
+                    <MobileDestinationItem key={destination.id}>
+                        <DestinationCard
+                            shape="oval"
+                            id={destination.id}
+                            name={destination.name}
+                            image={destination.image}
+                            toursCount={destination.toursCount}
+                        />
+                    </MobileDestinationItem>
                 ))}
             </DestinationsGrid>
         </SectionContainer>

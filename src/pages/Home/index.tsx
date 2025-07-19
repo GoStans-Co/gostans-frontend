@@ -1,5 +1,5 @@
 import { tours, destinations, accommodations } from '@/data/mockData';
-import PopularDestinations from '@/components/Home/PopularPlaces';
+import PopularDestinations from '@/components/Home/PopularDestinations';
 import TrendingTours from '@/components/Home/TrendingTours';
 import CityExpertSection from '@/pages/Home/CityExpert';
 import NewsletterSection from '@/pages/Home/NewsLetter';

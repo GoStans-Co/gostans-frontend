@@ -27,6 +27,10 @@ const HeaderContainer = styled.header`
     position: sticky;
     top: 0;
     z-index: 100;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 1.1rem 1.5rem;
+    }
 `;
 
 const HeaderContent = styled.div`
@@ -35,6 +39,11 @@ const HeaderContent = styled.div`
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        justify-content: space-between;
+    }
 `;
 
 const Logo = styled(Link)`
@@ -42,18 +51,22 @@ const Logo = styled(Link)`
     font-weight: bold;
     color: ${theme.colors.primary};
     text-decoration: none;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 20px;
+    }
 `;
 
 const Nav = styled.nav<{ isOpen: boolean }>`
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         position: fixed;
         top: 0;
         right: 0;
         height: 100vh;
-        width: 250px;
+        width: 280px;
         background-color: white;
-        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-        padding: 2rem;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
         transform: translateX(${({ isOpen }) => (isOpen ? '0' : '100%')});
         transition: transform 0.3s ease;
         display: flex;
@@ -78,6 +91,11 @@ const RightSection = styled.div`
     display: flex;
     align-items: center;
     gap: 1.5rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: 1.5rem;
+        order: 2;
+    }
 `;
 
 const LanguageSelector = styled.div<{ isActive?: boolean }>`
@@ -89,6 +107,14 @@ const LanguageSelector = styled.div<{ isActive?: boolean }>`
     transition: all 0.2s ease;
     background-color: 'transparent';
 
+    ${({ theme }) => theme.responsive.maxMobile} {
+        span {
+            display: none;
+        }
+
+        gap: 0;
+    }
+
     svg {
         transition: color 0.2s ease;
         color: ${({ isActive, theme }) => (isActive ? theme.colors.primary : theme.colors.lightText)};
@@ -96,6 +122,7 @@ const LanguageSelector = styled.div<{ isActive?: boolean }>`
 
     span {
         color: ${({ isActive, theme }) => (isActive ? theme.colors.primary : theme.colors.text)};
+        font-size: 0.875rem;
     }
 
     &:hover {
@@ -128,6 +155,14 @@ const CartCount = styled.span`
     display: flex;
     align-items: center;
     justify-content: center;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 0.6rem;
+        height: 14px;
+        width: 14px;
+        top: -6px;
+        right: -6px;
+    }
 `;
 
 const MobileMenuButton = styled.button`
@@ -138,7 +173,7 @@ const MobileMenuButton = styled.button`
     font-size: 1.5rem;
     color: ${({ theme }) => theme.colors.text};
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         display: block;
     }
 `;
@@ -169,12 +204,12 @@ const CloseButton = styled.button`
 `;
 
 const MobileAuthSection = styled.div`
-    display: block;
-    margin-top: 20px;
-    padding: 0 20px;
+    display: none;
 
-    @media (min-width: 768px) {
-        display: none;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: block;
+        margin-top: 0;
+        padding: 0;
     }
 `;
 
@@ -183,7 +218,7 @@ const AuthButtons = styled.div`
     align-items: center;
     gap: 1rem;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         display: none;
     }
 
@@ -207,11 +242,15 @@ const UserAvatarButton = styled.button`
     cursor: pointer;
     transition: background-color 0.3s ease;
 
+    ${({ theme }) => theme.responsive.maxMobile} {
+        width: 32px;
+        height: 32px;
+    }
+
     &:hover {
         background-color: ${({ theme }) => theme.colors.border};
     }
 `;
-
 const UserImageDefault = styled.img`
     width: 100%;
     height: 100%;
@@ -224,6 +263,10 @@ const LeftSection = styled.div`
     display: flex;
     align-items: center;
     gap: 1rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        order: 1;
+    }
 `;
 
 export default function Header() {
@@ -340,17 +383,12 @@ export default function Header() {
                     </Logo>
                 </LeftSection>
 
-                <MobileMenuButton onClick={toggleMenu}>
-                    <FaBars />
-                </MobileMenuButton>
-
                 <OverlayBackdrop isOpen={isMenuOpen} onClick={toggleMenu} />
 
                 <Nav isOpen={isMenuOpen}>
                     <CloseButton onClick={toggleMenu}>
                         <FaTimes />
                     </CloseButton>
-                    <NavList></NavList>
                     <MobileAuthSection>
                         {isLoggedIn ? (
                             <div>
@@ -440,6 +478,10 @@ export default function Header() {
                             </Button>
                         </AuthButtons>
                     )}
+
+                    <MobileMenuButton onClick={toggleMenu}>
+                        <FaBars />
+                    </MobileMenuButton>
                 </RightSection>
             </HeaderContent>
             <CountriesModal

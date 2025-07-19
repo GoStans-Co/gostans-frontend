@@ -21,7 +21,7 @@ type IconBoxProps = {
 const HeroContainer = styled.div`
     position: relative;
     height: auto;
-    padding: 2rem 2rem;
+    padding: 2rem;
     background-color: ${({ theme }) => theme.colors.grayBackground};
     display: flex;
     flex-direction: row;
@@ -29,8 +29,9 @@ const HeroContainer = styled.div`
     justify-content: space-between;
     overflow: visible;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         flex-direction: column;
+        padding: 1rem;
         overflow: hidden;
     }
 `;
@@ -43,7 +44,7 @@ const HeroContent = styled.div`
     text-align: left;
     color: ${({ theme }) => theme.colors.text};
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         width: 100%;
         text-align: center;
         z-index: 1;
@@ -58,6 +59,15 @@ const Title = styled.h1`
     color: black;
     line-height: 64px;
     letter-spacing: -0.25px;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 2.5rem;
+        line-height: 1.2;
+    }
+
+    ${({ theme }) => theme.responsive.tablet} {
+        font-size: 3rem;
+    }
 `;
 
 const ImagesGrid = styled.div`
@@ -69,7 +79,7 @@ const ImagesGrid = styled.div`
     position: relative;
     z-index: 1;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         width: 100%;
         margin-top: 2rem;
         z-index: 1;
@@ -123,7 +133,7 @@ const SearchBarWrapper = styled.div`
     position: relative;
     z-index: 10;
 
-    @media (min-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.minLaptop} {
         width: 140%;
         transform: translateX(0);
     }
@@ -163,8 +173,9 @@ const Subtitle = styled.p`
     color: black;
     text-align: left;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         font-size: 1rem;
+        text-align: center;
     }
 `;
 

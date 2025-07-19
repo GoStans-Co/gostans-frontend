@@ -11,6 +11,12 @@ const NewsletterContainer = styled.section`
     margin-bottom: 90px;
     position: relative;
     overflow: hidden;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 2rem 1rem;
+        margin: 2rem 1rem;
+        margin-bottom: 60px;
+    }
 `;
 
 const NewsletterBackground = styled.div`
@@ -28,7 +34,7 @@ const NewsletterTitle = styled.h2`
     margin-bottom: 1rem;
     position: relative;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         font-size: 2rem;
     }
 `;
@@ -38,6 +44,10 @@ const NewsletterSubtitle = styled.p`
     margin-bottom: 2rem;
     opacity: 0.9;
     position: relative;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 1rem;
+    }
 `;
 
 const InputContainer = styled.div`
@@ -46,7 +56,7 @@ const InputContainer = styled.div`
     margin: 0 auto;
     position: relative;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         flex-direction: column;
     }
 `;

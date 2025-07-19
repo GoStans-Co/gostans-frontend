@@ -18,10 +18,15 @@ type CartModalProps = {
 
 const CartItemContainer = styled.div`
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: ${theme.spacing.md};
     padding: ${theme.spacing.md} ${theme.spacing.lg};
     border-bottom: 1px solid ${theme.colors.border};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${theme.spacing.sm} ${theme.spacing.md};
+        gap: ${theme.spacing.sm};
+    }
 
     &:last-child {
         border-bottom: none;
@@ -40,6 +45,11 @@ const CartItemImage = styled.div.attrs<{ src?: string }>((props) => ({
     background-size: cover;
     background-position: center;
     flex-shrink: 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        width: 50px;
+        height: 50px;
+    }
 `;
 
 const CartItemDetails = styled.div`
@@ -72,6 +82,8 @@ const RemoveButton = styled.button`
     align-items: center;
     justify-content: center;
     transition: ${theme.transitions.default};
+    flex-shrink: 0;
+    margin-top: 2px;
 
     &:hover {
         color: #d32f2f;
@@ -82,6 +94,10 @@ const CartFooter = styled.div`
     padding: ${theme.spacing.lg};
     border-top: 1px solid ${theme.colors.border};
     background: ${theme.colors.lightBackground};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${theme.spacing.md};
+    }
 `;
 
 const CartTotal = styled.div`
@@ -145,7 +161,7 @@ export default function CartModal({
             anchorElement={anchorElement}
             width="400px"
             modalWidth={400}
-            modalHeight={500}
+            modalHeight={550}
             gap={20}
             alignment="right"
         >

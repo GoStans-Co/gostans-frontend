@@ -42,7 +42,7 @@ export default function CurrencyModal({
             modalWidth={150}
             modalHeight={130}
             gap={20}
-            alignment="right"
+            alignment="left"
         >
             {currencies.map((currency) => (
                 <MenuItem

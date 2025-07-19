@@ -37,6 +37,16 @@ export const theme: DefaultTheme = {
             },
         },
     },
+    responsive: {
+        mobile: `@media (max-width: 767px)`,
+        tablet: `@media (min-width: 768px) and (max-width: 1023px)`,
+        laptop: `@media (min-width: 1024px) and (max-width: 1279px)`,
+        desktop: `@media (min-width: 1280px)`,
+        maxMobile: `@media (max-width: 767px)`,
+        minTablet: `@media (min-width: 768px)`,
+        minLaptop: `@media (min-width: 1024px)`,
+        minDesktop: `@media (min-width: 1280px)`,
+    },
     colors: {
         grayBackground: '#F0F3F5',
         primary: '#0F2846',

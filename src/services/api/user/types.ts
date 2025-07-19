@@ -8,15 +8,17 @@ export type Wishlist = {
 };
 
 export type UserProfile = {
-    id: string;
-    email: string;
-    name: string;
-    phone?: string;
-    image?: string;
-    dateJoined: string;
-    updatedAt: string;
-    isVerified: boolean;
-    wishLists: Wishlist[];
+    data: {
+        id: string;
+        email: string;
+        name: string;
+        phone?: string;
+        image?: string;
+        dateJoined: string;
+        updatedAt: string;
+        isVerified: boolean;
+        wishLists: Wishlist[];
+    };
 };
 
 export type UpdateUserData = {

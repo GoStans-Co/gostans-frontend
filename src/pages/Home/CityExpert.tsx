@@ -7,17 +7,28 @@ const ExpertSectionContainer = styled.section`
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     overflow: hidden;
     margin: 3rem 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex-direction: column;
+        margin: 2rem 1rem;
+    }
 `;
 
 const ExpertContent = styled.div`
     flex: 1;
-    padding: 3rem;
+    padding: 2rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 2rem 1rem;
+        text-align: center;
+        align-items: center;
+    }
+
+    ${({ theme }) => theme.responsive.tablet} {
         padding: 2rem;
     }
 `;
@@ -27,8 +38,13 @@ const ExpertTitle = styled.h2`
     color: ${({ theme }) => theme.colors.primary};
     margin-bottom: 1rem;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         font-size: 2rem;
+        text-align: center;
+    }
+
+    ${({ theme }) => theme.responsive.tablet} {
+        font-size: 2.2rem;
     }
 `;
 
@@ -37,6 +53,12 @@ const ExpertDescription = styled.p`
     color: ${({ theme }) => theme.colors.text};
     margin-bottom: 2rem;
     max-width: 90%;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 1rem;
+        text-align: center;
+        max-width: 100%;
+    }
 `;
 
 const ExpertImage = styled.div`
@@ -44,16 +66,22 @@ const ExpertImage = styled.div`
     background-image: url('https://images.unsplash.com/photo-1528127269322-539801943592');
     background-size: cover;
     background-position: center;
+    min-height: 300px;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        display: none;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        min-height: 200px;
+        order: -1;
+    }
+
+    ${({ theme }) => theme.responsive.tablet} {
+        min-height: 250px;
     }
 `;
 
 const ButtonWrapper = styled.div`
     width: 180px;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         width: 100%;
     }
 `;

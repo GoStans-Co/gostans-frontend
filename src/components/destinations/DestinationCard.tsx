@@ -33,9 +33,14 @@ const ImageContainer = styled.div<{ $shape?: CardShape }>`
     width: 100%;
     max-width: ${({ $shape }) => ($shape === 'oval' ? '170px' : 'none')};
     height: ${({ $shape }) => ($shape === 'oval' ? '230px' : 'auto')};
+    margin: 0 auto 1rem auto;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        max-width: ${({ $shape }) => ($shape === 'oval' ? '140px' : 'none')};
+        height: ${({ $shape }) => ($shape === 'oval' ? '190px' : 'auto')};
+    }
 `;
 
-// Update Image to be inside ImageContainer
 const Image = styled.img`
     width: 100%;
     height: 100%;
@@ -43,19 +48,26 @@ const Image = styled.img`
     transition: transform 0.5s ease;
 `;
 
-// Remove Overlay and update text styles
 const DestinationName = styled.h3`
     font-size: ${({ theme }) => theme.fontSizes.lg};
     font-weight: 600;
     color: black;
     margin-bottom: 0.25rem;
     text-align: center;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+    }
 `;
 
 const ToursCount = styled.span`
     font-size: ${({ theme }) => theme.fontSizes.md};
     color: ${({ theme }) => theme.colors.primary};
     text-align: center;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
 `;
 
 export default function DestinationCard({ id, name, image, toursCount, shape = 'square' }: DestinationProps) {

@@ -29,6 +29,19 @@ export const DropdownModal = styled.div<{
     overflow-y: auto;
     z-index: 1001;
 
+    ${({ theme }) => theme.responsive.minLaptop} {
+        width: ${({ width }) => width || '450px'};
+        max-height: 550px;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        left: 50% !important;
+        transform: translateX(-50%);
+        width: 90vw !important;
+        max-width: 350px;
+        max-height: 80vh;
+    }
+
     &::before {
         content: '';
         position: absolute;
@@ -39,6 +52,12 @@ export const DropdownModal = styled.div<{
         border-left: 8px solid transparent;
         border-right: 8px solid transparent;
         border-bottom: 8px solid ${theme.colors.background};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
+        }
     }
 
     &::after {
@@ -51,6 +70,12 @@ export const DropdownModal = styled.div<{
         border-left: 8px solid transparent;
         border-right: 8px solid transparent;
         border-bottom: 8px solid ${theme.colors.border};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
+        }
     }
 
     &::-webkit-scrollbar {

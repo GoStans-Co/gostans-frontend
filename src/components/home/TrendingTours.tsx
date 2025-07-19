@@ -9,6 +9,10 @@ import Button from '@/components/Common/Button';
 const SectionContainer = styled.section`
     padding: 4rem 2rem;
     background-color: ${({ theme }) => theme.colors.lightBackground};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 2rem 1rem;
+    }
 `;
 
 const SectionHeader = styled.div`
@@ -19,15 +23,34 @@ const SectionHeader = styled.div`
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
+    padding: 0;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 0;
+        justify-content: center;
+    }
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 0;
+        margin-bottom: 2rem;
+    }
 `;
 
 const SectionTitle = styled.h2`
     font-size: 2rem;
     font-weight: 700;
     color: ${({ theme }) => theme.colors.text};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        font-size: 1.75rem;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 1.5rem;
+        text-align: left;
     }
 `;
 
@@ -37,9 +60,20 @@ const ViewAllLink = styled(Link)`
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    flex-shrink: 0;
+    white-space: nowrap;
 
     &:hover {
         text-decoration: underline;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 0.875rem;
+
+        svg {
+            width: 16px;
+            height: 16px;
+        }
     }
 `;
 
@@ -50,12 +84,13 @@ const ToursGrid = styled.div`
     max-width: 1200px;
     margin: 0 auto;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-        grid-template-columns: repeat(2, 1fr);
+    ${({ theme }) => theme.responsive.maxMobile} {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        grid-template-columns: 1fr;
+    ${({ theme }) => theme.responsive.tablet} {
+        grid-template-columns: repeat(2, 1fr);
     }
 `;
 
@@ -65,6 +100,10 @@ const NavigationButtons = styled.div`
     align-items: center;
     gap: 1rem;
     margin-top: 0.5rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        justify-content: center;
+    }
 `;
 
 type TrendingToursProps = {
