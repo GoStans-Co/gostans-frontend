@@ -1,25 +1,16 @@
-import { wishlistAtom, WishlistTour } from '@/atoms/wishlist';
-import { useFetch } from '@/hooks/useFetch';
-import { ApiResponse } from '@/types/fetch';
+import { wishlistAtom } from '@/atoms/wishlist';
+import { useFetch } from '@/hooks/api/useFetch';
+import { ApiResponse } from '@/types/common/fetch';
 import { useMemo } from 'react';
 import { useRecoilState } from 'recoil';
+import { WishlistAddResponse, WishlistResponse } from '@/services/api/wishlist/types';
 
-export type WishlistResponse = {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: WishlistTour[];
-};
-
-export type WishlistAddResponse = {
-    statuscode: number;
-    message: string;
-    data: {
-        tour_uuid: string;
-    };
-};
-
-export const useWishlistFetchService = () => {
+/**
+ * Wishlist Fetch Service - Wishlist Operations
+ * @module useWishlistService
+ * @description This module provides functions for wishlist operations
+ */
+export const useWishlistService = () => {
     const { execute: fetchData } = useFetch();
     const [wishlist, setWishlist] = useRecoilState(wishlistAtom);
 

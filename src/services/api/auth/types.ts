@@ -47,3 +47,14 @@ export type SocialLoginData = {
     provider: 'google' | 'facebook' | 'twitter';
     id_token: string;
 };
+
+export type RefreshTokenRequest = {
+    refresh: string;
+};
+
+export type RefreshTokenResponse = {
+    token: string;
+    refresh: string;
+};
+
+export type Result<T, E = Error> = { success: true; data: T } | { success: false; error: E };

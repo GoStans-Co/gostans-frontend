@@ -1,4 +1,4 @@
-import { COOKIE_OPTIONS } from '@/services/cookieAuthService';
+import { COOKIE_OPTIONS } from '@/services/cache/cookieAuthService';
 
 const setCookie = (name: string, value: string, options = COOKIE_OPTIONS) => {
     let cookieString = `${name}=${value}; path=${options.path}`;

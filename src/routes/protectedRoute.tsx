@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import useCookieAuth from '@/services/cookieAuthService';
+import useCookieAuth from '@/services/cache/cookieAuthService';
 import React from 'react';
 
 type ProtectedRouteProps = {

@@ -48,6 +48,7 @@ export const theme: DefaultTheme = {
         silverBackground: 'B7B7B7',
         lightBackground: '#F5F5F5',
         border: '#E5E5E5',
+        error: '#FF4D4D',
     },
     fontSizes: {
         xs: '0.75rem',

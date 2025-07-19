@@ -1,4 +1,4 @@
-import { BookingDetails } from '@/services/api/useCheckoutService';
+import { BookingDetails } from '@/services/api/checkout';
 import { atom } from 'recoil';
 
 export const activeBookingsAtom = atom<BookingDetails[]>({

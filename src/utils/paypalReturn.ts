@@ -1,4 +1,4 @@
-import { useBookingFetchService } from '@/services/api/useCheckoutService';
+import { useBookingFetchService } from '@/services/api/checkout/checkoutService';
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 

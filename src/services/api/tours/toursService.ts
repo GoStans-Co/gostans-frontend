@@ -1,23 +1,22 @@
-import {
-    tourDetailsAtom,
-    TourDetailsResponse,
-    TourListResponse,
-    toursCacheStatusAtom,
-    toursDataAtom,
-    ToursListApiResponse,
-} from '@/atoms/tours';
-import { useFetch } from '@/hooks/useFetch';
-import { ApiResponse } from '@/types/fetch';
+import { TourDetailsResponse, TourListResponse, ToursListApiResponse } from '@/services/api/tours/types';
+import { useFetch } from '@/hooks/api/useFetch';
+import { ApiResponse } from '@/types/common/fetch';
 import { useMemo } from 'react';
 import { useRecoilState } from 'recoil';
-import { CACHE_DURATION } from '@/services/api/useUserAuthService';
+import { CACHE_DURATION } from '@/services/api/auth/authService';
+import { tourDetailsAtom, toursCacheStatusAtom, toursDataAtom } from '@/atoms/tours';
 
 export const isCacheValid = (lastFetch: number | null): boolean => {
     if (!lastFetch) return false;
     return Date.now() - lastFetch < CACHE_DURATION;
 };
 
-export const useToursFetchService = () => {
+/**
+ * Tours Fetch Service - Tour Operations
+ * @module useToursService
+ * @description This module provides functions for fetching tours and tour details
+ */
+export const useToursService = () => {
     const { execute: fetchData } = useFetch();
     const [toursData, setToursData] = useRecoilState(toursDataAtom);
     const [cacheStatus, setCacheStatus] = useRecoilState(toursCacheStatusAtom);

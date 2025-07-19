@@ -1,11 +1,7 @@
-import { UserProfile } from '@/services/api';
-import { UserData } from '@/services/cookieAuthService';
+import { UserProfile } from '@/services/api/user/types';
+import { CacheStatus } from '@/services/api/tours';
+import { UserData } from '@/services/cache/cookieAuthService';
 import { atom, selector } from 'recoil';
-
-export type CacheStatus = {
-    loaded: boolean;
-    lastFetch: number | null;
-};
 
 export const userProfileAtom = atom<UserProfile | null>({
     key: 'userProfileAtom',

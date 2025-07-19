@@ -49,6 +49,7 @@ declare module 'styled-components' {
             background: string;
             lightBackground: string;
             border: string;
+            error: string;
         };
         fontSizes: {
             xs: string;

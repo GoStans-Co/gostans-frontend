@@ -1,16 +1,14 @@
+import { CartItem } from '@/services/api/cart';
 import { atom } from 'recoil';
-import { TourDetailsResponse } from '@/atoms/tours';
+import { recoilPersist } from 'recoil-persist';
 
-export type CartItem = {
-    tourId: string;
-    tourData: TourDetailsResponse;
-    quantity: number;
-    selectedDate?: string;
-    adults: number;
-    addedAt: number;
-};
+const { persistAtom } = recoilPersist({
+    key: 'cart-storage',
+    storage: localStorage,
+});
 
 export const cartAtom = atom<CartItem[]>({
     key: 'cartAtom',
     default: [],
+    effects_UNSTABLE: [persistAtom],
 });

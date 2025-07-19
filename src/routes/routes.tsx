@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 import React, { Suspense } from 'react';
-import NotFoundPage from '@/pages/NotFound';
+import NotFoundPage from '@/components/NotFound';
 import ProtectedRoute from '@/routes/protectedRoute';
 import MainLayout from '@/components/Layout/Layout';
 

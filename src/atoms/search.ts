@@ -1,5 +1,5 @@
 import { atom } from 'recoil';
-import { SearchData, SearchFilters, SearchUIState, SearchCacheStatus, SearchCacheEntry } from '@/types/search';
+import { SearchData, SearchFilters, SearchUIState, SearchCacheStatus, SearchCacheEntry } from '@/types/common/search';
 
 export const searchDataAtom = atom<SearchData>({
     key: 'searchDataAtom',

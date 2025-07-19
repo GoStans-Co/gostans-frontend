@@ -1,8 +1,30 @@
-export { useToursFetchService } from '@/services/api/useToursFetchService';
-export { useUserFetchService } from '@/services/api/useUserFetchService';
-export { useUserAuthService } from '@/services/api/useUserAuthService';
-export { useWishlistFetchService } from '@/services/api/useWishlistFetchService';
-export { useBookingFetchService } from '@/services/api/useCheckoutService';
+import { useAuthService } from '@/services/api/auth';
+import { useCartService } from '@/services/api/cart';
+import { useCheckoutService } from '@/services/api/checkout';
+import { useToursService } from '@/services/api/tours';
+import { useUserService } from '@/services/api/user';
+import { useWishlistService } from '@/services/api/wishlist';
 
-export type { TourListResponse, ToursListApiResponse, TourDetailsResponse } from '@/atoms/tours';
-export type { UserProfile, UpdateUserData, ChangePasswordData } from '@/services/api/useUserFetchService';
+/**
+ * Centralized hook to access all API services.
+ * This hook provides a convenient way to access all the services
+ * without needing to import each one individually.
+ * @returns An object containing all the API services.
+ */
+export const useApiServices = () => {
+    const auth = useAuthService();
+    const cart = useCartService();
+    const checkout = useCheckoutService();
+    const tours = useToursService();
+    const user = useUserService();
+    const wishlist = useWishlistService();
+
+    return {
+        auth,
+        cart,
+        checkout,
+        tours,
+        user,
+        wishlist,
+    } as const;
+};

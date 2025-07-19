@@ -1,103 +1,28 @@
 import { useRecoilState } from 'recoil';
-import { ApiResponse } from '@/types/fetch';
+import { ApiResponse } from '@/types/common/fetch';
 import { useMemo, useRef } from 'react';
-import { useFetch } from '@/hooks/useFetch';
+import { useFetch } from '@/hooks/api/useFetch';
 import { activeBookingsAtom, bookingCacheAtom } from '@/atoms/booking';
+import {
+    BookingDetails,
+    BookingListResponse,
+    BookingValidationError,
+    CardPaymentRequest,
+    CardPaymentResponse,
+    PaymentCreateRequest,
+    PaymentCreateResponse,
+    PaymentExecuteRequest,
+    PaymentExecuteResponse,
+} from '@/services/api/checkout/types';
 
 export const BOOKING_CACHE_DURATION = 10 * 60 * 1000;
-
-export type Participant = {
-    firstName: string;
-    lastName: string;
-    idType: string;
-    idNumber: string;
-    dateOfBirth: string;
-};
-
-export type PaymentCreateRequest = {
-    amount: number;
-    currency?: string;
-    tour_uuid: string;
-    participants: Participant[];
-};
-
-export type PaymentCreateResponse = {
-    bookingId: number;
-    approvalUrl: string;
-    paymentId: string;
-};
-
-export type PaymentExecuteRequest = {
-    payment_id: string;
-    payer_id: string;
-};
-
-export type PaymentExecuteResponse = {
-    id: string;
-    state: string;
-    payer: {
-        payment_method: string;
-        status: string;
-        payer_info?: {
-            email?: string;
-            first_name?: string;
-            last_name?: string;
-            payer_id?: string;
-        };
-    };
-    transactions?: Array<{
-        amount: {
-            total: string;
-            currency: string;
-        };
-        description?: string;
-    }>;
-};
-
-export type BookingDetails = {
-    id: number;
-    booking_id: string;
-    tour_uuid: string;
-    tour_title: string;
-    amount: number;
-    currency: string;
-    status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
-    payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
-    payment_id?: string;
-    participants: Participant[];
-    booking_date: string;
-    created_at: string;
-    updated_at: string;
-};
-
-export type BookingListResponse = {
-    results: BookingDetails[];
-    count: number;
-    next?: string;
-    previous?: string;
-};
-
-export type BookingError = {
-    field?: string;
-    message: string;
-    code?: string;
-};
-
-export type BookingValidationError = {
-    amount?: string[];
-    participants?: string[];
-    tourUuid?: string[];
-    paymentId?: string[];
-    PayerID?: string[];
-    [key: string]: string[] | undefined;
-};
 
 /**
  * Booking Fetch Service - For PayPal Payment and Booking Operations
  * @module useBookingFetchService
  * @description This module provides functions for booking and payment operations
  */
-export const useBookingFetchService = () => {
+export const useCheckoutService = () => {
     const { execute: fetchData } = useFetch();
     const [bookingCache, setBookingCache] = useRecoilState(bookingCacheAtom);
     const [activeBookings, setActiveBookings] = useRecoilState(activeBookingsAtom);
@@ -223,6 +148,57 @@ export const useBookingFetchService = () => {
 
                 activeRequests.current.set(requestKey, requestPromise);
                 return requestPromise;
+            },
+
+            /**
+             * Create card payment for tour booking
+             * @param paymentData - Card payment creation data
+             * @returns Promise with card payment response
+             */
+            createVisaPayment: async (paymentData: CardPaymentRequest): Promise<ApiResponse<CardPaymentResponse>> => {
+                try {
+                    console.log('Creating card payment:', paymentData);
+                    const accessToken = localStorage.getItem('access_token');
+
+                    const response = await fetchData({
+                        url: '/user/payments/card/',
+                        method: 'POST',
+                        data: paymentData,
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+
+                    console.log('Card payment created successfully:', response.data);
+
+                    return {
+                        data: response.data,
+                        statusCode: 200,
+                        message: response.message || 'Payment completed successfully',
+                    };
+                } catch (error: any) {
+                    console.error('Card payment creation failed:', error);
+
+                    if (error.response?.status === 400) {
+                        const validationErrors: BookingValidationError = error.response?.data?.data || {};
+                        const errorMessages = Object.entries(validationErrors)
+                            .map(([field, messages]) => `${field}: ${messages?.join(', ')}`)
+                            .join('; ');
+
+                        return {
+                            data: null as any,
+                            statusCode: 400,
+                            message: errorMessages || error.message || 'Validation failed',
+                        };
+                    }
+
+                    return {
+                        data: null as any,
+                        statusCode: error.response?.status || 500,
+                        message: error.message || 'Failed to process card payment',
+                    };
+                }
             },
 
             /**
