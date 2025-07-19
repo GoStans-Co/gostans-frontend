@@ -7,7 +7,7 @@ type UseDropdownModalOptions = {
     alignment?: 'left' | 'right';
 };
 
-export function useDropdownModal(
+export default function useDropdownModal(
     isOpen: boolean,
     anchorElement: HTMLElement | null,
     onClose: () => void,

@@ -7,8 +7,8 @@ import {
     searchResultsAtom,
     defaultSearchValuesAtom,
 } from '@/atoms/search';
-import { SearchCacheEntry, SearchData, SearchFilters } from '@/types/search';
-import { TourListResponse } from '@/atoms/tours';
+import { SearchCacheEntry, SearchData, SearchFilters } from '@/types/common/search';
+import { TourListResponse } from '@/services/api/tours';
 
 export const useSearchData = () => {
     return useRecoilValue(searchDataAtom);

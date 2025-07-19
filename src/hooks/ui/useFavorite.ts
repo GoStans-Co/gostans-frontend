@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import useApiServices from '@/services';
 import { wishlistAtom } from '@/atoms/wishlist';
-import useCookieAuth from '@/services/cookieAuthService';
+import useCookieAuth from '@/services/cache/cookieAuthService';
+import { useApiServices } from '@/services/api';
 
 export default function useFavorite() {
     const wishlist = useRecoilValue(wishlistAtom);

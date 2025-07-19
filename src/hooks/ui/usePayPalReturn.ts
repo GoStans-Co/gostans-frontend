@@ -1,11 +1,11 @@
+import { useApiServices } from '@/services/api';
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useBookingFetchService } from '@/services/api/useCheckoutService';
 
 export const usePayPalReturn = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { executePayment } = useBookingFetchService();
+    const { checkout } = useApiServices();
 
     useEffect(() => {
         const paymentId = searchParams.get('paymentId');
@@ -22,7 +22,7 @@ export const usePayPalReturn = () => {
 
     const handlePayPalReturn = async (payment_id: string, payer_id: string) => {
         try {
-            const response = await executePayment({ payment_id, payer_id });
+            const response = await checkout.executePayment({ payment_id, payer_id });
 
             if (response.statusCode === 200) {
                 navigate('/cart/checkout/confirmation?success=true');
