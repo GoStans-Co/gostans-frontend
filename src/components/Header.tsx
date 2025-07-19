@@ -4,9 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaGlobe, FaShoppingCart, FaBars, FaTimes, FaMoneyBill } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
-import useModal from '@/hooks/useModal';
+import useModal from '@/hooks/ui/useModal';
 import ModalAuth from '@/components/ModalPopup/AuthModal/ModalAuth';
-import useCookieAuth from '@/services/cookieAuthService';
+import useCookieAuth from '@/services/cache/cookieAuthService';
 import UserProfileModal from '@/components/Modal/UserProfileModal';
 import { ModalAlert } from '@/components/ModalPopup';
 import userImage from '@/assets/user.jpg';
@@ -15,9 +15,10 @@ import CountriesModal from '@/components/Modal/HeaderModals/CountriesModal';
 import LanguageModal from '@/components/Modal/HeaderModals/LanguageModal';
 import CurrencyModal from '@/components/Modal/HeaderModals/CurrencyModal';
 import CartModal from '@/components/Modal/HeaderModals/CartModal';
-import useApiServices from '@/services';
 import { useRecoilState } from 'recoil';
 import { cartAtom } from '@/atoms/cart';
+import { useCartService } from '@/services/api/cart/useCartService';
+import { useApiServices } from '@/services/api';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -228,6 +229,8 @@ const LeftSection = styled.div`
 export default function Header() {
     const { openModal, closeModal } = useModal();
     const { auth: authService } = useApiServices();
+    const { clearCartOnLogout, removeFromCart } = useCartService();
+
     const { isAuthenticated, getUserData, removeAuthCookie } = useCookieAuth();
 
     const userButtonRef = useRef<HTMLButtonElement>(null);
@@ -293,6 +296,7 @@ export default function Header() {
         setIsLoggingOut(true);
         try {
             await authService.logout();
+            clearCartOnLogout();
             window.location.href = '/';
         } catch (error) {
             console.error('Logout error:', error);
@@ -304,6 +308,19 @@ export default function Header() {
             setIsUserModalOpen(false);
         }
     }, [authService, removeAuthCookie]);
+
+    const handleRemoveItem = async (tourId: string) => {
+        if (isAuthenticated()) {
+            try {
+                await removeFromCart(tourId);
+            } catch (error) {
+                console.error('Failed to remove item from cart:', error);
+                setCartItems((items) => items.filter((item) => item.tourId !== tourId));
+            }
+        } else {
+            setCartItems((items) => items.filter((item) => item.tourId !== tourId));
+        }
+    };
 
     const toggleUserModal = () => {
         setIsUserModalOpen(!isUserModalOpen);
@@ -459,9 +476,7 @@ export default function Header() {
                 onClose={() => setShowCart(false)}
                 anchorElement={cartRef.current}
                 cartItems={cartItems}
-                onRemoveItem={(tourId) => {
-                    setCartItems((items) => items.filter((item) => item.tourId !== tourId));
-                }}
+                onRemoveItem={handleRemoveItem}
                 onGoToCart={() => {
                     if (isAuthenticated()) {
                         navigate('/cart');

@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import Button from '@/components/Common/Button';
 import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import { FaInfoCircle } from 'react-icons/fa';
-import { ConfirmationModalProps } from '@/types/modal';
+import { ConfirmationModalProps } from '@/types/common/modal';
 import CoreModalPopup from '@/components/ModalPopup/CoreModal/CoreModalPopup';
 
 type AlertType = 'info' | 'success' | 'warning' | 'error';

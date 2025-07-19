@@ -4,13 +4,14 @@ import { theme } from '@/styles/theme';
 import { Eye, EyeOff } from 'lucide-react';
 import Input from '@/components/Common/Input';
 import Modal from '@/components/Modal';
-import useCookieAuth from '@/services/cookieAuthService';
+import useCookieAuth from '@/services/cache/cookieAuthService';
 import SocialLogin from '@/components/ModalPopup/AuthModal/SocialLogin';
-import { LoginCredentials, SignUpData, SocialLoginData } from '@/types/auth';
 import PhoneVerification from '@/components/ModalPopup/AuthModal/PhoneVerification';
 import { message } from 'antd';
-import useApiServices from '@/services';
 import PasswordComponent from '@/components/ModalPopup/AuthModal/PasswordComponent';
+import { useCartService } from '@/services/api/cart/useCartService';
+import { LoginCredentials, SignUpData, SocialLoginData } from '@/services/api/auth';
+import { useApiServices } from '@/services/api';
 
 enum SignupStage {
     FORM = 'form',
@@ -163,6 +164,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
 
     const [messageApi, contextHolder] = message.useMessage();
     const { auth: authService } = useApiServices();
+    const { syncCartOnLogin } = useCartService();
 
     const { isAuthenticated } = useCookieAuth();
 
@@ -215,6 +217,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                         onClose();
                         window.location.href = '/';
                     }, 500);
+                    await syncCartOnLogin();
                 }
                 messageApi.success({
                     content: 'You successfully logged in!',
@@ -255,6 +258,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     content: `Login with ${provider} is successful!`,
                     duration: 3,
                 });
+                await syncCartOnLogin();
             }
         } catch (err) {
             console.error('Social login error:', err);
@@ -366,7 +370,6 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                                 />
                             </InputField>
 
-                            {/* Only show password field for login */}
                             {activeTab === 'login' && (
                                 <Input
                                     type={showPassword ? 'text' : 'password'}

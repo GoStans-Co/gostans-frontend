@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Input from '@/components/Common/Input';
-import { useValidation } from '@/hooks/useValidation';
+import { useValidation } from '@/hooks/utils/useValidation';
 import { COUNTRY_CODES } from '@/constants/countryCodes';
 
 type LeadGuestFormProps = {
@@ -77,15 +77,15 @@ const FullWidthContainer = styled.div`
     grid-column: 1 / -1;
 `;
 
-const HelpText = styled.p`
-    font-size: 0.7rem;
-    color: #666;
-    margin: 0.3rem 0 0 0;
-    text-align: left;
-`;
+// const HelpText = styled.p`
+//     font-size: 0.7rem;
+//     color: #666;
+//     margin: 0.3rem 0 0 0;
+//     text-align: left;
+// `;
 
 export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestFormProps) {
-    const { leadGuestData, errors, handleLeadGuestChange, validateAllFields } = useValidation('leadGuest');
+    const { billingInfo, errors, handleBillingChange, validateAllFields } = useValidation('billing');
     const [selectedCountryCode, setSelectedCountryCode] = useState('+39');
 
     useEffect(() => {
@@ -99,7 +99,10 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
 
         if (validateAllFields()) {
             const completeFormData = {
-                phoneNumber: `${selectedCountryCode}${leadGuestData.phoneNumber}`,
+                billingInfo: {
+                    ...billingInfo,
+                    phone: `${selectedCountryCode}${billingInfo.phone}`,
+                },
             };
             onSubmit(completeFormData);
         }
@@ -108,48 +111,45 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
     return (
         <FormContainer>
             <FormHeader>
-                <FormTitle>Main Guest</FormTitle>
-                <FormSubtitle>Enter the main guest details below for confirmation.</FormSubtitle>
+                <FormTitle>Billing Information</FormTitle>
+                <FormSubtitle>Required for payment processing</FormSubtitle>
             </FormHeader>
 
             <form onSubmit={handleSubmit}>
                 <FormGrid>
                     <div>
                         <Input
-                            label="Full name"
-                            placeholder="Enter full name"
-                            value={leadGuestData.fullName}
-                            onChange={(e) => handleLeadGuestChange('fullName', e.target.value)}
-                            error={errors.fullName}
+                            label="First Name"
+                            placeholder="John"
+                            value={billingInfo.firstName}
+                            onChange={(e) => handleBillingChange('firstName', e.target.value)}
+                            error={errors.firstName}
                             inputConfig={{ variant: 'outlined', size: 'md' }}
                         />
-                        {!errors.fullName && <HelpText>Must match ID</HelpText>}
+                    </div>
+
+                    <div>
+                        <Input
+                            label="Last Name"
+                            placeholder="Doe"
+                            value={billingInfo.lastName}
+                            onChange={(e) => handleBillingChange('lastName', e.target.value)}
+                            error={errors.lastName}
+                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                        />
                     </div>
 
                     <div>
                         <Input
                             label="Email address"
-                            placeholder="Enter email address"
+                            placeholder="john@example.com"
                             type="email"
-                            value={leadGuestData.email}
-                            onChange={(e) => handleLeadGuestChange('email', e.target.value)}
+                            value={billingInfo.email}
+                            onChange={(e) => handleBillingChange('email', e.target.value)}
                             error={errors.email}
                             inputConfig={{ variant: 'outlined', size: 'md' }}
                         />
-                        {!errors.email && <HelpText>We'll send your tickets here</HelpText>}
-                    </div>
-
-                    <div>
-                        <Input
-                            label="Confirm email address"
-                            placeholder="Confirm email address"
-                            type="email"
-                            value={leadGuestData.confirmEmail}
-                            onChange={(e) => handleLeadGuestChange('confirmEmail', e.target.value)}
-                            error={errors.confirmEmail}
-                            inputConfig={{ variant: 'outlined', size: 'md' }}
-                        />
-                        {!errors.confirmEmail && <HelpText>Just to ensure we've got this right</HelpText>}
+                        {!errors.email}
                     </div>
 
                     <div>
@@ -179,29 +179,70 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
                             <PhoneInputWrapper>
                                 <Input
                                     placeholder="Enter phone number"
-                                    value={leadGuestData.phoneNumber}
-                                    onChange={(e) => handleLeadGuestChange('phoneNumber', e.target.value)}
-                                    error={errors.phoneNumber}
+                                    value={billingInfo.phone}
+                                    onChange={(e) => handleBillingChange('phone', e.target.value)}
+                                    error={errors.phone}
                                     inputConfig={{ variant: 'outlined', size: 'md' }}
                                 />
                             </PhoneInputWrapper>
                         </PhoneInputContainer>
-                        {!errors.phoneNumber && (
-                            <HelpText>We may reach out for booking updates here over SMS/WhatsApp</HelpText>
-                        )}
+                        {!errors.phone}
                     </div>
 
                     <FullWidthContainer>
                         <Input
-                            label="Date of birth"
-                            placeholder="DD/MM/YYYY"
-                            value={leadGuestData.dateOfBirth}
-                            onChange={(e) => handleLeadGuestChange('dateOfBirth', e.target.value)}
-                            error={errors.dateOfBirth}
+                            label="Address"
+                            placeholder="123 Main St"
+                            value={billingInfo.address}
+                            onChange={(e) => handleBillingChange('address', e.target.value)}
+                            error={errors.address}
                             inputConfig={{ variant: 'outlined', size: 'md' }}
                         />
-                        {!errors.dateOfBirth && <HelpText>Please use DD/MM/YYYY format only</HelpText>}
                     </FullWidthContainer>
+
+                    <div>
+                        <Input
+                            label="City"
+                            placeholder="New York"
+                            value={billingInfo.city}
+                            onChange={(e) => handleBillingChange('city', e.target.value)}
+                            error={errors.city}
+                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                        />
+                    </div>
+
+                    <div>
+                        <Input
+                            label="State"
+                            placeholder="NY"
+                            value={billingInfo.state}
+                            onChange={(e) => handleBillingChange('state', e.target.value)}
+                            error={errors.state}
+                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                        />
+                    </div>
+
+                    <div>
+                        <Input
+                            label="Postal Code"
+                            placeholder="10001"
+                            value={billingInfo.postalCode}
+                            onChange={(e) => handleBillingChange('postalCode', e.target.value)}
+                            error={errors.postalCode}
+                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                        />
+                    </div>
+
+                    <div>
+                        <Input
+                            label="Country"
+                            placeholder="US"
+                            value={billingInfo.country}
+                            onChange={(e) => handleBillingChange('country', e.target.value)}
+                            error={errors.country}
+                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                        />
+                    </div>
                 </FormGrid>
             </form>
         </FormContainer>

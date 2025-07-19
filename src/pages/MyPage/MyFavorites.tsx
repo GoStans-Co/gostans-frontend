@@ -5,8 +5,8 @@ import { Heart, HeartOff } from 'lucide-react';
 import Card from '@/components/Common/Card';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { wishlistAtom } from '@/atoms/wishlist';
-import useApiServices from '@/services';
 import { message } from 'antd';
+import { useApiServices } from '@/services/api';
 
 const FavoritesContainer = styled.div`
     width: 100%;

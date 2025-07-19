@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import Modal from '@/components/Modal/Modal';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
-import { AdvancedModalProps } from '@/types/modal';
+import { AdvancedModalProps } from '@/types/common/modal';
 
 export type CoreModalPopupProps = AdvancedModalProps;
 

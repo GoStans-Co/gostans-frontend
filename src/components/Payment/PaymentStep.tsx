@@ -2,12 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
-import { useValidation } from '@/hooks/useValidation';
+import { useValidation } from '@/hooks/utils/useValidation';
 import securitySvg from '@/assets/cards/security.svg';
 import masterCard from '@/assets/cards/mastercard.svg';
 import visaCard from '@/assets/cards/visa.svg';
 import paypalIcon from '@/assets/cards/paypal.svg';
 import GuestForm from '@/components/Payment/GuestForm';
+import { BillingInfo, CardInfo } from '@/services/api/checkout/types';
 
 type PaymentStepUIProps = {
     isProcessing: boolean;
@@ -15,7 +16,7 @@ type PaymentStepUIProps = {
     success: string;
     paymentCreated: any;
     onPayPalClick: () => Promise<void>;
-    onCardClick: () => void;
+    onCardClick: (cardInfo: CardInfo, billingInfo: BillingInfo, saveCard: boolean) => Promise<void>;
     onBack: () => void;
     total: number;
 };
@@ -273,6 +274,30 @@ const CardIconsContainer = styled.div`
     }
 `;
 
+const SaveCardSection = styled.div`
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e5e5;
+`;
+
+const SaveCardCheckbox = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    input[type='checkbox'] {
+        width: 16px;
+        height: 16px;
+        accent-color: #007bff;
+    }
+
+    label {
+        font-size: 14px;
+        color: #666;
+        cursor: pointer;
+    }
+`;
+
 export default function PaymentStepUI({
     isProcessing,
     error,
@@ -288,6 +313,8 @@ export default function PaymentStepUI({
     const [isPaymentInitializing, setIsPaymentInitializing] = useState(false);
     const [guestFormValidation, setGuestFormValidation] = useState<(() => boolean) | null>(null);
     const [validationError, setValidationError] = useState<string>('');
+    const [saveCard, setSaveCard] = useState(false);
+    const [guestFormData, setGuestFormData] = useState<any>(null);
 
     useEffect(() => {
         if (timeLeft <= 0) return;
@@ -335,7 +362,7 @@ export default function PaymentStepUI({
         if (!selectedMethod) return;
 
         if (guestFormValidation && !guestFormValidation()) {
-            setValidationError('Please fill in all required guest details');
+            setValidationError('Please fill in all required billing details');
             return;
         }
 
@@ -355,13 +382,21 @@ export default function PaymentStepUI({
                 onPayPalClick();
                 break;
             case 'card':
-                onCardClick();
+                const cardInfo: CardInfo = {
+                    number: cardDetails.cardNumber.replace(/\s/g, ''),
+                    exp_month: cardDetails.expiry.split('/')[0],
+                    exp_year: `20${cardDetails.expiry.split('/')[1]}`,
+                    cvv: cardDetails.cvv,
+                    type: detectCardType(cardDetails.cardNumber),
+                };
+                onCardClick(cardInfo, guestFormData?.billingInfo, saveCard);
                 break;
         }
     };
 
     const handleLeadGuestSubmit = (guestData: any) => {
-        console.log('Lead guest data submitted:', guestData);
+        setGuestFormData(guestData);
+        console.log('Billing data submitted:', guestData);
     };
 
     const handleGuestFormValidationReady = useCallback((validateFn: () => boolean) => {
@@ -501,6 +536,18 @@ export default function PaymentStepUI({
                                         <img src={securitySvg} alt="SafeKey" />
                                     </SecurityBadge>
                                 </SecuritySection>
+
+                                <SaveCardSection>
+                                    <SaveCardCheckbox>
+                                        <input
+                                            type="checkbox"
+                                            id="saveCard"
+                                            checked={saveCard}
+                                            onChange={(e) => setSaveCard(e.target.checked)}
+                                        />
+                                        <label htmlFor="saveCard">Save card details for future payments</label>
+                                    </SaveCardCheckbox>
+                                </SaveCardSection>
                             </div>
                         )}
                     </PaymentOption>
@@ -509,7 +556,7 @@ export default function PaymentStepUI({
 
             <ButtonsContainer>
                 <Button variant="outline" onClick={onBack} disabled={isProcessing} size="lg">
-                    ← Back
+                    Back
                 </Button>
 
                 <PayNowButtonWrapper>
@@ -528,7 +575,7 @@ export default function PaymentStepUI({
                             borderRadius: '12px',
                         }}
                     >
-                        {isPaymentInitializing ? 'Initializing...' : '🔒 Confirm & pay'}
+                        {isPaymentInitializing ? 'Initializing...' : '🔒 Confirm & Pay'}
                     </Button>
                 </PayNowButtonWrapper>
             </ButtonsContainer>

@@ -5,6 +5,7 @@ import { theme } from '@/styles/theme';
 import styled from 'styled-components';
 import AtomicDropdownModal from '@/components/Common/AtomicDropdownElements';
 import { CartItem } from '@/atoms/cart';
+import { useEffect } from 'react';
 
 type CartModalProps = {
     isOpen: boolean;
@@ -108,7 +109,28 @@ export default function CartModal({
     onRemoveItem,
     onGoToCart,
 }: CartModalProps) {
-    const totalPrice = cartItems.reduce((sum, item) => sum + Number(item.tourData.price) * item.quantity, 0);
+    useEffect(() => {
+        const handleScrollOrResize = () => {
+            if (isOpen) {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            window.addEventListener('scroll', handleScrollOrResize);
+            window.addEventListener('resize', handleScrollOrResize);
+        }
+
+        return () => {
+            window.removeEventListener('scroll', handleScrollOrResize);
+            window.removeEventListener('resize', handleScrollOrResize);
+        };
+    }, [isOpen, onClose]);
+
+    const totalPrice = cartItems.reduce((sum, item) => {
+        const itemPrice = item.tourData?.price ? parseFloat(item.tourData.price) : 0;
+        return sum + itemPrice * (item?.quantity ?? 0);
+    }, 0);
     const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
     const handleGoToCart = () => {
@@ -133,23 +155,37 @@ export default function CartModal({
                     Your Cart ({totalItems} {totalItems === 1 ? 'item' : 'items'})
                 </ModalTitle>
             </ModalHeader>
-
             {cartItems.length === 0 ? (
                 <EmptyCartMessage>Your cart is empty</EmptyCartMessage>
             ) : (
                 <>
-                    {cartItems.map((item) => (
+                    {cartItems.slice(0, 1).map((item) => (
                         <CartItemContainer key={item.tourId}>
-                            <CartItemImage src={item.tourData.mainImage ?? undefined} />
+                            <CartItemImage src={item.tourData?.mainImage ?? ''} />
                             <CartItemDetails>
-                                <CartItemName>{item.tourData.title}</CartItemName>
-                                <CartItemPrice>${parseFloat(item.tourData.price).toFixed(2)}</CartItemPrice>
+                                <CartItemName>{item.tourData?.title ?? 'No title'}</CartItemName>
+                                <CartItemPrice>
+                                    ${item.tourData?.price ? parseFloat(item.tourData.price).toFixed(2) : '0.00'}
+                                </CartItemPrice>
                             </CartItemDetails>
                             <RemoveButton onClick={() => onRemoveItem(item.tourId)}>
                                 <X size={16} />
                             </RemoveButton>
                         </CartItemContainer>
                     ))}
+
+                    {cartItems.length > 1 && (
+                        <div style={{ textAlign: 'center', padding: '6px 0', borderBottom: '0.5px solid #eee' }}>
+                            <Button
+                                variant="text"
+                                size="sm"
+                                onClick={handleGoToCart}
+                                style={{ fontSize: '14px', color: theme.colors.primary }}
+                            >
+                                Show More ({cartItems.length - 1} more items)
+                            </Button>
+                        </div>
+                    )}
 
                     <CartFooter>
                         <CartTotal>

@@ -10,6 +10,8 @@ type OrderSummaryProps = {
     showButton?: boolean;
     buttonText?: string;
     onButtonClick?: () => void;
+    buttonDisabled?: boolean;
+    validationErrors?: { [key: string]: string };
 };
 
 const OrderSummaryCard = styled.div`
@@ -138,6 +140,8 @@ export default function OrderSummary({
     showButton = false,
     buttonText = 'Proceed to Checkout',
     onButtonClick,
+    buttonDisabled = false,
+    validationErrors = {},
 }: OrderSummaryProps) {
     const subtotal = cartItems.reduce((sum, item) => sum + parseFloat(item.tourData.price) * item.quantity, 0);
     const tax = subtotal * 0.1;
@@ -207,7 +211,14 @@ export default function OrderSummary({
                 )}
 
                 {showButton && onButtonClick && buttonText !== 'none' && (
-                    <Button variant="primary" fullWidth onClick={onButtonClick} style={{ marginTop: '1.5rem' }}>
+                    <Button
+                        variant="primary"
+                        onClick={onButtonClick}
+                        disabled={buttonDisabled || Object.keys(validationErrors).length > 0}
+                        fullWidth
+                        size="lg"
+                        style={{ marginTop: '1.5rem' }}
+                    >
                         {buttonText}
                     </Button>
                 )}

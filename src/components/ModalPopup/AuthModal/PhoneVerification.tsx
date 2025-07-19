@@ -4,9 +4,9 @@ import { theme } from '@/styles/theme';
 import Input from '@/components/Common/Input';
 import Button from '@/components/Common/Button';
 import { ArrowLeft, ChevronDown } from 'lucide-react';
-import useApiServices from '@/services';
 import { message } from 'antd';
 import { COUNTRY_CODES } from '@/constants/countryCodes';
+import { useApiServices } from '@/services/api';
 
 enum VerificationStep {
     PHONE_INPUT = 'phone_input',

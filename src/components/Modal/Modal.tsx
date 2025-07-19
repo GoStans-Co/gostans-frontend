@@ -1,5 +1,5 @@
 import { theme } from '@/styles/theme';
-import { BaseModalProps } from '@/types/modal';
+import { BaseModalProps } from '@/types/common/modal';
 import React, { ReactNode, useEffect } from 'react';
 import styled from 'styled-components';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ModalOverlay, DropdownModal, ModalContent } from '@/components/Common/DropdownElemStyles';
-import { useDropdownModal } from '@/hooks/useDropdownModal';
+import useDropdownModal from '@/hooks/ui/useDropdownModal';
 
 type AtomicDropdownModalProps = {
     isOpen: boolean;

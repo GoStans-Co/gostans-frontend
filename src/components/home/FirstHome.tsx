@@ -7,7 +7,12 @@ import uzb4 from '@/assets/uzb4.jpg';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from '@/components/SearchBar';
-import { useDefaultSearchValues, useSearchActions, useSearchData, useSearchUIState } from '@/hooks/useSearchActions';
+import {
+    useDefaultSearchValues,
+    useSearchActions,
+    useSearchData,
+    useSearchUIState,
+} from '@/hooks/utils/useSearchActions';
 
 type IconBoxProps = {
     active?: boolean;

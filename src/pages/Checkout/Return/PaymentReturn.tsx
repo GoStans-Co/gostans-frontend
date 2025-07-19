@@ -1,6 +1,6 @@
+import { useApiServices } from '@/services/api';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useBookingFetchService } from '@/services/api/useCheckoutService';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -78,7 +78,7 @@ const SuccessMessage = styled.div`
 export default function PaymentReturn() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { executePayment } = useBookingFetchService();
+    const { checkout } = useApiServices();
     const hasExecuted = useRef(false);
 
     const [status, setStatus] = useState<'processing' | 'success' | 'error' | 'cancelled'>('processing');
@@ -117,7 +117,7 @@ export default function PaymentReturn() {
         try {
             setMessage('Confirming your payment with PayPal...');
 
-            const response = await executePayment({ payment_id, payer_id });
+            const response = await checkout.executePayment({ payment_id, payer_id });
 
             if (response.statusCode === 200) {
                 setStatus('success');
