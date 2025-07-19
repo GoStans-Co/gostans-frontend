@@ -75,18 +75,6 @@ const Nav = styled.nav<{ isOpen: boolean }>`
     }
 `;
 
-const NavList = styled.ul`
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-        flex-direction: column;
-        align-items: flex-start;
-        margin-top: 2rem;
-    }
-`;
-
 const RightSection = styled.div`
     display: flex;
     align-items: center;

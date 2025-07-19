@@ -11,7 +11,7 @@ import {
     SignUpData,
     SocialLoginData,
     SocialLoginResponse,
-} from './types';
+} from '@/services/api/auth/types';
 
 export const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -238,7 +238,14 @@ export const useAuthService = () => {
             if (response?.data?.token && response?.data?.refresh) {
                 const currentUser = userProfile;
                 if (currentUser) {
-                    setAuthCookie(response.data.token, currentUser, response.data.refresh);
+                    const userForCookie = {
+                        id: currentUser.data.id,
+                        email: currentUser.data.email,
+                        name: currentUser.data.name,
+                        phone: currentUser.data.phone || '',
+                        avatar: currentUser.data.image || undefined,
+                    };
+                    setAuthCookie(response.data.token, userForCookie, response.data.refresh);
                 }
 
                 return {

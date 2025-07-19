@@ -19,6 +19,7 @@ export type AuthResponse = {
         email: string;
         name: string;
         phone: string;
+        imageURL?: string;
     };
 };
 

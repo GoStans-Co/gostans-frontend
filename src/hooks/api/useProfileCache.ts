@@ -17,38 +17,39 @@ export const useUserProfileCache = () => {
     const updateUserProfileCache = (userData: AuthResponse['user'] | SocialAuthResponse | UserProfile): void => {
         const now = Date.now();
 
-        // Handle UserProfile type (from fetch service)
         if ('dateJoined' in userData && 'isVerified' in userData) {
             setUserProfile(userData as UserProfile);
-        }
-        // Handle social login response
-        else if ('accessToken' in userData) {
+        } else if ('accessToken' in userData) {
+            /* to handle social login response */
             const socialUser = userData as SocialAuthResponse;
             setUserProfile({
-                id: socialUser.id,
-                email: socialUser.email,
-                name: socialUser.name,
-                phone: socialUser.phone || '',
-                image: socialUser.imageURL,
-                dateJoined: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                isVerified: true,
-                wishLists: [],
+                data: {
+                    id: socialUser.id,
+                    email: socialUser.email,
+                    name: socialUser.name,
+                    phone: socialUser.phone || '',
+                    image: socialUser.imageURL || undefined,
+                    dateJoined: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    isVerified: true,
+                    wishLists: [],
+                },
             });
-        }
-        // Handle regular login response
-        else {
+        } else {
+            /* for regular login response */
             const regularUser = userData as AuthResponse['user'];
             setUserProfile({
-                id: regularUser.id,
-                email: regularUser.email,
-                name: regularUser.name,
-                phone: regularUser.phone || '',
-                image: undefined,
-                dateJoined: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                isVerified: false,
-                wishLists: [],
+                data: {
+                    id: regularUser.id,
+                    email: regularUser.email,
+                    name: regularUser.name,
+                    phone: regularUser.phone || '',
+                    image: regularUser.imageURL || undefined,
+                    dateJoined: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    isVerified: false,
+                    wishLists: [],
+                },
             });
         }
 
