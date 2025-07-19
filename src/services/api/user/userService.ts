@@ -31,8 +31,8 @@ export const useUserService = () => {
                 method: 'GET',
             });
 
-            if (response) {
-                updateUserProfileCache(response);
+            if (response && response.data) {
+                updateUserProfileCache(response.data);
                 return {
                     success: true,
                     data: response,
@@ -51,6 +51,7 @@ export const useUserService = () => {
             };
         }
     };
+
     const updateUserProfile = async (userData: UpdateUserData): Promise<Result<UserProfile, string>> => {
         try {
             const response = await fetchData({

@@ -76,19 +76,19 @@ export default function MyPage() {
             try {
                 const userResponse = await userService.getUserProfile();
                 if (userResponse.success) {
-                    const createdDate = new Date(userResponse.data.dateJoined);
-                    console.log('Fetched user data:', userResponse.data);
+                    const userData = userResponse.data.data;
+                    const createdDate = new Date(userData.dateJoined);
+                    console.log('Fetched user data:', userData);
                     setUserData({
-                        name: userResponse.data.name,
+                        name: userData.name,
                         dateJoined: !isNaN(createdDate.getTime()) ? createdDate.toLocaleDateString() : '2025-01-01',
-                        email: userResponse.data.email,
-                        image: userResponse.data.image || '',
-                        phone: userResponse.data.phone || '',
+                        email: userData.email,
+                        image: userData.image || '',
+                        phone: userData.phone || '',
                     });
 
-                    setProfileImage(userResponse.data.image || null);
+                    setProfileImage(userData.image || null);
                 } else {
-                    console.error('Failed to fetch user data:', userResponse.error);
                     messageApi.error({
                         content: 'Failed to fetch user data. Please try again later.',
                         duration: 3,
@@ -103,7 +103,6 @@ export default function MyPage() {
                     setProfileImage(null);
                 }
             } catch (error) {
-                console.error('Error fetching user data:', error);
                 messageApi.error({
                     content: 'Failed to fetch user data. Please try again later.',
                     duration: 3,
