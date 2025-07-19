@@ -35,7 +35,7 @@ export type CardDetails = {
     saveCard: boolean;
 };
 
-type PaymentMethod = 'mastercard' | 'apple-pay' | 'visa-pay' | 'paypal' | 'google-pay' | 'bank-transfer';
+export type PaymentMethod = 'mastercard' | 'apple-pay' | 'visa-pay' | 'paypal' | 'google-pay' | 'bank-transfer';
 
 export type PaymentDetails = {
     orderId: string;

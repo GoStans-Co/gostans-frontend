@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import { CartItem } from '@/atoms/cart';
 import Button from '@/components/Common/Button';
+import { CartItem } from '@/services/api/cart';
 
 type OrderSummaryProps = {
     cartItems: CartItem[];

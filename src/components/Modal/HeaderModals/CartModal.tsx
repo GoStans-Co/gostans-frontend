@@ -4,8 +4,8 @@ import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
 import styled from 'styled-components';
 import AtomicDropdownModal from '@/components/Common/AtomicDropdownElements';
-import { CartItem } from '@/atoms/cart';
 import { useEffect } from 'react';
+import { CartItem } from '@/services/api/cart';
 
 type CartModalProps = {
     isOpen: boolean;

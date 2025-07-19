@@ -14,7 +14,7 @@ import PaymentStep from '@/components/Payment/PaymentStep';
 import { AlertCircle } from 'lucide-react';
 import { useValidation } from '@/hooks/utils/useValidation';
 import { useApiServices } from '@/services/api';
-import { BookingFormData, PaymentDetails } from '@/services/api/cart';
+import { BookingFormData, PaymentDetails, PaymentMethod } from '@/services/api/cart';
 import { BillingInfo, CardInfo, CardPaymentRequest } from '@/services/api/checkout';
 
 type CheckoutStep = 'cart' | 'checkout' | 'payment' | 'confirmation';
@@ -95,14 +95,6 @@ const GuestSelectionGrid = styled.div`
         grid-template-columns: 1fr;
         gap: ${({ theme }) => theme.spacing.lg};
     }
-`;
-
-const SectionTitle = styled.h4`
-    margin: 0 0 ${({ theme }) => theme.spacing.lg} 0;
-    font-family: ${({ theme }) => theme.typography.fontFamily.display};
-    font-size: ${({ theme }) => theme.fontSizes.lg};
-    font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
-    color: ${({ theme }) => theme.colors.text};
 `;
 
 const GuestRow = styled.div`
@@ -369,15 +361,6 @@ export default function CartPage() {
         [itemId: string]: { adults: number; children: number; infants: number };
     }>({});
     const [isFamilyPackage, setIsFamilyPackage] = useState(false);
-    const [cardFormData, setCardFormData] = useState<{
-        cardInfo: CardInfo | null;
-        billingInfo: BillingInfo | null;
-        saveCard: boolean;
-    }>({
-        cardInfo: null,
-        billingInfo: null,
-        saveCard: false,
-    });
     const [selectedDates, setSelectedDates] = useState<{ [itemId: string]: Date | null }>({});
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -555,10 +538,10 @@ export default function CartPage() {
 
                 const cartItemsForConfirmation = [...cartItems];
 
-                setCardFormData((prev) => ({
+                setFormData((prev) => ({
                     ...prev,
                     paymentDetails: paymentDetails,
-                    paymentMethod: 'card',
+                    paymentMethod: 'card' as PaymentMethod,
                     cartItems: cartItemsForConfirmation,
                     totalAmount: total,
                 }));
@@ -575,7 +558,6 @@ export default function CartPage() {
             setIsProcessing(false);
         }
     };
-
     const validateCartItems = () => {
         return validateCart(cartItems, selectedDates, guestCounts, isFamilyPackage);
     };

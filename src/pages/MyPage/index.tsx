@@ -75,7 +75,7 @@ export default function MyPage() {
         const fetchUserData = async () => {
             try {
                 const userResponse = await userService.getUserProfile();
-                if (userResponse.statusCode === 200) {
+                if (userResponse.success) {
                     const createdDate = new Date(userResponse.data.dateJoined);
                     console.log('Fetched user data:', userResponse.data);
                     setUserData({
@@ -88,7 +88,19 @@ export default function MyPage() {
 
                     setProfileImage(userResponse.data.image || null);
                 } else {
-                    console.error('Failed to fetch user data:', userResponse);
+                    console.error('Failed to fetch user data:', userResponse.error);
+                    messageApi.error({
+                        content: 'Failed to fetch user data. Please try again later.',
+                        duration: 3,
+                    });
+                    setUserData({
+                        name: '',
+                        dateJoined: '',
+                        email: '',
+                        image: '',
+                        phone: '',
+                    });
+                    setProfileImage(null);
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -151,7 +163,7 @@ export default function MyPage() {
         try {
             const response = await userService.uploadProfileImage(file);
 
-            if (response.statusCode === 200) {
+            if (response.success) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     setProfileImage(e.target?.result as string);

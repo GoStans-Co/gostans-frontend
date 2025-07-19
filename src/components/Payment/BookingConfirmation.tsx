@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import Button from '@/components/Common/Button';
-import { BookingFormData } from '@/types/cart';
-import { CartItem } from '@/atoms/cart';
+import { BookingFormData, CartItem } from '@/services/api/cart';
 
 type BookingConfirmationProps = {
     formData: BookingFormData;

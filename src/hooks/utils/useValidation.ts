@@ -205,7 +205,6 @@ export const useValidation = (formType: FormType = 'card') => {
      * Cart validation functions
      */
     const validateCartItem = (
-        item: any,
         selectedDate: Date | null,
         guestCounts: { adults: number; children: number; infants: number },
         isFamilyPackage: boolean,
@@ -213,19 +212,16 @@ export const useValidation = (formType: FormType = 'card') => {
     ): string[] => {
         const errorMessages = [];
 
-        // Check if date is selected
         if (!selectedDate) {
             errorMessages.push('Please select a date');
         }
 
-        // Check if at least one guest is selected
         const totalGuests = guestCounts.adults + guestCounts.children + guestCounts.infants;
 
         if (totalGuests === 0) {
             errorMessages.push('Please select at least one guest');
         }
 
-        // For family package, check minimum requirement
         if (isFamilyPackage && isFirstItem && totalGuests < 3) {
             errorMessages.push('Family package requires minimum 3 guests');
         }
@@ -248,7 +244,6 @@ export const useValidation = (formType: FormType = 'card') => {
             cartItems.forEach((item, index) => {
                 const counts = guestCounts[item.tourId] || { adults: 1, children: 0, infants: 0 };
                 const errorMessages = validateCartItem(
-                    item,
                     selectedDates[item.tourId],
                     counts,
                     isFamilyPackage,
@@ -467,21 +462,17 @@ export const useValidation = (formType: FormType = 'card') => {
     }, []);
 
     return {
-        // Card-related exports
         cardDetails,
         handleCardDetailsChange,
         detectCardType,
 
-        // Billing-related exports
         billingInfo,
         handleBillingChange,
 
-        // Cart validation exports
         cartValidationErrors,
         validateCart,
         resetCartValidation,
 
-        // Common exports
         errors,
         validateAllFields,
         resetAll,

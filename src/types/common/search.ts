@@ -1,4 +1,4 @@
-import { TourListResponse } from '@/atoms/tours';
+import { TourListResponse } from '@/services/api/tours';
 
 export type SearchData = {
     destination: string;
