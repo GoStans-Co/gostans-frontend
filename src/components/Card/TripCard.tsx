@@ -158,6 +158,7 @@ export type TripCardProps = {
     onQuantityChange?: (quantity: number) => void;
     actions?: React.ReactNode;
     customContent?: React.ReactNode;
+    shortDescription?: string;
 };
 
 export default function TripCard({

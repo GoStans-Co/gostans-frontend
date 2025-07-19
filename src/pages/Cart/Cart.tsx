@@ -3,18 +3,19 @@ import styled from 'styled-components';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import Button from '@/components/Common/Button';
 import EnterInfoStep from '@/components/Cart/EnterInfoStep';
-import { BookingFormData, PaymentDetails } from '@/types/cart';
 import { StepsWrapper } from '@/components/Steps';
 import TripCard from '@/components/Card/TripCard';
 import { useRecoilState } from 'recoil';
 import { cartAtom } from '@/atoms/cart';
-import { useBookingFetchService } from '@/services/api/useCheckoutService';
 import OrderSummary from '@/components/Payment/OrderSummary';
 import BookingConfirmation from '@/components/Payment/BookingConfirmation';
 import PaymentReturnHandler from '@/components/Payment/PaymentReturnHandle';
 import PaymentStep from '@/components/Payment/PaymentStep';
-import { DatePicker } from 'antd';
 import { AlertCircle } from 'lucide-react';
+import { useValidation } from '@/hooks/utils/useValidation';
+import { useApiServices } from '@/services/api';
+import { BookingFormData, PaymentDetails } from '@/services/api/cart';
+import { BillingInfo, CardInfo, CardPaymentRequest } from '@/services/api/checkout';
 
 type CheckoutStep = 'cart' | 'checkout' | 'payment' | 'confirmation';
 
@@ -88,6 +89,7 @@ const GuestSelectionGrid = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: ${({ theme }) => theme.spacing.xl};
+    align-items: start;
 
     @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
         grid-template-columns: 1fr;
@@ -118,6 +120,7 @@ const GuestInfo = styled.div`
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    text-align: left;
 `;
 
 const GuestLabel = styled.div`
@@ -138,6 +141,7 @@ const GuestControls = styled.div`
     display: flex;
     align-items: center;
     gap: ${({ theme }) => theme.spacing.sm};
+    text-align: left;
 `;
 
 const GuestCount = styled.span`
@@ -169,12 +173,169 @@ const FamilyPackageNotice = styled.div`
     text-align: center;
 `;
 
-const LeftAlignedSection = styled.div`
+const GuestSelectionTitle = styled.h3`
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: 1.5rem;
     text-align: left;
 `;
 
-const DatePickerContainer = styled.div`
-    text-align: left;
+const LeftAlignedSection = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+`;
+
+const CalendarContainer = styled.div`
+    background: ${({ theme }) => theme.colors.background};
+    border-radius: 8px;
+    padding: 1rem;
+    // box-shadow: 0 1px 2px ${({ theme }) => theme.colors.border};
+`;
+
+const CalendarHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+`;
+
+const CalendarTitle = styled.h3`
+    font-size: 1rem;
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
+    margin: 0;
+`;
+
+const SelectedDateText = styled.div`
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: ${({ theme }) => theme.colors.lightText};
+`;
+
+const CalendarNav = styled.div`
+    display: flex;
+    gap: 0.5rem;
+`;
+
+const CalendarNavButton = styled.button`
+    background: none;
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: 4px;
+    padding: 0.25rem 0.7rem;
+    cursor: pointer;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 1rem;
+    transition: all 0.2s;
+
+    &:hover {
+        background: ${({ theme }) => theme.colors.primary};
+        border-color: ${({ theme }) => theme.colors.lightBackground};
+        color: ${({ theme }) => theme.colors.border};
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+`;
+
+const CalendarGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.25rem;
+`;
+
+const CalendarWeekday = styled.div`
+    text-align: center;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #666;
+    padding: 0.5rem 0;
+`;
+
+const CalendarDay = styled.button<{ $isSelected?: boolean; $isToday?: boolean; $isDisabled?: boolean }>`
+    aspect-ratio: 1;
+    border: 1px solid ${(props) => (props.$isSelected ? '#007bff' : props.$isToday ? '#007bff' : 'transparent')};
+    background: ${(props) => (props.$isSelected ? '#007bff' : props.$isToday ? '#e6f2ff' : '#fff')};
+    color: ${(props) => (props.$isSelected ? '#fff' : props.$isDisabled ? '#ccc' : '#333')};
+    border-radius: 4px;
+    cursor: ${(props) => (props.$isDisabled ? 'not-allowed' : 'pointer')};
+    font-size: 0.875rem;
+    transition: all 0.2s;
+
+    &:hover:not(:disabled) {
+        background: ${(props) => (props.$isSelected ? '#0056b3' : '#f0f0f0')};
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+`;
+
+const TourActions = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+`;
+
+const TourActionButtons = styled.div`
+    display: flex;
+    gap: 1rem;
+`;
+
+const TourPricing = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+`;
+
+const TourQuantity = styled.span`
+    color: #666;
+`;
+
+const TourPrice = styled.span`
+    fontsize: 1.25rem;
+    fontweight: 600;
+    color: ${({ theme }) => theme.colors.primary};
+`;
+
+const CustomContent = styled.div`
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+`;
+
+const TourDetails = styled.span`
+    font-size: 0.875rem;
+    color: ${({ theme }) => theme.colors.lightText};
+`;
+
+const TestButton = styled.button<{ $active?: boolean }>`
+    background-color: ${(props) => (props.$active ? '#ffc107' : '#007bff')};
+    color: white;
+    border: none;
+    padding: 0.2rem 0.3rem;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    float: right;
+`;
+
+const ValidationError = styled.div`
+    color: ${({ theme }) => theme.colors.error};
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    margin-top: ${({ theme }) => theme.spacing.sm};
+    text-align: center;
+    background-color: rgb(246, 227, 229);
+    padding: ${({ theme }) => theme.spacing.sm};
+    border-radius: ${({ theme }) => theme.borderRadius.sm};
 `;
 
 export default function CartPage() {
@@ -190,7 +351,7 @@ export default function CartPage() {
     };
 
     const [searchParams] = useSearchParams();
-    const { createPayment, executePayment } = useBookingFetchService();
+    const { checkout } = useApiServices();
 
     const [cartItems, setCartItems] = useRecoilState(cartAtom);
     const [currentStep, setCurrentStep] = useState<CheckoutStep>(getCurrentStep());
@@ -204,12 +365,23 @@ export default function CartPage() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string>('');
     const [success, setSuccess] = useState<string>('');
-    const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [guestCounts, setGuestCounts] = useState<{
         [itemId: string]: { adults: number; children: number; infants: number };
     }>({});
     const [isFamilyPackage, setIsFamilyPackage] = useState(false);
+    const [cardFormData, setCardFormData] = useState<{
+        cardInfo: CardInfo | null;
+        billingInfo: BillingInfo | null;
+        saveCard: boolean;
+    }>({
+        cardInfo: null,
+        billingInfo: null,
+        saveCard: false,
+    });
+    const [selectedDates, setSelectedDates] = useState<{ [itemId: string]: Date | null }>({});
+    const [currentMonth, setCurrentMonth] = useState(new Date());
 
+    const { cartValidationErrors, validateCart } = useValidation('cart');
     const hasInitialized = useRef(false);
 
     useEffect(() => {
@@ -269,7 +441,7 @@ export default function CartPage() {
                 })),
             };
 
-            const response = await createPayment(paymentRequest);
+            const response = await checkout.createPayment(paymentRequest);
 
             if (response.statusCode === 200) {
                 setPaymentCreated(response.data);
@@ -293,7 +465,7 @@ export default function CartPage() {
 
             const calculatedTotal = calculateTotal();
 
-            const executeResponse = await executePayment({ payment_id, payer_id });
+            const executeResponse = await checkout.executePayment({ payment_id, payer_id });
 
             if (executeResponse.statusCode === 200) {
                 const paymentDetails: PaymentDetails = {
@@ -343,12 +515,69 @@ export default function CartPage() {
         window.location.href = paymentCreated.approvalUrl;
     };
 
-    const handleCardPayment = () => {
-        if (!paymentCreated?.approvalUrl) {
-            setError('Payment not initialized. Please try again.');
-            return;
+    const handleVisaCardPayment = async (cardInfo: CardInfo, billingInfo: BillingInfo, saveCard: boolean) => {
+        try {
+            setError('');
+            setIsProcessing(true);
+
+            const mainTour = cartItems[0];
+            const total = calculateTotal();
+
+            const cardPaymentRequest: CardPaymentRequest = {
+                amount: Number(total.toFixed(2)),
+                currency: 'USD',
+                tour_uuid: mainTour.tourId,
+                participants: formData.participants.map((participant: any) => ({
+                    firstName: participant.firstName || participant.first_name,
+                    lastName: participant.lastName || participant.last_name,
+                    idType: participant.idType || participant.id_type || 'passport',
+                    idNumber: participant.idNumber || participant.id_number,
+                    dateOfBirth: participant.dateOfBirth || participant.date_of_birth,
+                })),
+                card_info: cardInfo,
+                billing_info: billingInfo,
+                save_card: saveCard,
+            };
+
+            const response = await checkout.createVisaPayment(cardPaymentRequest);
+
+            if (response.statusCode === 200) {
+                const paymentDetails: PaymentDetails = {
+                    orderId: response.data.payment_id,
+                    payerId: billingInfo.email,
+                    payerEmail: billingInfo.email,
+                    payerName: `${billingInfo.firstName} ${billingInfo.lastName}`,
+                    amount: response.data.amount.toString(),
+                    currency: response.data.currency,
+                    status: response.data.status,
+                    transactionId: response.data.payment_id,
+                };
+
+                const cartItemsForConfirmation = [...cartItems];
+
+                setCardFormData((prev) => ({
+                    ...prev,
+                    paymentDetails: paymentDetails,
+                    paymentMethod: 'card',
+                    cartItems: cartItemsForConfirmation,
+                    totalAmount: total,
+                }));
+
+                setCartItems([]);
+                setSuccess('Payment completed successfully!');
+                navigate('/cart/checkout/confirmation');
+            } else {
+                throw new Error(response.message);
+            }
+        } catch (err: any) {
+            setError(err.message || 'Card payment failed');
+        } finally {
+            setIsProcessing(false);
         }
-        window.location.href = paymentCreated.approvalUrl;
+    };
+
+    const validateCartItems = () => {
+        return validateCart(cartItems, selectedDates, guestCounts, isFamilyPackage);
     };
 
     const calculateTotal = () => {
@@ -366,12 +595,65 @@ export default function CartPage() {
         return subtotal + tax;
     };
 
+    const getDaysInMonth = (date: Date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+
+        const days = [];
+
+        for (let i = 0; i < startingDayOfWeek; i++) {
+            days.push(null);
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            days.push(new Date(year, month, i));
+        }
+
+        return days;
+    };
+
+    const formatMonth = (date: Date) => {
+        return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    };
+
+    const isToday = (date: Date | null) => {
+        if (!date) return false;
+        const today = new Date();
+        return date.toDateString() === today.toDateString();
+    };
+
+    const isPastDate = (date: Date | null) => {
+        if (!date) return false;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return date < today;
+    };
+
+    const handleDateSelect = (itemId: string, date: Date) => {
+        setSelectedDates((prev) => ({ ...prev, [itemId]: date }));
+
+        if (cartValidationErrors[itemId]) {
+            validateCart(cartItems, { ...selectedDates, [itemId]: date }, guestCounts, isFamilyPackage);
+        }
+    };
+
+    const navigateMonth = (direction: number) => {
+        setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + direction, 1));
+    };
+
     const removeItem = (tourId: string) => {
         setCartItems((prev) => prev.filter((item) => item.tourId !== tourId));
     };
 
     const handleCheckout = () => {
-        navigate('/cart/checkout');
+        const isValid = validateCartItems();
+        if (isValid) {
+            navigate('/cart/checkout');
+        }
     };
 
     const handleInfoNext = (data: Partial<BookingFormData>) => {
@@ -385,6 +667,7 @@ export default function CartPage() {
             ...data,
             totalGuests,
             guestCounts,
+            selectedDates,
         }));
         navigate('/cart/checkout/payment');
     };
@@ -520,7 +803,7 @@ export default function CartPage() {
                             success={success}
                             paymentCreated={paymentCreated}
                             onPayPalClick={handlePayPalPayment}
-                            onCardClick={handleCardPayment}
+                            onCardClick={handleVisaCardPayment}
                             onBack={handlePaymentBack}
                             total={calculateTotal()}
                         />
@@ -571,29 +854,15 @@ export default function CartPage() {
                                         date={item.selectedDate || 'Date not specified'}
                                         variant="default"
                                         customContent={
-                                            <div
-                                                style={{
-                                                    marginTop: '0.5rem',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    alignItems: 'flex-end',
-                                                }}
-                                            >
-                                                <span style={{ fontSize: '0.875rem', color: '#666' }}>
+                                            <CustomContent>
+                                                <TourDetails>
                                                     {item.tourData.duration} • {getTotalPeople(item.tourId)} people
-                                                </span>
-                                            </div>
+                                                </TourDetails>
+                                            </CustomContent>
                                         }
                                         actions={
-                                            <div
-                                                style={{
-                                                    display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    alignItems: 'flex-start',
-                                                    width: '100%',
-                                                }}
-                                            >
-                                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                            <TourActions>
+                                                <TourActionButtons>
                                                     <Button variant="text" size="sm">
                                                         Edit
                                                     </Button>
@@ -604,38 +873,22 @@ export default function CartPage() {
                                                     >
                                                         Remove
                                                     </Button>
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                    <span style={{ color: '#666' }}>Qty: {item.quantity}</span>
-                                                    <span
-                                                        style={{
-                                                            fontSize: '1.25rem',
-                                                            fontWeight: '600',
-                                                            color: '#0F2846',
-                                                        }}
-                                                    >
+                                                </TourActionButtons>
+                                                <TourPricing>
+                                                    <TourQuantity>Qty: {item.quantity}</TourQuantity>
+                                                    <TourPrice>
                                                         ${(parseFloat(item.tourData.price) * item.quantity).toFixed(2)}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                                    </TourPrice>
+                                                </TourPricing>
+                                            </TourActions>
                                         }
                                     />
-                                    <div style={{ marginBottom: '1rem', textAlign: 'end' }}>
-                                        <button
-                                            style={{
-                                                backgroundColor: isFamilyPackage ? '#ffc107' : '#007bff',
-                                                color: 'white',
-                                                border: 'none',
-                                                padding: '0.2rem 0.3rem ',
-                                                fontSize: '0.7rem',
-                                                borderRadius: '4px',
-                                                cursor: 'pointer',
-                                            }}
-                                            onClick={() => setIsFamilyPackage(!isFamilyPackage)}
-                                        >
-                                            {isFamilyPackage ? 'Disable' : 'Enable'} Family Package Test
-                                        </button>
-                                    </div>
+                                    <TestButton
+                                        $active={isFamilyPackage}
+                                        onClick={() => setIsFamilyPackage(!isFamilyPackage)}
+                                    >
+                                        {isFamilyPackage ? 'Disable' : 'Enable'} Family Package Test
+                                    </TestButton>
 
                                     {isFamilyPackage && item.tourId === cartItems[0]?.tourId && (
                                         <FamilyPackageNotice>
@@ -647,10 +900,9 @@ export default function CartPage() {
                                     )}
 
                                     <GuestSelectionCard>
+                                        <GuestSelectionTitle>Guest Selecting</GuestSelectionTitle>
                                         <GuestSelectionGrid>
                                             <LeftAlignedSection>
-                                                <SectionTitle>Info</SectionTitle>
-
                                                 <GuestRow>
                                                     <GuestInfo>
                                                         <GuestLabel>Adult</GuestLabel>
@@ -746,16 +998,59 @@ export default function CartPage() {
                                                 </GuestRow>
                                             </LeftAlignedSection>
 
-                                            <DatePickerContainer>
-                                                <SectionTitle>Date</SectionTitle>
-                                                <DatePicker
-                                                    value={selectedDate}
-                                                    style={{ width: '100%', height: '48px' }}
-                                                    placeholder="04.13.2025"
-                                                    onChange={setSelectedDate}
-                                                />
-                                            </DatePickerContainer>
+                                            <CalendarContainer>
+                                                <CalendarHeader>
+                                                    <CalendarTitle>{formatMonth(currentMonth)}</CalendarTitle>
+                                                    <CalendarNav>
+                                                        <CalendarNavButton onClick={() => navigateMonth(-1)}>
+                                                            &#8249;
+                                                        </CalendarNavButton>
+                                                        <CalendarNavButton onClick={() => navigateMonth(1)}>
+                                                            &#8250;
+                                                        </CalendarNavButton>
+                                                    </CalendarNav>
+                                                </CalendarHeader>
+
+                                                <CalendarGrid>
+                                                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => (
+                                                        <CalendarWeekday key={day}>{day}</CalendarWeekday>
+                                                    ))}
+
+                                                    {getDaysInMonth(currentMonth).map((date, index) => (
+                                                        <CalendarDay
+                                                            key={index}
+                                                            $isSelected={
+                                                                !!date &&
+                                                                selectedDates[item.tourId]?.toDateString() ===
+                                                                    date.toDateString()
+                                                            }
+                                                            $isToday={isToday(date)}
+                                                            $isDisabled={isPastDate(date) || isToday(date)}
+                                                            disabled={!date || isPastDate(date) || isToday(date)}
+                                                            onClick={() =>
+                                                                date &&
+                                                                !isPastDate(date) &&
+                                                                !isToday(date) &&
+                                                                handleDateSelect(item.tourId, date)
+                                                            }
+                                                        >
+                                                            {date?.getDate()}
+                                                        </CalendarDay>
+                                                    ))}
+                                                </CalendarGrid>
+
+                                                {selectedDates[item.tourId] && (
+                                                    <SelectedDateText>
+                                                        Selected: {selectedDates[item.tourId]?.toLocaleDateString()}
+                                                    </SelectedDateText>
+                                                )}
+                                            </CalendarContainer>
                                         </GuestSelectionGrid>
+                                        {cartValidationErrors[item.tourId] && (
+                                            <ValidationError>
+                                                Please select a date and number of adults{' '}
+                                            </ValidationError>
+                                        )}
                                     </GuestSelectionCard>
                                 </div>
                             ))}
@@ -766,6 +1061,8 @@ export default function CartPage() {
                             total={total}
                             showButton={true}
                             onButtonClick={handleCheckout}
+                            validationErrors={cartValidationErrors}
+                            buttonDisabled={false}
                         />
                     </CartGrid>
                 </Container>

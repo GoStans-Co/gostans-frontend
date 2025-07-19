@@ -21,7 +21,6 @@ import Button from '@/components/Common/Button';
 import Card from '@/components/Common/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
-import useApiServices from '@/services';
 import { tourDetailsAtom } from '@/atoms/tours';
 import CopyLink from '@/components/CopyLink';
 import default_n1 from '@/assets/default/default_1.jpg';
@@ -30,10 +29,13 @@ import TourCard from '@/components/Tours/ToursCard';
 import { tours } from '@/data/mockData';
 import { cartAtom } from '@/atoms/cart';
 import { useRecoilValue, useRecoilState, useSetRecoilState } from 'recoil';
-import useFavorite from '@/hooks/useFavorite';
-import useCookieAuth from '@/services/cookieAuthService';
-import useModal from '@/hooks/useModal';
+import useFavorite from '@/hooks/ui/useFavorite';
+import useCookieAuth from '@/services/cache/cookieAuthService';
+import useModal from '@/hooks/ui/useModal';
 import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
+import { TourDetailsResponse } from '@/services/api/tours';
+import { CartItem } from '@/services/api/cart';
+import { useApiServices } from '@/services/api';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -362,10 +364,25 @@ const DayContent = styled.div`
     }
 
     p {
-        margin: 0;
+        margin: 0.5rem 0 0 0;
         color: ${({ theme }) => theme.colors.lightText};
         font-size: 14px;
     }
+`;
+
+const DayHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    width: 100%;
+`;
+
+const Arrow = styled.span<{ expanded: boolean }>`
+    transform: ${({ expanded }) => (expanded ? 'rotate(180deg)' : 'rotate(0deg)')};
+    transition: transform 0.3s ease;
+    color: ${({ theme }) => theme.colors.primary};
+    font-size: 12px;
 `;
 
 const PriceHeader = styled.div`
@@ -590,7 +607,12 @@ export default function SearchPackageDetails() {
     const setTourDetailsCache = useSetRecoilState(tourDetailsAtom);
     const [cart, setCart] = useRecoilState(cartAtom);
 
-    const { tours: toursService } = useApiServices();
+    const { tours: toursService, cart: cartApiService } = useApiServices();
+
+    const { isAuthenticated } = useCookieAuth();
+    const { openModal, closeModal } = useModal();
+
+    const hasInitialized = useRef(false);
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -604,11 +626,7 @@ export default function SearchPackageDetails() {
         isOpen: false,
         type: null,
     });
-
-    const { isAuthenticated } = useCookieAuth();
-    const { openModal, closeModal } = useModal();
-
-    const hasInitialized = useRef(false);
+    const [expandedDays, setExpandedDays] = useState(new Set([1]));
 
     const toursPerPage = 3;
 
@@ -752,7 +770,30 @@ export default function SearchPackageDetails() {
 
     const visibleTours = filteredTours.slice(currentPage * toursPerPage, (currentPage + 1) * toursPerPage);
 
-    const handleBookingAction = () => {
+    const createCartItem = (tour: TourDetailsResponse, selectedDate?: string): CartItem => {
+        return {
+            tourId: tour.uuid,
+            tourData: {
+                uuid: tour.uuid,
+                title: tour.title,
+                price: tour.price,
+                mainImage: tour.mainImage ?? '',
+                duration: tour.duration,
+                about: tour.about,
+                tourType: parseInt(tour.tourType) || 0,
+                shortDescription: tour.shortDescription || '',
+            },
+            quantity: 1,
+            selectedDate: selectedDate,
+            adults: 1,
+            addedAt: Date.now(),
+            price: parseFloat(tour.price),
+            duration: tour.duration,
+        };
+    };
+
+    /* we handle booking action based on whether the user is authenticated or not */
+    const handleBookingAction = async () => {
         const isInCart = cart.some((item) => item.tourId === tour.uuid);
 
         if (isInCart) {
@@ -765,29 +806,32 @@ export default function SearchPackageDetails() {
                 });
             }
         } else {
-            const cartItem = {
-                tourId: tour.uuid,
-                tourData: tour,
-                quantity: 1,
-                selectedDate: selectedDate?.format('YYYY-MM-DD'),
-                adults: 1,
-                addedAt: Date.now(),
-            };
+            if (isAuthenticated()) {
+                try {
+                    const response = await cartApiService.addToCart({
+                        tourUuid: tour.uuid,
+                        quantity: 1,
+                    });
 
-            setCart((prev) => [...prev, cartItem]);
-            messageApi.success(`Tour "${tour.title}" added to your cart!`);
+                    if (response.statusCode === 201) {
+                        messageApi.success(`Tour "${tour.title}" added to your cart!`);
+                    } else if (response.statusCode === 200) {
+                        messageApi.info(`Tour "${tour.title}" quantity updated in cart!`);
+                    }
+                } catch (error) {
+                    messageApi.error('Failed to add tour to cart');
+                }
+            } else {
+                /* if user is not authenticated, we show a confirmation modal */
+                const cartItem = createCartItem(tour, selectedDate?.format('YYYY-MM-DD'));
+                setCart((prev) => [...prev, cartItem]);
+                messageApi.success(`Tour "${tour.title}" added to your cart!`);
+            }
         }
     };
 
     const handleConfirmedAddToCart = () => {
-        const cartItem = {
-            tourId: tour.uuid,
-            tourData: tour,
-            quantity: 1,
-            selectedDate: selectedDate?.format('YYYY-MM-DD'),
-            adults: 1,
-            addedAt: Date.now(),
-        };
+        const cartItem = createCartItem(tour, selectedDate?.format('YYYY-MM-DD'));
 
         setCart((prev) => {
             const existingIndex = prev.findIndex((item) => item.tourId === tour.uuid);
@@ -803,9 +847,20 @@ export default function SearchPackageDetails() {
         });
 
         messageApi.success(`Tour "${tour.title}" added to your cart!`);
-
         setModalConfig({ isOpen: false, type: null });
         navigate('/cart');
+    };
+
+    const toggleDay = (dayNumber: number) => {
+        setExpandedDays((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(dayNumber)) {
+                newSet.delete(dayNumber);
+            } else {
+                newSet.add(dayNumber);
+            }
+            return newSet;
+        });
     };
 
     const handleModalConfirm = () => {
@@ -1046,13 +1101,18 @@ export default function SearchPackageDetails() {
                                 <h2>Itinerary</h2>
                                 <Itinerary>
                                     {tour.itineraries?.map((day) => (
-                                        <ItineraryDay key={day.day_number} active={day.day_number === 1}>
-                                            <DayNumber active={day.day_number === 1}>{day.day_number}</DayNumber>
+                                        <ItineraryDay key={day.dayNumber} active={expandedDays.has(day.dayNumber)}>
+                                            <DayNumber active={expandedDays.has(day.dayNumber)}>
+                                                {day.dayNumber}
+                                            </DayNumber>
                                             <DayContent>
-                                                <h4>
-                                                    Day {day.day_number}: {day.day_title}
-                                                </h4>
-                                                <p>{day.description}</p>
+                                                <DayHeader onClick={() => toggleDay(day.dayNumber)}>
+                                                    <h4>
+                                                        Day {day.dayNumber}: {day.dayTitle}
+                                                    </h4>
+                                                    <Arrow expanded={expandedDays.has(day.dayNumber)}>▼</Arrow>
+                                                </DayHeader>
+                                                {expandedDays.has(day.dayNumber) && <p>{day.description}</p>}
                                             </DayContent>
                                         </ItineraryDay>
                                     ))}

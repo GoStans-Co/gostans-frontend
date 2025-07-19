@@ -3,11 +3,11 @@ import styled from 'styled-components';
 import Card from '@/components/Common/Card';
 import Button from '@/components/Common/Button';
 import Input from '@/components/Common/Input';
-import { EnterInfoStepProps, Participant } from '@/types/cart';
 import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
 import TripCard from '@/components/Card/TripCard';
-import OrderSummary from '../Payment/OrderSummary';
+import OrderSummary from '@/components/Payment/OrderSummary';
+import { EnterInfoStepProps, Participant } from '@/services/api/cart';
 
 const StepContainer = styled.div`
     display: grid;
@@ -94,11 +94,6 @@ const ErrorMessage = styled.span`
     color: ${({ theme }) => theme.colors.accent};
     font-size: ${({ theme }) => theme.fontSizes.sm};
     align-self: flex-start;
-`;
-
-const AddParticipantButton = styled(Button)`
-    align-self: flex-start;
-    margin-top: 0;
 `;
 
 const ButtonGroup = styled.div`
@@ -190,18 +185,6 @@ export default function EnterInfoStep({
         }
     }, [guestCounts]);
 
-    const addParticipant = () => {
-        const newParticipant: Participant = {
-            id: Date.now().toString(),
-            firstName: '',
-            lastName: '',
-            idType: 'passport',
-            idNumber: '',
-            dateOfBirth: '',
-        };
-        setParticipants([...participants, newParticipant]);
-    };
-
     const clearError = (participantId: string, field: string) => {
         setValidationErrors((prev) => ({
             ...prev,
@@ -271,7 +254,7 @@ export default function EnterInfoStep({
                     id={cartItems[0]?.tourId || '1'}
                     image={cartItems[0]?.tourData.mainImage || '/api/placeholder/80/80'}
                     title={cartItems[0]?.tourData.title || 'Samarkand city Tour (Individual)'}
-                    subtitle={cartItems[0]?.tourData.tourType || 'One day trip'}
+                    subtitle={String(cartItems[0]?.tourData.tourType || 'One day trip')}
                     date={cartItems[0]?.selectedDate || '17 Apr 2025'}
                     price={total}
                     variant="compact"
@@ -375,9 +358,9 @@ export default function EnterInfoStep({
                     </ParticipantCard>
                 ))}
 
-                <AddParticipantButton variant="outline" onClick={addParticipant}>
+                {/* <AddParticipantButton variant="outline" onClick={addParticipant}>
                     + Add another participant
-                </AddParticipantButton>
+                </AddParticipantButton> */}
 
                 <WarningBox>
                     Once your info is submitted, it cannot be changed. Please double-check before proceeding.

@@ -12,17 +12,17 @@ import {
     useSearchData,
     useSearchFilters,
     useSearchUIState,
-} from '@/hooks/useSearchActions';
+} from '@/hooks/utils/useSearchActions';
 import FilterBar from '@/components/FilterBar';
 import NoDataFound from '@/components/Common/NoDataFound';
-import useApiServices from '@/services';
-import { TourListResponse } from '@/atoms/tours';
 import { motion } from 'framer-motion';
-import useFavorite from '@/hooks/useFavorite';
-import useModal from '@/hooks/useModal';
-import useCookieAuth from '@/services/cookieAuthService';
+import useFavorite from '@/hooks/ui/useFavorite';
+import useModal from '@/hooks/ui/useModal';
+import useCookieAuth from '@/services/cache/cookieAuthService';
 import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
 import { message } from 'antd';
+import { useApiServices } from '@/services/api';
+import { TourListResponse } from '@/services/api/tours';
 
 const PageContainer = styled.div`
     min-height: 100vh;
