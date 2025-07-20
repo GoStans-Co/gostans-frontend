@@ -27,33 +27,22 @@ export const useAuthService = () => {
         useUserProfileCache();
 
     const login = async (credentials: LoginCredentials): Promise<Result<AuthResponse, string>> => {
-        try {
-            const response = await fetchData({
-                url: '/auth/login/',
-                method: 'POST',
-                data: credentials,
-            });
+        const response = await fetchData({
+            url: '/auth/login/',
+            method: 'POST',
+            data: credentials,
+        });
 
-            if (response?.token && response?.user) {
-                setAuthCookie(response.token, response.user, response.refresh);
-                updateUserProfileCache(response.user); // Use the hook function
+        if (response?.token && response?.user) {
+            setAuthCookie(response.token, response.user, response.refresh);
+            updateUserProfileCache(response.user);
 
-                return {
-                    success: true,
-                    data: response,
-                };
-            } else {
-                return {
-                    success: false,
-                    error: 'Invalid login response structure',
-                };
-            }
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
             return {
-                success: false,
-                error: errorResponse.message || 'Login failed',
+                success: true,
+                data: response,
             };
+        } else {
+            throw new Error('Invalid login response structure');
         }
     };
 

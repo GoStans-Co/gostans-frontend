@@ -1,6 +1,6 @@
 type TourCardVariant = 'link' | 'button';
 
-export type TourProps = {
+export type TourPropsMock = {
     id: string;
     title: string;
     description: string;
@@ -17,6 +17,24 @@ export type TourProps = {
     dayInfo?: string;
     peopleBooked?: number;
     reviews?: number;
+};
+
+export type TourProps = {
+    id: number;
+    uuid?: string;
+    title: string;
+    shortDescription: string;
+    tourType: {
+        id: number;
+        name: string;
+    };
+    price: number;
+    currency: 'USD' | 'EUR' | 'KRW';
+    country: string;
+    mainImage: string | null;
+    isLiked: boolean;
+    variant?: TourCardVariant;
+    buttonText?: string;
 };
 
 export type AccommodationProps = {
