@@ -4,14 +4,14 @@ import { theme } from '@/styles/theme';
 import { Eye, EyeOff } from 'lucide-react';
 import Input from '@/components/Common/Input';
 import Modal from '@/components/Modal';
-import useCookieAuth from '@/services/cache/cookieAuthService';
 import SocialLogin from '@/components/ModalPopup/AuthModal/SocialLogin';
 import PhoneVerification from '@/components/ModalPopup/AuthModal/PhoneVerification';
 import { message } from 'antd';
 import PasswordComponent from '@/components/ModalPopup/AuthModal/PasswordComponent';
-import { useCartService } from '@/services/api/cart/useCartService';
 import { LoginCredentials, SignUpData, SocialLoginData } from '@/services/api/auth';
 import { useApiServices } from '@/services/api';
+import { useStatusHandler } from '@/hooks/api/useStatusHandler';
+import useCookieAuthService from '@/services/cache/cookieAuthService';
 
 enum SignupStage {
     FORM = 'form',
@@ -163,10 +163,10 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const [isLoading, setIsLoading] = useState(false);
 
     const [messageApi, contextHolder] = message.useMessage();
-    const { auth: authService } = useApiServices();
-    const { syncCartOnLogin } = useCartService();
+    const { auth: authService, cart } = useApiServices();
+    const statusHandler = useStatusHandler(messageApi);
 
-    const { isAuthenticated } = useCookieAuth();
+    const { isAuthenticated } = useCookieAuthService();
 
     useEffect(() => {
         setName('');
@@ -194,7 +194,6 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSuccess('');
-        setIsLoading(true);
 
         try {
             if (activeTab === 'login') {
@@ -210,20 +209,30 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     password,
                 };
 
-                const result = await authService.login(credentials);
-
-                if (result) {
-                    setTimeout(() => {
-                        onClose();
-                        window.location.href = '/';
-                    }, 500);
-                    await syncCartOnLogin();
-                }
-                messageApi.success({
-                    content: 'You successfully logged in!',
-                    style: { marginTop: '1vh' },
-                    duration: 8,
+                const { data, error } = await statusHandler.handleAsyncOperation(() => authService.login(credentials), {
+                    loadingMessage: 'Logging in...',
+                    successMessage: 'Login successful!',
+                    showLoading: true,
+                    showSuccess: true,
+                    showError: true,
+                    onSuccess: async (result) => {
+                        if (result?.success) {
+                            await cart.syncCartOnLogin();
+                            setTimeout(() => {
+                                onClose();
+                                window.location.href = '/';
+                            }, 500);
+                        }
+                    },
+                    onError: (apiError) => {
+                        console.error('Login failed:', apiError);
+                    },
                 });
+
+                if (error) {
+                    /* error will be handled by status handler */
+                    return;
+                }
             } else {
                 /* for signup only, we validate name and email, then go to password step */
                 if (!name) throw new Error('Name is required');
@@ -232,14 +241,10 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                 setSignupStage(SignupStage.PASSWORD);
             }
         } catch (err) {
-            messageApi.error({
-                content: err instanceof Error ? err.message : 'An error occurred',
-                duration: 4,
-            });
-        } finally {
-            setIsLoading(false);
+            statusHandler.showMessage('error', err instanceof Error ? err.message : 'An error occurred', 4);
         }
     };
+
     const handleSocialLogin = async (provider: string, credential?: string) => {
         setIsLoading(true);
         try {
@@ -258,7 +263,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     content: `Login with ${provider} is successful!`,
                     duration: 3,
                 });
-                await syncCartOnLogin();
+                await cart.syncCartOnLogin();
             }
         } catch (err) {
             console.error('Social login error:', err);
