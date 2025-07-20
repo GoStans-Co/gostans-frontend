@@ -60,6 +60,13 @@ declare module 'styled-components' {
             lightBackground: string;
             border: string;
             error: string;
+            success: string;
+            warning: string;
+            info: string;
+            muted: string;
+            mutedForeground: string;
+            gradientStart: string;
+            gradientEnd: string;
         };
         fontSizes: {
             xs: string;
@@ -71,6 +78,8 @@ declare module 'styled-components' {
             '3xl': string;
             '4xl': string;
             '5xl': string;
+            '6xl': string;
+            '7xl': string;
         };
         spacing: {
             xs: string;
@@ -80,6 +89,8 @@ declare module 'styled-components' {
             xl: string;
             '2xl': string;
             '3xl': string;
+            '4xl': string;
+            '5xl': string;
         };
         borderRadius: {
             sm: string;
@@ -98,6 +109,8 @@ declare module 'styled-components' {
             sm: string;
             md: string;
             lg: string;
+            xl: string;
+            '2xl': string;
         };
         transitions: {
             default: string;

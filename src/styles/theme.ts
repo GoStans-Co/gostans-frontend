@@ -59,6 +59,13 @@ export const theme: DefaultTheme = {
         lightBackground: '#F5F5F5',
         border: '#E5E5E5',
         error: '#FF4D4D',
+        success: '#10B981',
+        warning: '#F59E0B',
+        info: '#3B82F6',
+        muted: '#6b7280',
+        mutedForeground: '#9ca3af',
+        gradientStart: '#667eea',
+        gradientEnd: '#764ba2',
     },
     fontSizes: {
         xs: '0.75rem',
@@ -70,6 +77,8 @@ export const theme: DefaultTheme = {
         '3xl': '1.875rem',
         '4xl': '2.25rem',
         '5xl': '3rem',
+        '6xl': '3.75rem',
+        '7xl': '4.5rem',
     },
     spacing: {
         xs: '0.25rem',
@@ -79,6 +88,8 @@ export const theme: DefaultTheme = {
         xl: '2rem',
         '2xl': '3rem',
         '3xl': '4rem',
+        '4xl': '5rem',
+        '5xl': '6rem',
     },
     borderRadius: {
         sm: '0.25rem',
@@ -97,6 +108,8 @@ export const theme: DefaultTheme = {
         sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
         md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
     },
     transitions: {
         default: '0.3s ease',
