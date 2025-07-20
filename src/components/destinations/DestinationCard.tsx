@@ -36,8 +36,10 @@ const ImageContainer = styled.div<{ $shape?: CardShape }>`
     margin: 0 auto 1rem auto;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        max-width: ${({ $shape }) => ($shape === 'oval' ? '140px' : 'none')};
-        height: ${({ $shape }) => ($shape === 'oval' ? '190px' : 'auto')};
+        max-width: ${({ $shape }) => ($shape === 'oval' ? '90px' : 'none')};
+        height: ${({ $shape }) => ($shape === 'oval' ? '120px' : 'auto')};
+        border-radius: ${({ $shape }) => ($shape === 'oval' ? '45px' : 'none')};
+        margin-bottom: 0.5rem;
     }
 `;
 
@@ -56,7 +58,9 @@ const DestinationName = styled.h3`
     text-align: center;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: ${({ theme }) => theme.fontSizes.md};
+        font-size: 0.75rem;
+        margin-bottom: 0.125rem;
+        line-height: 1.2;
     }
 `;
 
@@ -66,7 +70,7 @@ const ToursCount = styled.span`
     text-align: center;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: ${({ theme }) => theme.fontSizes.sm};
+        font-size: 0.625rem;
     }
 `;
 

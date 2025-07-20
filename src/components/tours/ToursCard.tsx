@@ -4,6 +4,7 @@ import { TourProps } from '@/types/index';
 import Button from '@/components/Common/Button';
 
 const CardContainer = styled.div`
+    border: 0.5px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     overflow: hidden;
     background-color: white;
@@ -41,13 +42,15 @@ const CardContent = styled.div`
     padding: 1.5rem 1.5rem 1rem;
     align-items: flex-start;
     text-align: left;
+    min-width: 0;
 `;
+
 const Title = styled.h3`
     font-size: ${({ theme }) => theme.fontSizes.lg};
     font-weight: 600;
     margin-bottom: 0.5rem;
     color: ${({ theme }) => theme.colors.text};
-    line-height: 1.3;
+    line-height: 1.4;
 `;
 
 const Description = styled.p`
@@ -94,16 +97,16 @@ const CardWrapper = styled(Link)`
 export default function TourCard({
     id,
     title,
-    description,
+    shortDescription: description,
     price,
-    image,
+    mainImage: image,
     variant = 'button',
     buttonText = 'Book Now',
 }: TourProps) {
     const content = (
         <CardContainer>
             <ImageContainer>
-                <Image src={image} alt={title} />
+                <Image src={image ?? undefined} alt={title} />
             </ImageContainer>
             <CardContent>
                 <Title>{title}</Title>

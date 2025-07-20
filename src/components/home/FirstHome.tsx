@@ -80,9 +80,7 @@ const ImagesGrid = styled.div`
     z-index: 1;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        width: 100%;
-        margin-top: 2rem;
-        z-index: 1;
+        display: none;
     }
 `;
 

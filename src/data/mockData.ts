@@ -1,7 +1,7 @@
 import { DestinationProps } from '@/components/Destinations/DestinationCard';
-import { TourProps, AccommodationProps } from '../types';
+import { AccommodationProps, TourPropsMock } from '../types';
 
-export const tours: TourProps[] = [
+export const tours: TourPropsMock[] = [
     {
         id: 'tour-1',
         title: 'Turkmenistan Classic Tour',

@@ -5,6 +5,12 @@ import TourCard from '@/components/Tours/ToursCard';
 import { useState } from 'react';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
+import defaultImage from '@/assets/default/default_1.jpg';
+
+type TrendingToursProps = {
+    tours: TourProps[];
+    loading?: boolean;
+};
 
 const SectionContainer = styled.section`
     padding: 4rem 2rem;
@@ -30,9 +36,6 @@ const SectionHeader = styled.div`
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: 0;
         justify-content: center;
-    }
-    ${({ theme }) => theme.responsive.maxMobile} {
-        padding: 0;
         margin-bottom: 2rem;
     }
 `;
@@ -106,11 +109,26 @@ const NavigationButtons = styled.div`
     }
 `;
 
-type TrendingToursProps = {
-    tours: TourProps[];
-};
+const LoadingContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    color: ${({ theme }) => theme.colors.lightText};
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+`;
 
-export default function TrendingTours({ tours }: TrendingToursProps) {
+const EmptyContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    color: ${({ theme }) => theme.colors.lightText};
+    text-align: center;
+`;
+
+export default function TrendingTours({ tours, loading = false }: TrendingToursProps) {
     const [currentPage, setCurrentPage] = useState(0);
     const toursPerPage = 4;
     const totalPages = Math.ceil(tours.length / toursPerPage);
@@ -125,11 +143,60 @@ export default function TrendingTours({ tours }: TrendingToursProps) {
         setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
     };
 
+    if (loading) {
+        return (
+            <SectionContainer>
+                <SectionHeader>
+                    <SectionTitle>Trending Tours</SectionTitle>
+                    <ViewAllLink to="/trendingTours">
+                        Explore All
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M9 18L15 12L9 6"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </ViewAllLink>
+                </SectionHeader>
+                <LoadingContainer>Loading tours...</LoadingContainer>
+            </SectionContainer>
+        );
+    }
+
+    if (!tours || tours.length === 0) {
+        return (
+            <SectionContainer>
+                <SectionHeader>
+                    <SectionTitle>Trending Tours</SectionTitle>
+                    <ViewAllLink to="/trendingTours">
+                        Explore All
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M9 18L15 12L9 6"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </ViewAllLink>
+                </SectionHeader>
+                <EmptyContainer>
+                    <h3>No tours available</h3>
+                    <p>Check back later for exciting tour packages!</p>
+                </EmptyContainer>
+            </SectionContainer>
+        );
+    }
+
     return (
         <SectionContainer>
             <SectionHeader>
                 <SectionTitle>Trending Tours</SectionTitle>
-                <ViewAllLink to="/tours">
+                <ViewAllLink to="/trendingTours">
                     Explore All
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -145,22 +212,29 @@ export default function TrendingTours({ tours }: TrendingToursProps) {
 
             <ToursGrid>
                 {currentTours.map((tour) => (
-                    <TourCard
-                        buttonText="See more"
-                        // variant="link"
+                    <Link
+                        to={`/searchTrips/${tour.uuid}`}
+                        style={{ textDecoration: 'none', color: 'inherit' }}
                         key={tour.id}
-                        id={tour.id}
-                        title={tour.title}
-                        description={tour.description}
-                        price={tour.price}
-                        image={tour.image}
-                        country={tour.country}
-                        status={tour.status}
-                    />
+                    >
+                        <TourCard
+                            buttonText="See Details"
+                            id={tour.id}
+                            title={tour.title}
+                            shortDescription={tour.shortDescription}
+                            price={tour.price}
+                            mainImage={defaultImage}
+                            country={tour.country}
+                            isLiked={tour.isLiked}
+                            variant="button"
+                            tourType={{ id: tour.tourType.id, name: tour.tourType.name }}
+                            currency={tour.currency}
+                        />
+                    </Link>
                 ))}
             </ToursGrid>
 
-            <NavigationButtons>
+            {totalPages > 1 && (
                 <NavigationButtons>
                     <Button
                         variant="circle"
@@ -180,7 +254,7 @@ export default function TrendingTours({ tours }: TrendingToursProps) {
                         <FaArrowRight />
                     </Button>
                 </NavigationButtons>
-            </NavigationButtons>
+            )}
         </SectionContainer>
     );
 }

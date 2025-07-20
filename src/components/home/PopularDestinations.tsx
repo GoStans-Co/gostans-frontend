@@ -112,14 +112,14 @@ const MobileDestinationItem = styled.div`
     flex: 0 0 auto;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        flex: 0 0 45%;
+        flex: 0 0 20%;
         scroll-snap-align: start;
     }
 `;
 
 const TabsContainer = styled.div`
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem;
     margin-bottom: 2rem;
     max-width: 1200px;
     margin-left: auto;
