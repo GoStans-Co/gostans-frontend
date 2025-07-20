@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useRecoilState } from 'recoil';
 import { CACHE_DURATION } from '@/services/api/auth/authService';
 import { tourDetailsAtom, toursCacheStatusAtom, toursDataAtom } from '@/atoms/tours';
+import { TourProps } from '@/types';
 
 export const isCacheValid = (lastFetch: number | null): boolean => {
     if (!lastFetch) return false;
@@ -128,6 +129,27 @@ export const useToursService = () => {
                 return response;
             },
 
+            getTrendingTours: async (): Promise<ApiResponse<TourProps[]>> => {
+                try {
+                    const response = await fetchData({
+                        url: '/tours/trending-tours/',
+                        method: 'GET',
+                    });
+
+                    const apiResponse: ApiResponse<TourProps[]> = {
+                        data: response.data || response,
+                        statusCode: response.statusCode || 200,
+                        message: response.message || 'Trending tours retrieved successfully',
+                    };
+
+                    console.log('Fetched trending tours:', apiResponse.data || 0);
+                    return apiResponse;
+                } catch (error) {
+                    console.error('Trending tours fetch error:', error);
+                    throw error;
+                }
+            },
+
             clearCache: () => {
                 setToursData(null);
                 setTourDetailsCache({});
@@ -135,7 +157,7 @@ export const useToursService = () => {
                 console.log('Tours cache cleared');
             },
 
-            forceRefresh: async () => {
+            forceRefresh: () => {
                 setCacheStatus({ loaded: false, lastFetch: null });
                 setTourDetailsCache({});
                 console.log('Tours force refresh triggered');

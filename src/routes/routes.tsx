@@ -38,16 +38,16 @@ const routes: RouteObject[] = [
                 element: withSuspense(React.lazy(() => import('@/pages/Home/DestinationPage'))),
             },
             {
-                path: 'tours',
-                element: withSuspense(React.lazy(() => import('@/pages/Home/ToursPage'))),
-            },
-            {
                 path: 'mypage',
                 element: withProtection(React.lazy(() => import('@/pages/MyPage'))),
             },
             {
                 path: '/searchTrips',
                 element: withSuspense(React.lazy(() => import('@/pages/Search/SearchPackageList'))),
+            },
+            {
+                path: '/trendingTours',
+                element: withSuspense(React.lazy(() => import('@/pages/Tours/TrendingTours'))),
             },
             {
                 path: '/searchTrips/:packageId',

@@ -26,7 +26,6 @@ import CopyLink from '@/components/CopyLink';
 import default_n1 from '@/assets/default/default_1.jpg';
 import default_n2 from '@/assets/default/default_2.jpg';
 import TourCard from '@/components/Tours/ToursCard';
-import { tours } from '@/data/mockData';
 import { cartAtom } from '@/atoms/cart';
 import { useRecoilValue, useRecoilState, useSetRecoilState } from 'recoil';
 import useFavorite from '@/hooks/ui/useFavorite';
@@ -36,6 +35,7 @@ import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
 import { TourDetailsResponse } from '@/services/api/tours';
 import { CartItem } from '@/services/api/cart';
 import { useApiServices } from '@/services/api';
+import { TourProps } from '@/types';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -627,6 +627,7 @@ export default function SearchPackageDetails() {
         type: null,
     });
     const [expandedDays, setExpandedDays] = useState(new Set([1]));
+    const [trendingTours, setTrendingTours] = useState<TourProps[]>([]);
 
     const toursPerPage = 3;
 
@@ -670,8 +671,34 @@ export default function SearchPackageDetails() {
     }, [id, tourDetailsCache]);
 
     useEffect(() => {
+        setTrendingTours([]);
+        setSelectedDate(null);
+        setExpandedDays(new Set([1]));
         hasInitialized.current = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [id]);
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, []);
+
+    useEffect(() => {
+        if (tour) {
+            const fetchTrendingTours = async () => {
+                try {
+                    const response = await toursService.getTrendingTours();
+                    if (response.data) {
+                        const filtered = response.data.filter((trendingTour) => trendingTour.uuid !== tour.uuid);
+                        setTrendingTours(filtered);
+                    }
+                } catch (error) {
+                    console.error('Error fetching trending tours:', error);
+                }
+            };
+
+            fetchTrendingTours();
+        }
+    }, [tour]);
 
     if (isLoading) {
         return (
@@ -705,10 +732,8 @@ export default function SearchPackageDetails() {
         );
     }
 
-    const filteredTours = tours.filter((tour) => {
-        if (tour.id === id) return false;
-        return tour.country.toLowerCase() === tour.country.toLowerCase();
-    });
+    /* we show only 6 list of trending tours */
+    const filteredTours = trendingTours.slice(0, 6);
 
     const totalPages = Math.ceil(filteredTours.length / toursPerPage);
 
@@ -1212,17 +1237,34 @@ export default function SearchPackageDetails() {
                                 </div>
                                 <RelatedTours>
                                     {visibleTours.map((tour) => (
-                                        <TourCard
-                                            buttonText="See more"
+                                        <div
+                                            style={{ cursor: 'pointer' }}
                                             key={tour.id}
-                                            id={tour.id}
-                                            title={tour.title}
-                                            description={tour.description}
-                                            price={tour.price}
-                                            image={tour.image}
-                                            country={tour.country}
-                                            status={'all'}
-                                        />
+                                            onClick={() => {
+                                                setIsLoading(true);
+                                                setTrendingTours([]);
+                                                hasInitialized.current = false;
+                                                navigate(`/searchTrips/${tour.uuid}`, { replace: true });
+                                            }}
+                                        >
+                                            <TourCard
+                                                buttonText="See more"
+                                                key={tour.id}
+                                                id={tour.id}
+                                                title={tour.title}
+                                                shortDescription={tour.shortDescription}
+                                                mainImage={default_n1}
+                                                tourType={{
+                                                    id: tour.tourType?.id || 0,
+                                                    name: tour.tourType?.name || 'General',
+                                                }}
+                                                price={tour.price}
+                                                country={tour.country}
+                                                variant="button"
+                                                currency="USD"
+                                                isLiked={tour.isLiked}
+                                            />
+                                        </div>
                                     ))}
                                 </RelatedTours>
                             </Section>
