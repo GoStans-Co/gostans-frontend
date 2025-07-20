@@ -1,3 +1,5 @@
+import { TourCardVariant } from '@/types';
+
 type DurationTypes = '1 day' | '2 day' | '3 day' | '4 day' | '5 day' | '6 day' | '7 day';
 type CurrencyTypes = 'USD' | 'EUR' | 'KRW';
 type LanguageTypes = 'en' | 'ru' | 'uz' | 'ko';
@@ -15,6 +17,24 @@ export type TourListResponse = {
     currency: 'USD' | 'EUR' | 'KRW';
     mainImage: string | null;
     isLiked: boolean;
+};
+
+export type TourPropsResponse = {
+    id: number;
+    uuid?: string;
+    title: string;
+    shortDescription: string;
+    tourType: {
+        id: number;
+        name: string;
+    };
+    price?: number;
+    currency?: 'USD' | 'EUR' | 'KRW';
+    country: string;
+    mainImage: string | null;
+    isLiked?: boolean;
+    variant?: TourCardVariant;
+    buttonText?: string;
 };
 
 export type ToursListApiResponse = {
@@ -84,4 +104,23 @@ export type TourDetailsCache = {
         data: TourDetailsResponse;
         lastFetch: number;
     };
+};
+
+export type TopDestinationCity = {
+    id: number;
+    name: string;
+    tourCount: number;
+    image?: string;
+};
+
+export type TopDestination = {
+    id: number;
+    name: string;
+    destinationSet: TopDestinationCity[];
+};
+
+export type TopDestinationsResponse = {
+    statusCode: number;
+    message: string;
+    data: TopDestination[];
 };

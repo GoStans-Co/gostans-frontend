@@ -35,7 +35,7 @@ const routes: RouteObject[] = [
             },
             {
                 path: 'destinations',
-                element: withSuspense(React.lazy(() => import('@/pages/Home/DestinationPage'))),
+                element: withSuspense(React.lazy(() => import('@/pages/Home/Destinations/TopDestinations'))),
             },
             {
                 path: 'mypage',

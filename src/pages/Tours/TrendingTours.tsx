@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { useApiServices } from '@/services/api';
-import { TourProps } from '@/types/index';
 import TourCard from '@/components/Tours/ToursCard';
 import Button from '@/components/Common/Button';
 import defaultImage from '@/assets/default/default_1.jpg';
+import { TabItem } from '@/components/Common/Tabs';
+import Tabs from '@/components/Common/Tabs';
+import { TourPropsResponse } from '@/services/api/tours';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -103,61 +105,11 @@ const RetryButton = styled(Button)`
     margin-top: 1rem;
 `;
 
-const TabsContainer = styled.div`
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    margin-left: auto;
-    margin-right: auto;
-    overflow-x: auto;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 0 0.5rem;
-
-    ${({ theme }) => theme.responsive.maxMobile} {
-        gap: 0.5rem;
-        padding: 0 1rem;
-    }
-
-    &::-webkit-scrollbar {
-        display: none;
-    }
-
-    scrollbar-width: none;
-`;
-
-const Tab = styled.button<{ active: boolean }>`
-    padding: 0.375rem 1rem;
-    border-radius: 20px;
-    font-weight: 500;
-    font-size: 0.875rem;
-    white-space: nowrap;
-    border: none;
-    background-color: ${({ active, theme }) => (active ? theme.colors.primary : theme.colors.lightBackground)};
-    color: ${({ active }) => (active ? 'white' : 'inherit')};
-    transition: all ${({ theme }) => theme.transitions.default};
-    cursor: pointer;
-
-    ${({ theme }) => theme.responsive.maxMobile} {
-        padding: 0.3rem 0.8rem;
-        font-size: 0.8rem;
-    }
-
-    &:hover {
-        background-color: ${({ active, theme }) => (active ? theme.colors.primary : theme.colors.border)};
-    }
-
-    &:focus {
-        outline: none;
-        box-shadow: none;
-    }
-`;
-
 export default function TrendingToursPage() {
     const { tours: toursService } = useApiServices();
 
-    const [allTours, setAllTours] = useState<TourProps[]>([]);
-    const [filteredTours, setFilteredTours] = useState<TourProps[]>([]);
+    const [allTours, setAllTours] = useState<TourPropsResponse[]>([]);
+    const [filteredTours, setFilteredTours] = useState<TourPropsResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
     const [availableTabs, setAvailableTabs] = useState<{ id: string; label: string }[]>([]);
@@ -169,7 +121,7 @@ export default function TrendingToursPage() {
                 const response = await toursService.getTrendingTours();
 
                 if (response.data) {
-                    const transformedTours: TourProps[] = response.data.map((tour: TourProps) => ({
+                    const transformedTours: TourPropsResponse[] = response.data.map((tour: TourPropsResponse) => ({
                         id: tour.id,
                         title: tour.title,
                         shortDescription: tour.shortDescription || '',
@@ -229,6 +181,11 @@ export default function TrendingToursPage() {
         }
     }, [activeTab, allTours]);
 
+    const tabs: TabItem[] = availableTabs.map((tab) => ({
+        id: tab.id,
+        label: tab.label,
+    }));
+
     if (loading) {
         return (
             <PageContainer>
@@ -248,13 +205,7 @@ export default function TrendingToursPage() {
                     </PageSubtitle>
                 </PageHeader>
 
-                <TabsContainer>
-                    {availableTabs.map((tab) => (
-                        <Tab key={tab.id} active={activeTab === tab.id} onClick={() => setActiveTab(tab.id)}>
-                            {tab.label}
-                        </Tab>
-                    ))}
-                </TabsContainer>
+                <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="default" />
 
                 <ErrorContainer>
                     <p>No tours available for this category.</p>
@@ -276,13 +227,7 @@ export default function TrendingToursPage() {
                 </PageSubtitle>
             </PageHeader>
 
-            <TabsContainer>
-                {availableTabs.map((tab) => (
-                    <Tab key={tab.id} active={activeTab === tab.id} onClick={() => setActiveTab(tab.id)}>
-                        {tab.label}
-                    </Tab>
-                ))}
-            </TabsContainer>
+            <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="default" />
 
             <ToursGrid>
                 {filteredTours.map((tour) => (

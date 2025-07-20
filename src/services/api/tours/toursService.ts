@@ -1,11 +1,16 @@
-import { TourDetailsResponse, TourListResponse, ToursListApiResponse } from '@/services/api/tours/types';
+import {
+    TopDestinationsResponse,
+    TourDetailsResponse,
+    TourListResponse,
+    TourPropsResponse,
+    ToursListApiResponse,
+} from '@/services/api/tours/types';
 import { useFetch } from '@/hooks/api/useFetch';
 import { ApiResponse } from '@/types/common/fetch';
 import { useMemo } from 'react';
 import { useRecoilState } from 'recoil';
 import { CACHE_DURATION } from '@/services/api/auth/authService';
 import { tourDetailsAtom, toursCacheStatusAtom, toursDataAtom } from '@/atoms/tours';
-import { TourProps } from '@/types';
 
 export const isCacheValid = (lastFetch: number | null): boolean => {
     if (!lastFetch) return false;
@@ -129,14 +134,14 @@ export const useToursService = () => {
                 return response;
             },
 
-            getTrendingTours: async (): Promise<ApiResponse<TourProps[]>> => {
+            getTrendingTours: async (): Promise<ApiResponse<TourPropsResponse[]>> => {
                 try {
                     const response = await fetchData({
                         url: '/tours/trending-tours/',
                         method: 'GET',
                     });
 
-                    const apiResponse: ApiResponse<TourProps[]> = {
+                    const apiResponse: ApiResponse<TourPropsResponse[]> = {
                         data: response.data || response,
                         statusCode: response.statusCode || 200,
                         message: response.message || 'Trending tours retrieved successfully',
@@ -146,6 +151,31 @@ export const useToursService = () => {
                     return apiResponse;
                 } catch (error) {
                     console.error('Trending tours fetch error:', error);
+                    throw error;
+                }
+            },
+
+            getTopDestinations: async (countryId?: number): Promise<ApiResponse<TopDestinationsResponse[]>> => {
+                try {
+                    const url = countryId
+                        ? `/tours/top-destinations/?country_id=${countryId}`
+                        : '/tours/top-destinations/';
+
+                    const response = await fetchData({
+                        url,
+                        method: 'GET',
+                    });
+
+                    const apiResponse: ApiResponse<TopDestinationsResponse[]> = {
+                        data: response.data || response,
+                        statusCode: response.statusCode || 200,
+                        message: response.message || 'Top destinations retrieved successfully',
+                    };
+
+                    console.log('Fetched top destinations:', apiResponse.data?.length || 0);
+                    return apiResponse;
+                } catch (error) {
+                    console.error('Top destinations fetch error:', error);
                     throw error;
                 }
             },
