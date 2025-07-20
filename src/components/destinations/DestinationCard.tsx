@@ -10,6 +10,7 @@ export type DestinationProps = {
     toursCount?: number;
     shape?: CardShape;
     location?: string;
+    country?: string;
 };
 
 const CardContainer = styled(Link)<{ $shape?: CardShape }>`
@@ -18,6 +19,8 @@ const CardContainer = styled(Link)<{ $shape?: CardShape }>`
     position: relative;
     overflow: visible;
     text-decoration: none;
+    width: 100%;
+    min-width: 0;
 
     &:hover img {
         transform: scale(1.05);
@@ -57,10 +60,17 @@ const DestinationName = styled.h3`
     margin-bottom: 0.25rem;
     text-align: center;
 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    max-width: 170px;
+
     ${({ theme }) => theme.responsive.maxMobile} {
         font-size: 0.75rem;
         margin-bottom: 0.125rem;
         line-height: 1.2;
+        max-width: 90px;
     }
 `;
 
@@ -68,6 +78,12 @@ const ToursCount = styled.span`
     font-size: ${({ theme }) => theme.fontSizes.md};
     color: ${({ theme }) => theme.colors.primary};
     text-align: center;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: block;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         font-size: 0.625rem;

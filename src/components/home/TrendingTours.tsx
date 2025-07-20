@@ -1,14 +1,14 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { TourProps } from '@/types/index';
 import TourCard from '@/components/Tours/ToursCard';
 import { useState } from 'react';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
 import defaultImage from '@/assets/default/default_1.jpg';
+import { TourPropsResponse } from '@/services/api/tours';
 
 type TrendingToursProps = {
-    tours: TourProps[];
+    tours: TourPropsResponse[];
     loading?: boolean;
 };
 
