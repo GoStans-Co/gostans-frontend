@@ -147,7 +147,7 @@ export default function PopularDestinations({ destinations, loading = false, cou
             <SectionContainer>
                 <SectionHeader>
                     <SectionTitle>Top destinations</SectionTitle>
-                    <ViewAllLink to="/destinations">
+                    <ViewAllLink to="/top-destinations">
                         Explore All
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path
@@ -170,7 +170,7 @@ export default function PopularDestinations({ destinations, loading = false, cou
         <SectionContainer>
             <SectionHeader>
                 <SectionTitle>Top destinations</SectionTitle>
-                <ViewAllLink to="/destinations">
+                <ViewAllLink to="/top-destinations">
                     Explore All
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -189,13 +189,18 @@ export default function PopularDestinations({ destinations, loading = false, cou
             <DestinationsGrid>
                 {filteredDestinations.map((destination) => (
                     <MobileDestinationItem key={destination.id}>
-                        <DestinationCard
-                            shape="oval"
-                            id={destination.id}
-                            name={destination.name}
-                            image={destination.image}
-                            toursCount={destination.toursCount}
-                        />
+                        <Link
+                            to={`/top-destinations/${destination.cityId}/${destination.countryId}`}
+                            style={{ textDecoration: 'none' }}
+                        >
+                            <DestinationCard
+                                shape="oval"
+                                id={destination.id}
+                                name={destination.name}
+                                image={destination.image}
+                                toursCount={destination.toursCount}
+                            />
+                        </Link>
                     </MobileDestinationItem>
                 ))}
             </DestinationsGrid>

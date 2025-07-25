@@ -14,10 +14,6 @@ import {
     useSearchUIState,
 } from '@/hooks/utils/useSearchActions';
 
-type IconBoxProps = {
-    active?: boolean;
-};
-
 const HeroContainer = styled.div`
     position: relative;
     height: auto;
@@ -149,18 +145,18 @@ const CategoryItem = styled.div`
     align-items: center;
     gap: 0.5rem;
 `;
-const IconBox = styled.div<IconBoxProps>`
+const IconBox = styled.div<{ $active?: boolean }>`
     width: 60px;
     height: 60px;
-    background-color: ${(props) => (props.active ? props.theme.colors.primary : 'white')};
-    color: ${(props) => (props.active ? 'white' : props.theme.colors.text)};
+    background-color: ${(props) => (props.$active ? props.theme.colors.primary : 'white')};
+    color: ${(props) => (props.$active ? 'white' : props.theme.colors.text)};
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     cursor: pointer;
     transition: all ${({ theme }) => theme.transitions.default};
-    box-shadow: ${(props) => (props.active ? 'none' : props.theme.shadows.sm)};
+    box-shadow: ${(props) => (props.$active ? 'none' : props.theme.shadows.sm)};
 `;
 
 const Subtitle = styled.p`
@@ -211,7 +207,7 @@ export default function FirstHome() {
                 </Subtitle>
                 <CategoryIcons>
                     <CategoryItem>
-                        <IconBox active={true}>
+                        <IconBox $active={true}>
                             <FaSuitcase size={24} />
                         </IconBox>
                         <span style={{ color: 'black', fontWeight: 500 }}>Tours</span>

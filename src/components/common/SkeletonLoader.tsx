@@ -9,24 +9,24 @@ type SkeletonLoaderProps = {
 const Container = styled.div<{ type: string }>`
     display: ${({ type }) => (type === 'destination' ? 'flex' : 'grid')};
     gap: ${({ theme, type }) => (type === 'destination' ? theme.spacing['2xl'] : theme.spacing['2xl'])};
-    max-width: ${({ type }) => (type === 'destination' ? '1200px' : '1400px')};
+    max-width: ${({ type }) => (type === 'destination' ? '1200px' : '1200px')};
     margin: 0 auto;
+    padding: 0 ${({ theme }) => theme.spacing.md};
 
     ${({ type }) =>
         type === 'tour' &&
         `
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        padding: 0 2rem;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
     `}
 
     ${({ theme }) => theme.responsive.maxMobile} {
         gap: ${({ theme, type }) => (type === 'destination' ? theme.spacing.sm : theme.spacing.xl)};
+        padding: 0 ${({ theme }) => theme.spacing.lg};
 
         ${({ type }) =>
             type === 'tour' &&
             `
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            padding: 0 1rem;
+            grid-template-columns: 1fr; 
         `}
     }
 `;

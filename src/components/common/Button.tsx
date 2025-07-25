@@ -132,6 +132,26 @@ const StyledButton = styled.button<Omit<ButtonProps, 'children'>>`
                         box-shadow: none;
                     }
                 `;
+
+            case 'gradient':
+                return css`
+                    background: linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary});
+                    color: white;
+                    border: none;
+                    border-radius: 25px;
+                    font-weight: 600;
+                    gap: ${theme.spacing.sm};
+
+                    &:hover:not(:disabled) {
+                        transform: translateY(-1px);
+                        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+                    }
+
+                    ${theme.responsive.maxMobile} {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                `;
         }
     }}
 `;
@@ -144,6 +164,8 @@ export default function Button({
     onClick,
     disabled = false,
     type = 'button',
+    startIcon,
+    endIcon,
     ...rest
 }: ButtonProps) {
     return (
@@ -156,7 +178,9 @@ export default function Button({
             type={type}
             {...rest}
         >
+            <div style={{ paddingRight: '5px', display: 'flex', alignItems: 'center' }}>{startIcon && startIcon}</div>
             {children}
+            {endIcon && endIcon}
         </StyledButton>
     );
 }

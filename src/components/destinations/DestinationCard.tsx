@@ -11,9 +11,11 @@ export type DestinationProps = {
     shape?: CardShape;
     location?: string;
     country?: string;
+    cityId?: number;
+    countryId?: number;
 };
 
-const CardContainer = styled(Link)<{ $shape?: CardShape }>`
+const CardContainer = styled.div<{ $shape?: CardShape }>`
     display: flex;
     flex-direction: column;
     position: relative;
@@ -90,9 +92,9 @@ const ToursCount = styled.span`
     }
 `;
 
-export default function DestinationCard({ id, name, image, toursCount, shape = 'square' }: DestinationProps) {
+export default function DestinationCard({ name, image, toursCount, shape = 'square' }: DestinationProps) {
     return (
-        <CardContainer to={`/destinations/${id}`}>
+        <CardContainer>
             <ImageContainer $shape={shape}>
                 <Image src={image} alt={name} />
             </ImageContainer>

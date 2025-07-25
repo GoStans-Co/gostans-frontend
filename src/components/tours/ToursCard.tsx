@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { TourProps } from '@/types/index';
 import Button from '@/components/Common/Button';
+import { TourPropsResponse } from '@/services/api/tours';
 
 const CardContainer = styled.div`
     border: 0.5px solid ${({ theme }) => theme.colors.border};
@@ -102,7 +102,7 @@ export default function TourCard({
     mainImage: image,
     variant = 'button',
     buttonText = 'Book Now',
-}: TourProps) {
+}: TourPropsResponse) {
     const content = (
         <CardContainer>
             <ImageContainer>
