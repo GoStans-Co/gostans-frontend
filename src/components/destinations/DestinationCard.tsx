@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
 
 type CardShape = 'square' | 'rounded' | 'oval';
 

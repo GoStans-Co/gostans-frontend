@@ -9,7 +9,7 @@ import { accommodations } from '@/data/mockData';
 import TrendingTours from '@/components/Home/TrendingTours';
 import { useDestinationsCache } from '@/hooks/api/useDestinationCache';
 import { TopDestination } from '@/services/api/tours';
-import { useTrendingTours } from '@/hooks/api/useTrendingTours';
+import useTrendingTours from '@/hooks/api/useTrendingTours';
 
 export type Destinations = {
     id: string;

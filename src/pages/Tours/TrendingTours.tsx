@@ -7,7 +7,7 @@ import defaultImage from '@/assets/default/default_1.jpg';
 import { TabItem } from '@/components/Common/Tabs';
 import Tabs from '@/components/Common/Tabs';
 import { TourPropsResponse } from '@/services/api/tours';
-import { useTrendingTours } from '@/hooks/api/useTrendingTours';
+import useTrendingTours from '@/hooks/api/useTrendingTours';
 
 const PageContainer = styled.div`
     min-height: 100vh;

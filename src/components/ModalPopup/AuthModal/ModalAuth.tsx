@@ -209,7 +209,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     password,
                 };
 
-                const { data, error } = await statusHandler.handleAsyncOperation(() => authService.login(credentials), {
+                const { error } = await statusHandler.handleAsyncOperation(() => authService.login(credentials), {
                     loadingMessage: 'Logging in...',
                     successMessage: 'Login successful!',
                     showLoading: true,

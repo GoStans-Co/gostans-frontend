@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { TourPropsResponse } from '@/services/api/tours';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
-import BannerCard from '@/components/Tours/ToursCard';
+import BannerCard from '@/components/Card/BannerCard';
 import defaultImage from '@/assets/default/default_1.jpg';
 
 type TrendingToursProps = {
@@ -321,7 +321,7 @@ export default function TrendingTours({ tours, loading = false }: TrendingToursP
                                     id={tour.id}
                                     title={tour.title}
                                     shortDescription={tour.shortDescription}
-                                    price={tour.price}
+                                    price={String(tour.price)}
                                     mainImage={tour.mainImage ? tour.mainImage : defaultImage}
                                     country={tour.country || 'Unknown'}
                                     currency={tour.currency || 'USD'}

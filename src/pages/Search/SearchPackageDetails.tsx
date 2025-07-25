@@ -661,6 +661,17 @@ export default function SearchPackageDetails() {
         const fetchTourDetails = async () => {
             try {
                 const response = await toursService.getTourDetails(id);
+                if (response.statusCode === 200 && response.data) {
+                    setTourDetailsCache((prev) => ({
+                        ...prev,
+                        [id]: {
+                            data: response.data,
+                            lastFetch: Date.now(),
+                        },
+                    }));
+                } else {
+                    console.error('Failed to fetch tour details:', response.message);
+                }
             } catch (error) {
                 console.error('Error fetching tour details:', error);
                 hasInitialized.current = false;
