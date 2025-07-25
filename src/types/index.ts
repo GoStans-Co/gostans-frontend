@@ -31,7 +31,7 @@ export type AccommodationProps = {
 
 export type ButtonProps = {
     children: React.ReactNode;
-    variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'light' | 'circle';
+    variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'light' | 'circle' | 'gradient';
     size?: 'sm' | 'md' | 'lg' | 'xs' | 'mini';
     fullWidth?: boolean;
     onClick?: () => void;
@@ -40,6 +40,8 @@ export type ButtonProps = {
     as?: React.ElementType;
     to?: string;
     style?: React.CSSProperties;
+    startIcon?: React.ReactNode;
+    endIcon?: React.ReactNode;
 };
 
 export type CardProps = {

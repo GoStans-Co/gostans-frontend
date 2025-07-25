@@ -35,7 +35,7 @@ import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
 import { TourDetailsResponse } from '@/services/api/tours';
 import { CartItem } from '@/services/api/cart';
 import { useApiServices } from '@/services/api';
-import { TourProps } from '@/types';
+import useTrendingTours from '@/hooks/api/useTrendingTours';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -597,6 +597,12 @@ const TourDetailsContent = styled.div`
     }
 `;
 
+/**
+ * SearchPackageDetails - Page Component
+ * @description This component displays detailed information about a specific tour package,
+ * including images, reviews, itinerary, and booking options.
+ * It also handles user interactions such as adding to cart, viewing images, and managing wishlist.
+ */
 export default function SearchPackageDetails() {
     const { packageId: id } = useParams<{ packageId: string }>();
     const navigate = useNavigate();
@@ -608,6 +614,7 @@ export default function SearchPackageDetails() {
     const [cart, setCart] = useRecoilState(cartAtom);
 
     const { tours: toursService, cart: cartApiService } = useApiServices();
+    const { tours: trendingTours, fetchTrendingTours } = useTrendingTours();
 
     const { isAuthenticated } = useCookieAuth();
     const { openModal, closeModal } = useModal();
@@ -627,7 +634,6 @@ export default function SearchPackageDetails() {
         type: null,
     });
     const [expandedDays, setExpandedDays] = useState(new Set([1]));
-    const [trendingTours, setTrendingTours] = useState<TourProps[]>([]);
 
     const toursPerPage = 3;
 
@@ -642,23 +648,19 @@ export default function SearchPackageDetails() {
         if (hasInitialized.current) return;
 
         const cachedTour = tourDetailsCache[id];
-        console.log('Cache check for id', id, ':', cachedTour);
 
         if (cachedTour?.data) {
-            console.log('Using cached tour details');
             setIsLoading(false);
             hasInitialized.current = true;
             return;
         }
 
-        console.log('No valid cache found, making API call');
         setIsLoading(true);
         hasInitialized.current = true;
 
         const fetchTourDetails = async () => {
             try {
                 const response = await toursService.getTourDetails(id);
-                console.log('Tour details fetched:', response);
             } catch (error) {
                 console.error('Error fetching tour details:', error);
                 hasInitialized.current = false;
@@ -671,7 +673,10 @@ export default function SearchPackageDetails() {
     }, [id, tourDetailsCache]);
 
     useEffect(() => {
-        setTrendingTours([]);
+        fetchTrendingTours();
+    }, [fetchTrendingTours]);
+
+    useEffect(() => {
         setSelectedDate(null);
         setExpandedDays(new Set([1]));
         hasInitialized.current = false;
@@ -681,24 +686,6 @@ export default function SearchPackageDetails() {
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, []);
-
-    useEffect(() => {
-        if (tour) {
-            const fetchTrendingTours = async () => {
-                try {
-                    const response = await toursService.getTrendingTours();
-                    if (response.data) {
-                        const filtered = response.data.filter((trendingTour) => trendingTour.uuid !== tour.uuid);
-                        setTrendingTours(filtered);
-                    }
-                } catch (error) {
-                    console.error('Error fetching trending tours:', error);
-                }
-            };
-
-            fetchTrendingTours();
-        }
-    }, [tour]);
 
     if (isLoading) {
         return (
@@ -732,10 +719,10 @@ export default function SearchPackageDetails() {
         );
     }
 
-    /* we show only 6 list of trending tours */
-    const filteredTours = trendingTours.slice(0, 6);
-
+    const filteredTours = trendingTours.filter((trendingTour) => trendingTour.uuid !== tour?.uuid).slice(0, 12);
     const totalPages = Math.ceil(filteredTours.length / toursPerPage);
+    const visibleTours = filteredTours.slice(currentPage * toursPerPage, (currentPage + 1) * toursPerPage);
+    const totalPrice = parseFloat(tour.price);
 
     const images =
         tour.images?.length > 0 ? tour.images.map((img) => img.image || default_n1) : [tour.mainImage || default_n1];
@@ -749,20 +736,18 @@ export default function SearchPackageDetails() {
         defaultIndex++;
     }
 
-    const totalPrice = parseFloat(tour.price);
-
     const reviews = [
         {
             name: 'Oybek',
             date: '4.13.2025',
             rating: 5,
-            text: 'Lorem Ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, labore et dolore magna aliqua. Ut enim ad minim veniam.',
+            text: 'I had an amazing experience with this tour! The guides were knowledgeable and the sights were breathtaking. Highly recommend!',
         },
         {
-            name: 'Oybek',
+            name: 'Aziz',
             date: '4.13.2025',
             rating: 5,
-            text: 'Lorem Ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, labore et dolore magna aliqua. Ut enim ad minim veniam.',
+            text: 'This tour exceeded my expectations! The itinerary was well-planned, and I got to see so many incredible places. The food was also fantastic!',
         },
     ];
 
@@ -792,8 +777,6 @@ export default function SearchPackageDetails() {
     const handleNextPage = () => {
         setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
     };
-
-    const visibleTours = filteredTours.slice(currentPage * toursPerPage, (currentPage + 1) * toursPerPage);
 
     const createCartItem = (tour: TourDetailsResponse, selectedDate?: string): CartItem => {
         return {
@@ -1236,33 +1219,32 @@ export default function SearchPackageDetails() {
                                     </NavigationButtons>
                                 </div>
                                 <RelatedTours>
-                                    {visibleTours.map((tour) => (
+                                    {visibleTours.map((relatedTour) => (
                                         <div
                                             style={{ cursor: 'pointer' }}
-                                            key={tour.id}
+                                            key={relatedTour.id}
                                             onClick={() => {
                                                 setIsLoading(true);
-                                                setTrendingTours([]);
                                                 hasInitialized.current = false;
-                                                navigate(`/searchTrips/${tour.uuid}`, { replace: true });
+                                                navigate(`/searchTrips/${relatedTour.uuid}`, { replace: true });
                                             }}
                                         >
                                             <TourCard
                                                 buttonText="See more"
-                                                key={tour.id}
-                                                id={tour.id}
-                                                title={tour.title}
-                                                shortDescription={tour.shortDescription}
-                                                mainImage={default_n1}
+                                                key={relatedTour.id}
+                                                id={relatedTour.id}
+                                                title={relatedTour.title}
+                                                shortDescription={relatedTour.shortDescription}
+                                                mainImage={relatedTour.mainImage ? relatedTour.mainImage : default_n1}
                                                 tourType={{
-                                                    id: tour.tourType?.id || 0,
-                                                    name: tour.tourType?.name || 'General',
+                                                    id: relatedTour.tourType?.id || 0,
+                                                    name: relatedTour.tourType?.name || 'General',
                                                 }}
-                                                price={tour.price}
-                                                country={tour.country}
+                                                price={relatedTour.price}
+                                                country={relatedTour.country}
                                                 variant="button"
                                                 currency="USD"
-                                                isLiked={tour.isLiked}
+                                                isLiked={relatedTour.isLiked}
                                             />
                                         </div>
                                     ))}

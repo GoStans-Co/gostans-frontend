@@ -34,8 +34,12 @@ const routes: RouteObject[] = [
                 element: withSuspense(React.lazy(() => import('@/pages/Home'))),
             },
             {
-                path: 'destinations',
-                element: withSuspense(React.lazy(() => import('@/pages/Home/Destinations/TopDestinations'))),
+                path: 'top-destinations',
+                element: withSuspense(React.lazy(() => import('@/pages/Home/Destinations/TopDestinationsList'))),
+            },
+            {
+                path: 'top-destinations/:cityId/:countryId',
+                element: withSuspense(React.lazy(() => import('@/pages/Home/Destinations/TopDestinationsByCity'))),
             },
             {
                 path: 'mypage',

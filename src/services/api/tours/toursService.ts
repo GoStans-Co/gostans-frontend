@@ -2,7 +2,6 @@ import {
     TopDestinationsResponse,
     TourDetailsResponse,
     TourListResponse,
-    TourPropsResponse,
     ToursListApiResponse,
 } from '@/services/api/tours/types';
 import { useFetch } from '@/hooks/api/useFetch';
@@ -42,7 +41,6 @@ export const useToursService = () => {
                 all?: boolean;
             } = {}): Promise<ApiResponse<ToursListApiResponse>> => {
                 if (cacheStatus.loaded && isCacheValid(cacheStatus.lastFetch) && !search && page === 1 && toursData) {
-                    console.log('Using cached tours with correct count:', toursData.count);
                     return {
                         data: toursData,
                         statusCode: 200,
@@ -72,7 +70,6 @@ export const useToursService = () => {
                     if (apiResponse.data?.results && !search && page === 1) {
                         setToursData(apiResponse.data);
                         setCacheStatus({ loaded: true, lastFetch: Date.now() });
-                        console.log('Cached tours data with count:', apiResponse.data.count);
                     }
 
                     return apiResponse;
@@ -87,7 +84,6 @@ export const useToursService = () => {
                 const cachedTour = toursData?.results?.find((tour) => tour.id.toString() === tourId);
 
                 if (cachedTour && cacheStatus.loaded) {
-                    console.log(`Using cached tour data for ID: ${tourId}`);
                     return {
                         data: cachedTour,
                         statusCode: 200,
@@ -106,7 +102,6 @@ export const useToursService = () => {
                 const cachedDetail = tourDetailsCache[id];
 
                 if (cachedDetail && isCacheValid(cachedDetail.lastFetch)) {
-                    console.log(`Using cached tour details for ID: ${id}`);
                     return {
                         data: cachedDetail.data,
                         statusCode: 200,
@@ -128,26 +123,24 @@ export const useToursService = () => {
                             lastFetch: Date.now(),
                         },
                     }));
-                    console.log(`Tour details cached for ID: ${id}`);
                 }
 
                 return response;
             },
 
-            getTrendingTours: async (): Promise<ApiResponse<TourPropsResponse[]>> => {
+            getTrendingTours: async (): Promise<ApiResponse<ToursListApiResponse>> => {
                 try {
                     const response = await fetchData({
                         url: '/tours/trending-tours/',
                         method: 'GET',
                     });
 
-                    const apiResponse: ApiResponse<TourPropsResponse[]> = {
+                    const apiResponse: ApiResponse<ToursListApiResponse> = {
                         data: response.data || response,
                         statusCode: response.statusCode || 200,
                         message: response.message || 'Trending tours retrieved successfully',
                     };
 
-                    console.log('Fetched trending tours:', apiResponse.data || 0);
                     return apiResponse;
                 } catch (error) {
                     console.error('Trending tours fetch error:', error);
@@ -172,10 +165,45 @@ export const useToursService = () => {
                         message: response.message || 'Top destinations retrieved successfully',
                     };
 
-                    console.log('Fetched top destinations:', apiResponse.data?.length || 0);
                     return apiResponse;
                 } catch (error) {
                     console.error('Top destinations fetch error:', error);
+                    throw error;
+                }
+            },
+
+            getToursByDestination: async ({
+                countryId,
+                cityId,
+                page = 1,
+                pageSize = 20,
+            }: {
+                countryId: number;
+                cityId: number;
+                page?: number;
+                pageSize?: number;
+            }): Promise<ApiResponse<ToursListApiResponse>> => {
+                try {
+                    const params = new URLSearchParams();
+                    params.append('country_id', countryId.toString());
+                    params.append('city_id', cityId.toString());
+                    params.append('page', page.toString());
+                    params.append('pageSize', pageSize.toString());
+
+                    const response = await fetchData({
+                        url: `/tours/tours-by-destination/?${params.toString()}`,
+                        method: 'GET',
+                    });
+
+                    const apiResponse: ApiResponse<ToursListApiResponse> = {
+                        data: response.data || response,
+                        statusCode: response.statusCode || 200,
+                        message: response.message || 'Tours by destination retrieved successfully',
+                    };
+
+                    return apiResponse;
+                } catch (error) {
+                    console.error('Tours by destination fetch error:', error);
                     throw error;
                 }
             },
@@ -184,13 +212,11 @@ export const useToursService = () => {
                 setToursData(null);
                 setTourDetailsCache({});
                 setCacheStatus({ loaded: false, lastFetch: null });
-                console.log('Tours cache cleared');
             },
 
             forceRefresh: () => {
                 setCacheStatus({ loaded: false, lastFetch: null });
                 setTourDetailsCache({});
-                console.log('Tours force refresh triggered');
             },
 
             getCachedTours: () => toursData?.results || [],

@@ -4,21 +4,6 @@ type DurationTypes = '1 day' | '2 day' | '3 day' | '4 day' | '5 day' | '6 day' |
 type CurrencyTypes = 'USD' | 'EUR' | 'KRW';
 type LanguageTypes = 'en' | 'ru' | 'uz' | 'ko';
 
-export type TourListResponse = {
-    id: number;
-    uuid: string;
-    title: string;
-    shortDescription: string;
-    tourType: {
-        id: number;
-        name: string;
-    };
-    price: string;
-    currency: 'USD' | 'EUR' | 'KRW';
-    mainImage: string | null;
-    isLiked: boolean;
-};
-
 export type TourPropsResponse = {
     id: number;
     uuid?: string;
@@ -35,6 +20,23 @@ export type TourPropsResponse = {
     isLiked?: boolean;
     variant?: TourCardVariant;
     buttonText?: string;
+};
+
+export type TourListResponse = {
+    id: number;
+    uuid: string;
+    title: string;
+    shortDescription: string;
+    tourType: {
+        id: number;
+        name: string;
+    };
+    price: string;
+    currency: 'USD' | 'EUR' | 'KRW';
+    mainImage: string | null;
+    isLiked: boolean;
+    cityName?: string;
+    countryName?: string;
 };
 
 export type ToursListApiResponse = {
@@ -110,7 +112,11 @@ export type TopDestinationCity = {
     id: number;
     name: string;
     tourCount: number;
-    image?: string;
+    city: {
+        id: number;
+        name: string;
+        imageUrl: string;
+    };
 };
 
 export type TopDestination = {

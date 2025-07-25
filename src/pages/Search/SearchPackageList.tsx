@@ -263,7 +263,11 @@ const Spinner = styled(motion.div)`
     border-top: 3px solid #3498db;
     border-radius: 50%;
 `;
-
+/**
+ * SearchPackageList - Page Component
+ * @description This component renders the search package list page, including search bar, filters, and tour results.
+ * It handles fetching tours based on search criteria, pagination, and displaying results with options to favorite tours.
+ */
 export default function SearchPackageList() {
     const navigate = useNavigate();
     const { tours: toursService } = useApiServices();
@@ -311,7 +315,6 @@ export default function SearchPackageList() {
         if (isCacheValid(cacheKey)) {
             const cached = getCachedResults(cacheKey);
             if (cached) {
-                console.log('Using search cache for page:', page);
                 setFilteredTours(cached.data);
                 if (cached.paginationInfo) {
                     setCurrentPagination(cached.paginationInfo);
@@ -322,7 +325,6 @@ export default function SearchPackageList() {
             }
         }
 
-        console.log('Fetching fresh data for page:', page);
         setIsLoading(true);
         try {
             const response = await toursService.getTours({
@@ -331,8 +333,6 @@ export default function SearchPackageList() {
                 pageSize: PAGE_SIZE,
                 all: false,
             });
-
-            console.log('API response:', response);
 
             if (response.data?.results) {
                 let filtered = response.data.results;
@@ -353,8 +353,6 @@ export default function SearchPackageList() {
                     pageSize: PAGE_SIZE,
                 };
 
-                console.log('Pagination info:', paginationInfo);
-
                 searchActions.cacheSearchResults(cacheKey, filtered, {
                     ...searchData,
                     ...searchFilters,
@@ -364,7 +362,6 @@ export default function SearchPackageList() {
                 setFilteredTours(filtered);
                 setCurrentPagination(paginationInfo);
             } else {
-                console.log('No results found');
                 setFilteredTours([]);
             }
         } catch (error) {
@@ -378,7 +375,6 @@ export default function SearchPackageList() {
     useEffect(() => {
         if (!hasInitialized.current) {
             hasInitialized.current = true;
-            console.log('Initial load of SearchPackageList');
 
             const currentSearchParams = {
                 destination: searchData.destination,
@@ -406,7 +402,6 @@ export default function SearchPackageList() {
             currentSearchParams.minPrice !== lastSearchParams.minPrice ||
             currentSearchParams.maxPrice !== lastSearchParams.maxPrice
         ) {
-            console.log('Search params changed, fetching page 1');
             setLastSearchParams(currentSearchParams);
             toursService.clearCache();
             setCurrentPagination((prev) => ({ ...prev, currentPage: 1 }));
@@ -415,7 +410,6 @@ export default function SearchPackageList() {
     }, [searchData.destination, searchFilters.minPrice, searchFilters.maxPrice]);
 
     const handlePageChange = (page: number) => {
-        console.log('Page change requested:', page);
         if (page >= 1 && page <= currentPagination.totalPages && !isLoading && page !== currentPagination.currentPage) {
             fetchTours(page);
         }
