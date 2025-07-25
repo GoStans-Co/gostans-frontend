@@ -1,11 +1,10 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import TourCard from '@/components/Tours/ToursCard';
-import { useState } from 'react';
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
-import Button from '@/components/Common/Button';
-import defaultImage from '@/assets/default/default_1.jpg';
 import { TourPropsResponse } from '@/services/api/tours';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import BannerCard from '@/components/Tours/ToursCard';
+import defaultImage from '@/assets/default/default_1.jpg';
 
 type TrendingToursProps = {
     tours: TourPropsResponse[];
@@ -25,7 +24,7 @@ const SectionHeader = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
@@ -41,8 +40,9 @@ const SectionHeader = styled.div`
 `;
 
 const SectionTitle = styled.h2`
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: ${({ theme }) => theme.fontSizes['3xl']};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+    font-family: ${({ theme }) => theme.typography.fontFamily.display};
     color: ${({ theme }) => theme.colors.text};
     white-space: nowrap;
     overflow: hidden;
@@ -52,26 +52,29 @@ const SectionTitle = styled.h2`
     text-align: left;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: 1.5rem;
+        font-size: ${({ theme }) => theme.fontSizes['2xl']};
         text-align: left;
     }
 `;
 
 const ViewAllLink = styled(Link)`
     color: ${({ theme }) => theme.colors.primary};
-    font-weight: 500;
+    font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: ${({ theme }) => theme.spacing.sm};
     flex-shrink: 0;
     white-space: nowrap;
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    transition: ${({ theme }) => theme.transitions.fast};
 
     &:hover {
+        color: ${({ theme }) => theme.colors.secondary};
         text-decoration: underline;
     }
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: 0.875rem;
+        font-size: ${({ theme }) => theme.fontSizes.md};
 
         svg {
             width: 16px;
@@ -80,32 +83,93 @@ const ViewAllLink = styled(Link)`
     }
 `;
 
-const ToursGrid = styled.div`
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
+const SwiperContainer = styled.div`
     max-width: 1200px;
     margin: 0 auto;
+    position: relative;
+    overflow: hidden;
 
-    ${({ theme }) => theme.responsive.maxMobile} {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+    .swiper {
+        overflow: visible;
     }
 
-    ${({ theme }) => theme.responsive.tablet} {
-        grid-template-columns: repeat(2, 1fr);
+    .swiper-slide {
+        height: auto;
+        display: flex;
     }
-`;
 
-const NavigationButtons = styled.div`
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 1rem;
-    margin-top: 0.5rem;
+    /* Custom navigation buttons */
+    .swiper-button-next,
+    .swiper-button-prev {
+        color: ${({ theme }) => theme.colors.primary};
+        background: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        box-shadow: ${({ theme }) => theme.shadows.lg};
+        transition: ${({ theme }) => theme.transitions.fast};
+        z-index: 10;
+
+        &:after {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        &.swiper-button-disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            transform: none;
+        }
+    }
+
+    .swiper-button-next {
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .swiper-button-prev {
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .swiper-button-next::after,
+    .swiper-button-prev::after {
+        font-size: 16px;
+    }
+
+    /* custom pagination */
+    .swiper-pagination {
+        position: relative;
+        margin-top: ${({ theme }) => theme.spacing.lg};
+        text-align: center;
+
+        .swiper-pagination-bullet {
+            width: 14px;
+            height: 14px;
+            background: ${({ theme }) => theme.colors.border};
+            opacity: 0.7;
+            transition: ${({ theme }) => theme.transitions.fast};
+            margin: 0 6px;
+        }
+
+        .swiper-pagination-bullet-active {
+            background: ${({ theme }) => theme.colors.primary};
+            opacity: 1;
+            transform: scale(1.3);
+        }
+    }
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        justify-content: center;
+        .swiper {
+            padding-bottom: 50px;
+        }
+
+        .swiper-button-next,
+        .swiper-button-prev {
+            display: none;
+        }
     }
 `;
 
@@ -113,9 +177,10 @@ const LoadingContainer = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 300px;
+    min-height: 400px;
     color: ${({ theme }) => theme.colors.lightText};
     font-size: ${({ theme }) => theme.fontSizes.lg};
+    font-family: ${({ theme }) => theme.typography.fontFamily.body};
 `;
 
 const EmptyContainer = styled.div`
@@ -123,26 +188,29 @@ const EmptyContainer = styled.div`
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 300px;
+    min-height: 400px;
     color: ${({ theme }) => theme.colors.lightText};
     text-align: center;
+
+    h3 {
+        font-size: ${({ theme }) => theme.fontSizes.xl};
+        font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+        color: ${({ theme }) => theme.colors.text};
+    }
+
+    p {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        color: ${({ theme }) => theme.colors.lightText};
+    }
+`;
+
+const BannerCardWrapper = styled.div`
+    width: 100%;
+    height: 100%;
 `;
 
 export default function TrendingTours({ tours, loading = false }: TrendingToursProps) {
-    const [currentPage, setCurrentPage] = useState(0);
-    const toursPerPage = 4;
-    const totalPages = Math.ceil(tours.length / toursPerPage);
-
-    const currentTours = tours.slice(currentPage * toursPerPage, (currentPage + 1) * toursPerPage);
-
-    const handlePrevPage = () => {
-        setCurrentPage((prev) => Math.max(0, prev - 1));
-    };
-
-    const handleNextPage = () => {
-        setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
-    };
-
     if (loading) {
         return (
             <SectionContainer>
@@ -210,51 +278,61 @@ export default function TrendingTours({ tours, loading = false }: TrendingToursP
                 </ViewAllLink>
             </SectionHeader>
 
-            <ToursGrid>
-                {currentTours.map((tour) => (
-                    <Link
-                        to={`/searchTrips/${tour.uuid}`}
-                        style={{ textDecoration: 'none', color: 'inherit' }}
-                        key={tour.id}
-                    >
-                        <TourCard
-                            buttonText="See Details"
-                            id={tour.id}
-                            title={tour.title}
-                            shortDescription={tour.shortDescription}
-                            price={tour.price}
-                            mainImage={defaultImage}
-                            country={tour.country}
-                            isLiked={tour.isLiked}
-                            variant="button"
-                            tourType={{ id: tour.tourType.id, name: tour.tourType.name }}
-                            currency={tour.currency}
-                        />
-                    </Link>
-                ))}
-            </ToursGrid>
-
-            {totalPages > 1 && (
-                <NavigationButtons>
-                    <Button
-                        variant="circle"
-                        onClick={handlePrevPage}
-                        disabled={currentPage === 0}
-                        aria-label="Previous page"
-                    >
-                        <FaArrowLeft />
-                    </Button>
-
-                    <Button
-                        variant="circle"
-                        onClick={handleNextPage}
-                        disabled={currentPage === totalPages - 1}
-                        aria-label="Next page"
-                    >
-                        <FaArrowRight />
-                    </Button>
-                </NavigationButtons>
-            )}
+            <SwiperContainer>
+                <Swiper
+                    modules={[Autoplay, Pagination, Navigation]}
+                    spaceBetween={24}
+                    slidesPerView={1}
+                    slidesPerGroup={1}
+                    autoplay={{
+                        delay: 2000,
+                        disableOnInteraction: false,
+                        pauseOnMouseEnter: true,
+                    }}
+                    loop={tours.length > 2}
+                    pagination={{
+                        clickable: true,
+                        dynamicBullets: true,
+                    }}
+                    navigation={true}
+                    breakpoints={{
+                        640: {
+                            slidesPerView: 1,
+                            spaceBetween: 20,
+                        },
+                        768: {
+                            slidesPerView: 2,
+                            spaceBetween: 24,
+                        },
+                        1024: {
+                            slidesPerView: 2,
+                            spaceBetween: 24,
+                        },
+                        1200: {
+                            slidesPerView: 2,
+                            spaceBetween: 24,
+                        },
+                    }}
+                >
+                    {tours.map((tour) => (
+                        <SwiperSlide key={tour.id}>
+                            <BannerCardWrapper>
+                                <BannerCard
+                                    id={tour.id}
+                                    title={tour.title}
+                                    shortDescription={tour.shortDescription}
+                                    price={tour.price}
+                                    mainImage={tour.mainImage ? tour.mainImage : defaultImage}
+                                    country={tour.country || 'Unknown'}
+                                    currency={tour.currency || 'USD'}
+                                    uuid={tour.uuid ?? ''}
+                                    tourType={tour.tourType}
+                                />
+                            </BannerCardWrapper>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+            </SwiperContainer>
         </SectionContainer>
     );
 }

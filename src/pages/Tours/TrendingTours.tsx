@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { useApiServices } from '@/services/api';
 import TourCard from '@/components/Tours/ToursCard';
 import Button from '@/components/Common/Button';
 import defaultImage from '@/assets/default/default_1.jpg';
 import { TabItem } from '@/components/Common/Tabs';
 import Tabs from '@/components/Common/Tabs';
 import { TourPropsResponse } from '@/services/api/tours';
+import { useTrendingTours } from '@/hooks/api/useTrendingTours';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -105,83 +105,39 @@ const RetryButton = styled(Button)`
     margin-top: 1rem;
 `;
 
-export default function TrendingToursPage() {
-    const { tours: toursService } = useApiServices();
-
-    const [allTours, setAllTours] = useState<TourPropsResponse[]>([]);
+/**
+ * TrendingTours - Page Component
+ * @description This component displays trending tours with filtering options based on tour types.
+ * It fetches data from the API and allows users to navigate to individual tour details.
+ */
+export default function TrendingTours() {
     const [filteredTours, setFilteredTours] = useState<TourPropsResponse[]>([]);
-    const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
-    const [availableTabs, setAvailableTabs] = useState<{ id: string; label: string }[]>([]);
 
+    const { tours, tourTypes, loading, error, fetchTrendingTours } = useTrendingTours();
+
+    /* we fetch the tours when component mounts, this will use cached data if available */
     useEffect(() => {
-        const fetchTrendingTours = async () => {
-            try {
-                setLoading(true);
-                const response = await toursService.getTrendingTours();
-
-                if (response.data) {
-                    const transformedTours: TourPropsResponse[] = response.data.map((tour: TourPropsResponse) => ({
-                        id: tour.id,
-                        title: tour.title,
-                        shortDescription: tour.shortDescription || '',
-                        tourType: {
-                            id: tour.tourType?.id || 0,
-                            name: tour.tourType?.name || 'General',
-                        },
-                        currency: tour.currency || 'USD',
-                        isLiked: tour.isLiked || false,
-                        uuid: tour.uuid || undefined,
-                        price: tour.price || 0,
-                        mainImage: tour.mainImage || null,
-                        country: tour.country || 'Unknown',
-                        variant: 'link',
-                        buttonText: 'Book Now',
-                    }));
-                    const uniqueTypes = Array.from(
-                        new Set(transformedTours.map((tour) => tour.tourType?.name).filter(Boolean)),
-                    );
-
-                    const tabs = [
-                        { id: 'all', label: 'All Tours' },
-                        ...uniqueTypes.map((type) => ({
-                            id: type.toLowerCase().replace(/\s+/g, '-'),
-                            label: type,
-                        })),
-                    ];
-
-                    setAllTours(transformedTours);
-                    setFilteredTours(transformedTours);
-                    setAvailableTabs(tabs);
-                }
-            } catch (error) {
-                console.error('Failed to fetch trending tours:', error);
-                setAllTours([]);
-                setFilteredTours([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchTrendingTours();
-    }, []);
+    }, [fetchTrendingTours]);
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, []);
 
+    /* filter tours based on active tab */
     useEffect(() => {
         if (activeTab === 'all') {
-            setFilteredTours(allTours);
+            setFilteredTours(tours);
         } else {
-            const filtered = allTours.filter(
+            const filtered = tours.filter(
                 (tour) => tour.tourType?.name.toLowerCase().replace(/\s+/g, '-') === activeTab,
             );
             setFilteredTours(filtered);
         }
-    }, [activeTab, allTours]);
+    }, [activeTab, tours]);
 
-    const tabs: TabItem[] = availableTabs.map((tab) => ({
+    const tabs: TabItem[] = tourTypes.map((tab) => ({
         id: tab.id,
         label: tab.label,
     }));
@@ -190,6 +146,19 @@ export default function TrendingToursPage() {
         return (
             <PageContainer>
                 <LoadingContainer>Loading tours...</LoadingContainer>
+            </PageContainer>
+        );
+    }
+
+    if (error) {
+        return (
+            <PageContainer>
+                <ErrorContainer>
+                    <p>{error}</p>
+                    <RetryButton variant="primary" onClick={() => window.location.reload()}>
+                        Retry
+                    </RetryButton>
+                </ErrorContainer>
             </PageContainer>
         );
     }
@@ -242,7 +211,7 @@ export default function TrendingToursPage() {
                             title={tour.title}
                             shortDescription={tour.shortDescription}
                             price={tour.price}
-                            mainImage={defaultImage}
+                            mainImage={tour.mainImage ? tour.mainImage : defaultImage}
                             country={tour.country}
                             isLiked={tour.isLiked}
                             variant="button"

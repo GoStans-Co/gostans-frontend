@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useApiServices } from '@/services/api';
 import PopularDestinations from '@/components/Home/PopularDestinations';
 import CityExpertSection from '@/pages/Home/CityExpert';
@@ -8,55 +8,39 @@ import FirstHome from '@/components/Home/FirstHome';
 import { accommodations } from '@/data/mockData';
 import TrendingTours from '@/components/Home/TrendingTours';
 import { useDestinationsCache } from '@/hooks/api/useDestinationCache';
-import { TopDestination, TourPropsResponse } from '@/services/api/tours';
+import { TopDestination } from '@/services/api/tours';
+import { useTrendingTours } from '@/hooks/api/useTrendingTours';
+
+export type Destinations = {
+    id: string;
+    name: string;
+    image: string;
+    toursCount: number;
+    country: string;
+    cityId: number;
+    countryId: number;
+};
 
 export default function HomePage() {
-    const [tours, setTours] = useState<TourPropsResponse[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [destinations, setDestinations] = useState<any[]>([]);
-    const [destinationsLoading, setDestinationsLoading] = useState(true);
-
     const { tours: toursService } = useApiServices();
     const { cachedData, fetchTopDestinations } = useDestinationsCache();
 
+    const { homepageTours, loading: toursLoading, fetchTrendingTours } = useTrendingTours();
+
+    const hasFetchedDestinations = useRef(false);
+
+    const [destinations, setDestinations] = useState<Destinations[]>([]);
+    const [destinationsLoading, setDestinationsLoading] = useState(true);
+
+    /* trending tours on component mount */
     useEffect(() => {
-        const fetchTrendingTours = async () => {
-            try {
-                setLoading(true);
-                const response = await toursService.getTrendingTours();
-
-                if (response.data) {
-                    const transformedTours: TourPropsResponse[] = response.data.map((tour: TourPropsResponse) => ({
-                        id: tour.id,
-                        title: tour.title,
-                        shortDescription: tour.shortDescription || '',
-                        tourType: {
-                            id: tour.tourType?.id || 0,
-                            name: tour.tourType?.name || 'General',
-                        },
-                        currency: tour.currency || 'USD',
-                        isLiked: tour.isLiked || false,
-                        uuid: tour.uuid || undefined,
-                        price: tour.price || 0,
-                        mainImage: tour.mainImage || null,
-                        country: tour.country || 'Unknown',
-                        variant: 'link',
-                        buttonText: 'Book Now',
-                    }));
-                    setTours(transformedTours.slice(0, 8));
-                }
-            } catch (error) {
-                console.error('Failed to fetch trending tours:', error);
-                setTours([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchTrendingTours();
-    }, []);
+    }, [fetchTrendingTours]);
 
     useEffect(() => {
+        if (hasFetchedDestinations.current) return;
+        hasFetchedDestinations.current = true;
+
         const loadDestinations = async () => {
             setDestinationsLoading(true);
             try {
@@ -66,9 +50,10 @@ export default function HomePage() {
                     country.destinationSet.map((city) => ({
                         id: `${country.name.toLowerCase()}-${city.name.toLowerCase()}`,
                         name: city.name,
-                        image: `https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400`,
+                        image: city.city.imageUrl || `https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=400`,
                         toursCount: city.tourCount,
                         country: country.name,
+                        cityId: city.city.id,
                         countryId: country.id,
                     })),
                 );
@@ -83,7 +68,7 @@ export default function HomePage() {
         };
 
         loadDestinations();
-    }, []);
+    }, [fetchTopDestinations]);
 
     return (
         <>
@@ -93,7 +78,7 @@ export default function HomePage() {
                 loading={destinationsLoading}
                 countries={cachedData || []}
             />
-            <TrendingTours tours={tours} loading={loading} />
+            <TrendingTours tours={homepageTours} loading={toursLoading} />
             <CityExpertSection />
             <PopularAccommodations accommodations={accommodations} />
             <NewsletterSection />

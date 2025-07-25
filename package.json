@@ -24,7 +24,8 @@
     "react-router-dom": "^7.5.3",
     "recoil": "^0.7.7",
     "recoil-persist": "^5.1.0",
-    "styled-components": "^6.1.17"
+    "styled-components": "^6.1.17",
+    "swiper": "^11.2.10"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
