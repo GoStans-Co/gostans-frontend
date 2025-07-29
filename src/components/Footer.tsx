@@ -147,6 +147,23 @@ const BottomLink = styled.a`
     }
 `;
 
+const ContactValue = styled.a`
+    color: #000;
+    text-decoration: none;
+    font-size: 1rem;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+        opacity: 70%;
+        text-decoration: underline;
+        text-decoration-color: ${({ theme }) => theme.colors.muted};
+        text-decoration-thickness: 1px;
+        color: ${({ theme }) => theme.colors.primary};
+        highlight: none;
+    }
+`;
+
 export default function Footer() {
     return (
         <FooterContainer>
@@ -160,7 +177,11 @@ export default function Footer() {
                         unforgettable memories.
                     </FooterDescription>
                     <SocialLinks>
-                        <SocialLink href="#" target="_blank" aria-label="Facebook">
+                        <SocialLink
+                            href="https://www.facebook.com/people/Gostans-Gostans/pfbid0iKZm29CfLzRrxQoQS6dKmTB1JJxGCS8MasgtUJXzyyj5ffQN4LfyciQ67SrcNyhSl/"
+                            target="_blank"
+                            aria-label="Facebook"
+                        >
                             <FaFacebook style={{ color: 'black' }} />
                         </SocialLink>
                         <SocialLink href="#" target="_blank" aria-label="Twitter">
@@ -169,7 +190,11 @@ export default function Footer() {
                         <SocialLink href="#" target="_blank" aria-label="Instagram">
                             <FaInstagram style={{ color: 'black' }} />
                         </SocialLink>
-                        <SocialLink href="#" target="_blank" aria-label="LinkedIn">
+                        <SocialLink
+                            href="https://www.linkedin.com/company/gostans/"
+                            target="_blank"
+                            aria-label="LinkedIn"
+                        >
                             <FaLinkedin style={{ color: 'black' }} />
                         </SocialLink>
                     </SocialLinks>
@@ -226,19 +251,23 @@ export default function Footer() {
                         <ContactIcon>
                             <FaMapMarkerAlt />
                         </ContactIcon>
-                        <ContactText>Travel Street, Seoul, South Korea</ContactText>
+                        <ContactText>Afrosiyob 9, Bukhara, Uzbekistan</ContactText>
                     </ContactItem>
                     <ContactItem>
                         <ContactIcon>
                             <FaPhone />
                         </ContactIcon>
-                        <div>+82 123 456 7890</div>
+                        <ContactValue href="tel:+998775035747" target="_blank" rel="noopener noreferrer">
+                            +998-77-503-57-47
+                        </ContactValue>
                     </ContactItem>
                     <ContactItem>
                         <ContactIcon>
                             <FaEnvelope />
                         </ContactIcon>
-                        <div>info@gostans.com</div>
+                        <ContactValue href="mailto:info@gostans.com" target="_blank" rel="noopener noreferrer">
+                            info@gostans.com
+                        </ContactValue>
                     </ContactItem>
                 </FooterColumn>
             </FooterContent>
