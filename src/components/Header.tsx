@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaGlobe, FaShoppingCart, FaBars, FaTimes, FaMoneyBill } from 'react-icons/fa';
+import { FaShoppingCart, FaBars, FaTimes, FaMoneyBill } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
 import useModal from '@/hooks/ui/useModal';
@@ -12,7 +12,6 @@ import { ModalAlert } from '@/components/ModalPopup';
 import userImage from '@/assets/user.jpg';
 import { User } from 'lucide-react';
 import CountriesModal from '@/components/Modal/HeaderModals/CountriesModal';
-import LanguageModal from '@/components/Modal/HeaderModals/LanguageModal';
 import CurrencyModal from '@/components/Modal/HeaderModals/CurrencyModal';
 import CartModal from '@/components/Modal/HeaderModals/CartModal';
 import { useRecoilState } from 'recoil';
@@ -266,7 +265,7 @@ export default function Header() {
 
     const userButtonRef = useRef<HTMLButtonElement>(null);
     const countryRef = useRef<HTMLDivElement>(null);
-    const languageRef = useRef<HTMLDivElement>(null);
+    // const languageRef = useRef<HTMLDivElement>(null);
     const currencyRef = useRef<HTMLDivElement>(null);
     const cartRef = useRef<HTMLAnchorElement>(null);
 
@@ -275,7 +274,7 @@ export default function Header() {
     const [cartItems, setCartItems] = useRecoilState(cartAtom);
 
     const [showCountries, setShowCountries] = useState(false);
-    const [showLanguage, setShowLanguage] = useState(false);
+    // const [showLanguage, setShowLanguage] = useState(false);
     const [showCurrency, setShowCurrency] = useState(false);
     const [showCart, setShowCart] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -295,12 +294,12 @@ export default function Header() {
         name: 'Uzbekistan',
         flag: '🇺🇿',
     });
-    const [selectedLanguage, setSelectedLanguage] = useState({
-        code: 'en',
-        name: 'English',
-        nativeName: 'English',
-        flag: '🇺🇸',
-    });
+    // const [selectedLanguage, setSelectedLanguage] = useState({
+    //     code: 'en',
+    //     name: 'English',
+    //     nativeName: 'English',
+    //     flag: '🇺🇸',
+    // });
     const [selectedCurrency, setSelectedCurrency] = useState({
         code: 'USD',
         name: 'United States Dollar',
@@ -416,10 +415,10 @@ export default function Header() {
                 </Nav>
 
                 <RightSection>
-                    <LanguageSelector ref={languageRef} onClick={() => setShowLanguage(true)} isActive={showLanguage}>
+                    {/* <LanguageSelector ref={languageRef} onClick={() => setShowLanguage(true)} isActive={showLanguage}>
                         <FaGlobe style={{ width: '18px', height: '18px' }} />
                         <span>{selectedLanguage.name}</span>
-                    </LanguageSelector>
+                    </LanguageSelector> */}
 
                     <LanguageSelector ref={currencyRef} onClick={() => setShowCurrency(true)} isActive={showCurrency}>
                         <FaMoneyBill style={{ width: '18px', height: '18px' }} />
@@ -480,13 +479,13 @@ export default function Header() {
                 onCountrySelect={setSelectedCountry}
             />
 
-            <LanguageModal
+            {/* <LanguageModal
                 isOpen={showLanguage}
                 onClose={() => setShowLanguage(false)}
                 anchorElement={languageRef.current}
                 selectedLanguage={selectedLanguage}
                 onLanguageSelect={setSelectedLanguage}
-            />
+            /> */}
 
             <CurrencyModal
                 isOpen={showCurrency}
