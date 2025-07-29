@@ -59,3 +59,13 @@ export type RefreshTokenResponse = {
 };
 
 export type Result<T, E = Error> = { success: true; data: T } | { success: false; error: E };
+
+export type VerifyTelegramOtpResponse = {
+    uuid: string;
+    email: string;
+    name: string;
+    oauthId: string;
+    oauthProvider: string;
+    refresh: string;
+    accessToken: string;
+};

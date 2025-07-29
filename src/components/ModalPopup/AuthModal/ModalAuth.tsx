@@ -12,6 +12,7 @@ import { LoginCredentials, SignUpData, SocialLoginData } from '@/services/api/au
 import { useApiServices } from '@/services/api';
 import { useStatusHandler } from '@/hooks/api/useStatusHandler';
 import useCookieAuthService from '@/services/cache/cookieAuthService';
+import TelegramVerification from './TelegramOtpVerify';
 
 enum SignupStage {
     FORM = 'form',
@@ -151,6 +152,12 @@ const SignupPrompt = styled.div`
 `;
 
 export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthProps) {
+    const [messageApi, contextHolder] = message.useMessage();
+    const { auth: authService, cart } = useApiServices();
+    const statusHandler = useStatusHandler(messageApi);
+
+    const { isAuthenticated } = useCookieAuthService();
+
     const [activeTab, setActiveTab] = useState<'login' | 'signup'>(initialTab);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -161,12 +168,8 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const [success, setSuccess] = useState('');
     const [signupStage, setSignupStage] = useState<SignupStage>(SignupStage.FORM);
     const [isLoading, setIsLoading] = useState(false);
-
-    const [messageApi, contextHolder] = message.useMessage();
-    const { auth: authService, cart } = useApiServices();
-    const statusHandler = useStatusHandler(messageApi);
-
-    const { isAuthenticated } = useCookieAuthService();
+    const [telegramStage, setTelegramStage] = useState(false);
+    const [telegramLoading, setTelegramLoading] = useState(false);
 
     useEffect(() => {
         setName('');
@@ -247,6 +250,20 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
 
     const handleSocialLogin = async (provider: string, credential?: string) => {
         setIsLoading(true);
+
+        if (provider === 'telegram') {
+            setTelegramStage(true);
+            return;
+        }
+
+        setIsLoading(true);
+        const key = `${provider}-loading`;
+        messageApi.open({
+            key,
+            type: 'loading',
+            content: `Logging in with ${provider}...`,
+            duration: 0,
+        });
         try {
             setSuccess('');
             if (!credential) return;
@@ -259,16 +276,73 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             const result = await authService.socialLogin(socialData);
 
             if (result) {
-                messageApi.success({
+                messageApi.open({
+                    key,
+                    type: 'success',
                     content: `Login with ${provider} is successful!`,
-                    duration: 3,
+                    duration: 2,
                 });
                 await cart.syncCartOnLogin();
             }
         } catch (err) {
-            console.error('Social login error:', err);
+            messageApi.open({
+                key,
+                type: 'error',
+                content: `Login with ${provider} failed. Try again.`,
+                duration: 2,
+            });
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleTelegramOtpSubmit = async (otpCode: string) => {
+        if (!otpCode) {
+            messageApi.error('OTP code is required');
+            return;
+        }
+        const key = 'telegram-otp-loading';
+        messageApi.open({
+            key,
+            type: 'loading',
+            content: 'Verifying Telegram OTP...',
+            duration: 0,
+        });
+
+        if (otpCode.length !== 6) return;
+
+        const otpCodeValue = otpCode.toString();
+
+        try {
+            setTelegramLoading(true);
+            const res = await authService.verifyTelegramOtp(otpCodeValue);
+            if (res?.data?.accessToken) {
+                messageApi.success({
+                    content: 'Telegram login  is successful!',
+                    duration: 3,
+                });
+                setTimeout(() => {
+                    onClose();
+                    window.location.href = '/';
+                }, 3000);
+            } else {
+                messageApi.open({
+                    key,
+                    type: 'error',
+                    content: 'Invalid OTP. Please try again.',
+                    duration: 2,
+                });
+            }
+        } catch (error) {
+            console.error('Telegram OTP verification failed', error);
+            messageApi.open({
+                key,
+                type: 'error',
+                content: 'Verification failed. Please try again.',
+                duration: 2,
+            });
+        } finally {
+            setTelegramLoading(false);
         }
     };
 
@@ -328,7 +402,16 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             {contextHolder}
             <Modal isOpen={true} onClose={onClose} title="" width="450px" padding={theme.spacing.xl}>
                 {success && <div style={{ color: 'green', textAlign: 'center', marginBottom: '1rem' }}>{success}</div>}
-                {signupStage === SignupStage.PHONE_VERIFICATION ? (
+                {telegramStage ? (
+                    <TelegramVerification
+                        loading={telegramLoading}
+                        onSubmit={handleTelegramOtpSubmit}
+                        onBack={() => setTelegramStage(false)}
+                        onSuccess={() => {
+                            setTelegramStage(false);
+                        }}
+                    />
+                ) : signupStage === SignupStage.PHONE_VERIFICATION ? (
                     <PhoneVerification
                         onBack={() => setSignupStage(SignupStage.PASSWORD)}
                         onComplete={handlePhoneVerificationComplete}

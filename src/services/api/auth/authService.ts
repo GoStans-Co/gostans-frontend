@@ -11,6 +11,7 @@ import {
     SignUpData,
     SocialLoginData,
     SocialLoginResponse,
+    VerifyTelegramOtpResponse,
 } from '@/services/api/auth/types';
 
 export const CACHE_DURATION = 5 * 60 * 1000;
@@ -207,6 +208,49 @@ export const useAuthService = () => {
         }
     };
 
+    const verifyTelegramOtp = async (payload: string): Promise<ApiResponse<VerifyTelegramOtpResponse>> => {
+        try {
+            const response = await fetchData({
+                url: '/auth/telegram/verify-otp/',
+                method: 'POST',
+                data: { otp: payload },
+            });
+
+            if (response.data?.accessToken && response.data?.refresh) {
+                const userForCookie = {
+                    id: response.data.uuid,
+                    email: response.data.email,
+                    name: response.data.name,
+                    phone: '',
+                    avatar: '',
+                };
+                setAuthCookie(response.data.accessToken, userForCookie, response.data.refresh);
+                updateUserProfileCache({
+                    id: response.data.uuid,
+                    email: response.data.email,
+                    name: response.data.name,
+                    phone: response.data.phone || '',
+                    oauthId: response.data.oauthId,
+                    oauthProvider: response.data.oauthProvider,
+                    imageURL: '',
+                });
+            }
+
+            return {
+                data: response.data,
+                statusCode: response.statusCode || 200,
+                message: response.message || 'Login successful',
+            };
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            throw {
+                data: null,
+                statusCode: errorResponse.response?.status || 500,
+                message: errorResponse.message || 'Telegram OTP verification failed',
+            };
+        }
+    };
+
     const refreshToken = async (): Promise<Result<RefreshTokenResponse, string>> => {
         try {
             const refreshTokenValue = getRefreshToken();
@@ -279,6 +323,7 @@ export const useAuthService = () => {
             forgotPassword,
             sendOtp,
             verifyOtp,
+            verifyTelegramOtp,
             refreshToken,
             clearCache,
             forceRefresh,
