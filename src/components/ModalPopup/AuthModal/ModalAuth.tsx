@@ -157,8 +157,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const emailCheckTimer = useRef<NodeJS.Timeout | null>(null);
 
     const { auth: authService, cart } = useApiServices();
-    const statusHandler = useStatusHandler(messageApi);
-    const { execute } = useStatusHandler(messageApi);
+    const { statusHandler, execute } = useStatusHandler(messageApi);
 
     const { isAuthenticated } = useCookieAuthService();
 
