@@ -389,6 +389,82 @@ const NavigationButton = styled(Button)`
     }
 `;
 
+const FilterToggleButton = styled.div`
+    display: none;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+        background-color: ${({ theme }) => theme.colors.background};
+        padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+        border-radius: ${({ theme }) => theme.borderRadius.md};
+        box-shadow: ${({ theme }) => theme.shadows.sm};
+        border: 1px solid ${({ theme }) => theme.colors.border};
+        transition: ${({ theme }) => theme.transitions.default};
+    }
+`;
+
+const FilterLabel = styled.div`
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.sm};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
+    color: ${({ theme }) => theme.colors.text};
+
+    svg {
+        color: ${({ theme }) => theme.colors.primary};
+    }
+`;
+
+const ToggleSwitch = styled.div<{ isActive: boolean }>`
+    width: 45px;
+    height: 26px;
+    background-color: ${({ isActive, theme }) => (isActive ? theme.colors.primary : theme.colors.lightBackground)};
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding: 0 3px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    border: 1px solid ${({ isActive, theme }) => (isActive ? theme.colors.primary : theme.colors.border)};
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: ${({ isActive }) => (isActive ? '20px' : '4px')};
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: white;
+        transition:
+            left 0.3s ease,
+            box-shadow 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    &:hover::after {
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    &:active::after {
+        width: 22px;
+    }
+`;
+
+const ToggleText = styled.span<{ isActive: boolean }>`
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    color: ${({ isActive }) => (isActive ? 'white' : '#666')};
+    margin-left: ${({ isActive }) => (isActive ? '5px' : 'auto')};
+    margin-right: ${({ isActive }) => (isActive ? 'auto' : '5px')};
+    font-weight: 500;
+    user-select: none;
+`;
+
 /**
  * SearchPackageList - Page Component
  * @description This component renders the search package list page, including search bar, filters, and tour results.
@@ -431,6 +507,8 @@ export default function SearchPackageList() {
         locations: [] as string[],
     });
     const [isLoginAlertOpen, setIsLoginAlertOpen] = useState(false);
+    const [showMobileFilters, setShowMobileFilters] = useState(false);
+
     const [messageApi, contextHolder] = message.useMessage();
 
     const PAGE_SIZE = 10;
@@ -851,12 +929,25 @@ export default function SearchPackageList() {
                 </SearchContainer>
 
                 <ContentContainer>
-                    <FilterBar
-                        filters={searchFilters}
-                        handlers={filterActions}
-                        totalResults={filteredTours.length}
-                        tourData={filteredTours}
-                    />
+                    <FilterToggleButton onClick={() => setShowMobileFilters(!showMobileFilters)}>
+                        <FilterLabel>Show Filter Bar</FilterLabel>
+                        <ToggleSwitch isActive={showMobileFilters}>
+                            <ToggleText isActive={showMobileFilters}>{showMobileFilters ? '' : ''}</ToggleText>
+                        </ToggleSwitch>
+                    </FilterToggleButton>
+
+                    <div
+                        style={{
+                            display: window.innerWidth <= 768 ? (showMobileFilters ? 'block' : 'none') : 'block',
+                        }}
+                    >
+                        <FilterBar
+                            filters={searchFilters}
+                            handlers={filterActions}
+                            totalResults={filteredTours.length}
+                            tourData={filteredTours}
+                        />
+                    </div>
 
                     <ResultsContainer ref={resultsRef}>
                         {!isLoading && filteredTours.length > 0 && (

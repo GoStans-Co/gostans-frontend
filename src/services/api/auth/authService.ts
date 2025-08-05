@@ -130,6 +130,21 @@ export const useAuthService = () => {
         }
     };
 
+    const checkEmailExists = async (email: string): Promise<boolean> => {
+        try {
+            const response = await fetchData({
+                url: '/auth/check-email/',
+                method: 'POST',
+                data: { email },
+            });
+
+            return response?.emailExists === true;
+        } catch (error) {
+            console.error('Email check failed:', error);
+            return false;
+        }
+    };
+
     const logout = async (): Promise<ApiResponse<void>> => {
         const cartData = localStorage.getItem('cart-storage');
         try {
@@ -386,6 +401,7 @@ export const useAuthService = () => {
             login,
             signUp,
             socialLogin,
+            checkEmailExists,
             logout,
             forgotPassword,
             sendOtp,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
 import { Eye, EyeOff } from 'lucide-react';
@@ -154,12 +154,16 @@ const SignupPrompt = styled.div`
 
 export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthProps) {
     const [messageApi, contextHolder] = message.useMessage();
-    const { execute } = useStatusHandler(messageApi);
+    const emailCheckTimer = useRef<NodeJS.Timeout | null>(null);
+
     const { auth: authService, cart } = useApiServices();
     const statusHandler = useStatusHandler(messageApi);
+    const { execute } = useStatusHandler(messageApi);
 
     const { isAuthenticated } = useCookieAuthService();
 
+    const [debouncedEmail, setDebouncedEmail] = useState('');
+    const [emailValidMessage, setEmailValidMessage] = useState('');
     const [activeTab, setActiveTab] = useState<'login' | 'signup'>(initialTab);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -176,6 +180,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const [forgotPasswordStep, setForgotPasswordStep] = useState<'email' | 'otp' | 'reset'>('email');
     const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
     const [resendDisabled, setResendDisabled] = useState(false);
+    const [shouldCheckEmail, setShouldCheckEmail] = useState(false);
 
     useEffect(() => {
         setName('');
@@ -184,6 +189,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         setPassword('');
         setConfirmPassword('');
         setSuccess('');
+        setEmailValidMessage('');
     }, [activeTab]);
 
     useEffect(() => {
@@ -199,6 +205,26 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             return () => clearTimeout(timer);
         }
     }, [isAuthenticated, onClose]);
+
+    useEffect(() => {
+        const checkEmail = async () => {
+            if (activeTab !== 'signup' || !debouncedEmail || !shouldCheckEmail) return;
+
+            const exists = await authService.checkEmailExists(debouncedEmail);
+            console.log('Email check result:', exists);
+
+            if (exists) {
+                messageApi.error('Email already exists');
+                setEmailValidMessage('Email already exists');
+            } else {
+                setEmailValidMessage('Email is available to sign up');
+            }
+
+            setShouldCheckEmail(false);
+        };
+
+        checkEmail();
+    }, [debouncedEmail, activeTab, shouldCheckEmail]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -473,6 +499,29 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             setIsLoading(false);
         }
     };
+
+    const handleEmailChange = (value: string) => {
+        setEmail(value);
+        setEmailValidMessage('');
+        setShouldCheckEmail(false);
+
+        if (activeTab !== 'signup') return;
+
+        if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current);
+
+        emailCheckTimer.current = setTimeout(() => {
+            const validEmailPattern = /^[^\s@]+@[^\s@]+\.(com|net|org|edu)$/i;
+
+            if (validEmailPattern.test(value)) {
+                setDebouncedEmail(value);
+                setShouldCheckEmail(true);
+            } else {
+                setEmailValidMessage('');
+                setDebouncedEmail('');
+            }
+        }, 500);
+    };
+
     const forgotPasswordProps = {
         onClose,
         onBackToLogin: handleBackToLogin,
@@ -545,10 +594,24 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                                     placeholder="Email"
                                     type="email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onChange={(e) => handleEmailChange(e.target.value)}
                                     required={(activeTab === 'login' && !phoneNumber) || activeTab === 'signup'}
                                     inputConfig={{ noBorder: true }}
                                 />
+                                {emailValidMessage && (
+                                    <div
+                                        style={{
+                                            fontSize: '0.7rem',
+                                            marginTop: '0.25rem',
+                                            textAlign: 'left',
+                                            color: emailValidMessage.toLowerCase().includes('available')
+                                                ? 'green'
+                                                : 'red',
+                                        }}
+                                    >
+                                        {emailValidMessage}
+                                    </div>
+                                )}
                             </InputField>
 
                             {activeTab === 'login' && (
