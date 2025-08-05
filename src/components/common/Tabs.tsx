@@ -31,9 +31,9 @@ const Container = styled.div<{ variant?: string }>`
     ${({ theme }) => theme.responsive.maxMobile} {
         gap: ${({ theme }) => theme.spacing.sm};
         justify-content: flex-start;
+        margin-bottom: 2rem;
     }
 
-    /* Hide scrollbar */
     &::-webkit-scrollbar {
         display: none;
     }

@@ -57,8 +57,11 @@ const Title = styled.h1`
     letter-spacing: -0.25px;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: 2.5rem;
-        line-height: 1.2;
+        font-size: 1.8rem;
+        line-height: 1.3;
+        margin-bottom: 0.75rem;
+        word-spacing: -0.05em;
+        padding: 0 1rem;
     }
 
     ${({ theme }) => theme.responsive.tablet} {
@@ -137,6 +140,18 @@ const CategoryIcons = styled.div`
     display: flex;
     gap: 1rem;
     margin: 2rem 0;
+
+    ${({ theme }) => theme.breakpoints.md}) {
+        flex-direction: column;
+        align-items: center;
+        margin: 1rem 0;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex-direction: row;
+        justify-content: center;
+        margin: 1rem 0;
+    }
 `;
 
 const CategoryItem = styled.div`
@@ -168,8 +183,11 @@ const Subtitle = styled.p`
     text-align: left;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: 1rem;
+        font-size: 0.9rem;
         text-align: center;
+        margin: 0 auto 1.5rem;
+        line-height: 1.4;
+        padding: 0 0.5rem;
     }
 `;
 

@@ -99,9 +99,8 @@ const DestinationsGrid = styled.div`
     }
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        gap: 0.5rem;
+        gap: 0.8rem;
         scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
         padding: 0 0 1rem 0;
 
         scrollbar-width: none;
