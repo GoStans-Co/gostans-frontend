@@ -13,6 +13,7 @@ import { useApiServices } from '@/services/api';
 import { useStatusHandler } from '@/hooks/api/useStatusHandler';
 import useCookieAuthService from '@/services/cache/cookieAuthService';
 import TelegramVerification from './TelegramOtpVerify';
+import ForgotPassword from '@/components/Password/ForgotPassword';
 
 enum SignupStage {
     FORM = 'form',
@@ -153,6 +154,7 @@ const SignupPrompt = styled.div`
 
 export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthProps) {
     const [messageApi, contextHolder] = message.useMessage();
+    const { execute } = useStatusHandler(messageApi);
     const { auth: authService, cart } = useApiServices();
     const statusHandler = useStatusHandler(messageApi);
 
@@ -170,6 +172,10 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
     const [isLoading, setIsLoading] = useState(false);
     const [telegramStage, setTelegramStage] = useState(false);
     const [telegramLoading, setTelegramLoading] = useState(false);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [forgotPasswordStep, setForgotPasswordStep] = useState<'email' | 'otp' | 'reset'>('email');
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+    const [resendDisabled, setResendDisabled] = useState(false);
 
     useEffect(() => {
         setName('');
@@ -212,29 +218,29 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                     password,
                 };
 
-                const { error } = await statusHandler.handleAsyncOperation(() => authService.login(credentials), {
+                const { data, error } = await statusHandler.handleAsyncOperation(() => authService.login(credentials), {
                     loadingMessage: 'Logging in...',
-                    successMessage: 'Login successful!',
-                    showLoading: true,
-                    showSuccess: true,
-                    showError: true,
-                    onSuccess: async (result) => {
-                        if (result?.success) {
-                            await cart.syncCartOnLogin();
-                            setTimeout(() => {
-                                onClose();
-                                window.location.href = '/';
-                            }, 500);
-                        }
-                    },
-                    onError: (apiError) => {
-                        console.error('Login failed:', apiError);
-                    },
+                    showSuccess: false,
+                    showError: false,
+                    onSuccess: () => {},
                 });
 
                 if (error) {
-                    /* error will be handled by status handler */
+                    statusHandler.showMessage('error', error.message, 4);
                     return;
+                }
+
+                if (data?.success) {
+                    statusHandler.showMessage('success', 'Login successful!');
+                    /* then we  sync cart and redirect to home */
+                    await cart.syncCartOnLogin();
+                    setTimeout(() => {
+                        onClose();
+                        window.location.href = '/';
+                    }, 500);
+                } else {
+                    const errorMessage = data?.error || 'Login failed. Please check your credentials.';
+                    statusHandler.showMessage('error', errorMessage, 4);
                 }
             } else {
                 /* for signup only, we validate name and email, then go to password step */
@@ -362,6 +368,77 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         });
     };
 
+    const handleForgotPasswordClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setShowForgotPassword(true);
+        setForgotPasswordStep('email');
+    };
+
+    const handleBackToLogin = () => {
+        setShowForgotPassword(false);
+        setActiveTab('login');
+        setForgotPasswordStep('email');
+        setForgotPasswordEmail('');
+    };
+
+    const handleForgotPasswordEmailSubmit = async (email: string) => {
+        const result = await execute(() => authService.forgotPassword(email), {
+            loading: 'Sending OTP...',
+            success: 'OTP sent to your email',
+            error: 'Failed to send OTP. Please check your email and try again.',
+        });
+
+        if (result) {
+            setForgotPasswordStep('otp');
+        }
+    };
+    const handleForgotPasswordOtpSubmit = async (email: string, otp: string) => {
+        const result = await execute(() => authService.verifyOtpEmail(email, otp), {
+            loading: 'Verifying OTP...',
+            success: 'OTP verified successfully',
+            error: 'Invalid or expired OTP. Please try again.',
+        });
+
+        if (result) {
+            setForgotPasswordStep('reset');
+        }
+    };
+
+    const handleForgotPasswordReset = async (email: string, newPassword: string) => {
+        if (newPassword.length < 6) {
+            messageApi.error('Password must be at least 6 characters');
+            return;
+        }
+
+        const result = await execute(() => authService.resetPassword(email, newPassword), {
+            loading: 'Resetting password...',
+            success: 'Password reset successfully',
+            error: 'Failed to reset password. Please try again.',
+        });
+
+        if (result) {
+            setTimeout(() => {
+                handleBackToLogin();
+            }, 2000);
+        }
+    };
+
+    const handleResendOtp = async (email: string) => {
+        setResendDisabled(true);
+
+        const result = await execute(() => authService.resendOtp(email), {
+            loading: 'Resending OTP...',
+            success: 'OTP resent successfully',
+            error: 'Failed to resend OTP. Please try again.',
+        });
+
+        if (!result) {
+            setResendDisabled(false);
+        } else {
+            setTimeout(() => setResendDisabled(false), 60000);
+        }
+    };
+
     const handleFinalSignup = async () => {
         setIsLoading(true);
         try {
@@ -396,13 +473,29 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             setIsLoading(false);
         }
     };
+    const forgotPasswordProps = {
+        onClose,
+        onBackToLogin: handleBackToLogin,
+        onEmailSubmit: handleForgotPasswordEmailSubmit,
+        onOtpSubmit: handleForgotPasswordOtpSubmit,
+        onPasswordReset: handleForgotPasswordReset,
+        onResendOtp: handleResendOtp,
+        isLoading,
+        step: forgotPasswordStep,
+        setStep: setForgotPasswordStep,
+        email: forgotPasswordEmail,
+        setEmail: setForgotPasswordEmail,
+        resendDisabled,
+    };
 
     return (
         <>
             {contextHolder}
             <Modal isOpen={true} onClose={onClose} title="" width="450px" padding={theme.spacing.xl}>
                 {success && <div style={{ color: 'green', textAlign: 'center', marginBottom: '1rem' }}>{success}</div>}
-                {telegramStage ? (
+                {showForgotPassword ? (
+                    <ForgotPassword {...forgotPasswordProps} />
+                ) : telegramStage ? (
                     <TelegramVerification
                         loading={telegramLoading}
                         onSubmit={handleTelegramOtpSubmit}
@@ -493,7 +586,9 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                             )}
 
                             {activeTab === 'login' && (
-                                <ForgotPasswordLink href="#">Forgot Password?</ForgotPasswordLink>
+                                <ForgotPasswordLink href="#" onClick={handleForgotPasswordClick}>
+                                    Forgot Password?
+                                </ForgotPasswordLink>
                             )}
 
                             <SubmitButton
