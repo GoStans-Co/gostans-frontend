@@ -13,6 +13,11 @@ const FavoritesContainer = styled.div`
     max-width: 100%;
     padding: ${({ theme }) => theme.spacing.xl};
     padding-left: ${({ theme }) => theme.spacing.xl};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 1rem;
+        padding-left: 1rem;
+    }
 `;
 
 const PageTitle = styled.h1`
@@ -27,6 +32,12 @@ const FavoritesGrid = styled.div`
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     margin-left: 0;
     padding-left: 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.md};
+        // padding: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const FavoriteImage = styled.div<{ imageUrl: string }>`
@@ -138,6 +149,17 @@ const EmptyText = styled.p`
     margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
 
+const WrappedCard = styled(Card)`
+    background-color: ${({ theme }) => theme.colors.grayBackground};
+    padding-left: 0;
+
+    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+        padding: ${({ theme }) => theme.spacing.md};
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: ${({ theme }) => theme.borderRadius.md};
+    }
+`;
+
 export default function FavoritesPage() {
     const wishlist = useRecoilValue(wishlistAtom);
     const { wishlist: wishlistService } = useApiServices();
@@ -200,7 +222,7 @@ export default function FavoritesPage() {
                 ) : (
                     <FavoritesGrid>
                         {wishlist.map((favorite) => (
-                            <Card key={favorite.uuid} style={{ backgroundColor: '#f0f3f5', paddingLeft: '0' }}>
+                            <WrappedCard key={favorite.uuid}>
                                 <FavoriteImage imageUrl={favorite.mainImage}>
                                     <HeartButton onClick={() => removeFavorite(favorite.uuid)}>
                                         <Heart fill="currentColor" />
@@ -211,7 +233,7 @@ export default function FavoritesPage() {
                                     <FavoriteLocation>{favorite.city}</FavoriteLocation>
                                     <ToursCount>{favorite.tourType}</ToursCount>
                                 </FavoriteContent>
-                            </Card>
+                            </WrappedCard>
                         ))}
                     </FavoritesGrid>
                 )}

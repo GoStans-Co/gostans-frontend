@@ -9,6 +9,11 @@ const CardContainer = styled.div<{ variant?: 'default' | 'compact' }>`
     overflow: hidden;
     padding: ${({ theme, variant }) => (variant === 'compact' ? theme.spacing.md : theme.spacing.lg)};
 
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex-direction: column;
+        padding: 0;
+    }
+
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
         flex-direction: column;
     }
@@ -23,10 +28,18 @@ const CardImage = styled.div<{ imageUrl: string; size?: 'default' | 'small' }>`
     background-position: center;
     border-radius: ${({ theme }) => theme.borderRadius.md};
 
+    ${({ theme }) => theme.responsive.maxMobile} {
+        width: 100%;
+        height: 180px;
+        min-width: unset;
+        margin-bottom: 0;
+        border-radius: ${({ theme }) => `${theme.borderRadius.md} ${theme.borderRadius.md} 0 0`};
+    }
+
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-        width: 90px;
-        height: 90px;
-        margin-bottom: ${({ theme }) => theme.spacing.md};
+        width: 100%;
+        min-width: unset;
+        height: 140px;
     }
 `;
 
@@ -37,6 +50,11 @@ const CardInfo = styled.div<{ hasActions?: boolean }>`
     flex-direction: column;
     ${({ hasActions }) => hasActions && 'justify-content: space-between;'}
     min-height: ${({ hasActions }) => (hasActions ? '90px' : 'auto')};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        min-height: auto;
+    }
 `;
 
 const CardHeader = styled.div`
@@ -44,8 +62,15 @@ const CardHeader = styled.div`
     justify-content: space-between;
     width: 100%;
 
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: ${({ theme }) => theme.spacing.md};
+    }
+
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-        flex-direction: column;
+        flex-direction: row;
         gap: ${({ theme }) => theme.spacing.sm};
     }
 `;
@@ -55,6 +80,34 @@ const CardTitle = styled.h3<{ size?: 'default' | 'large' }>`
     color: ${({ theme }) => theme.colors.text};
     margin: 0 0 ${({ theme }) => theme.spacing.xs} 0;
     font-weight: 600;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: calc(100% - 80px);
+    }
+`;
+
+const LeftContent = styled.div`
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    justify-content: center;
+    overflow: hidden;
+    align-items: flex-start;
+    text-align: left;
+`;
+
+const RightContent = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    flex-shrink: 0;
 `;
 
 const CardSubtitle = styled.p`
@@ -70,10 +123,15 @@ const CardPrice = styled.span`
     color: ${({ theme }) => theme.colors.primary};
     margin-left: ${({ theme }) => theme.spacing.md};
     white-space: nowrap;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-left: 0;
+        font-size: ${({ theme }) => theme.fontSizes.xl};
+        font-weight: 700;
+    }
 `;
 
 const StatusPill = styled.div<{ status: string }>`
-    margin-top: ${({ theme }) => theme.spacing.sm};
     font-size: ${({ theme }) => theme.fontSizes.xs};
     padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.sm}`};
     border-radius: ${({ theme }) => theme.borderRadius.full};
@@ -106,13 +164,23 @@ const StatusPill = styled.div<{ status: string }>`
         }
     }}
 `;
-
 const CardActions = styled.div`
     display: flex;
     justify-content: flex-end;
     gap: ${({ theme }) => theme.spacing.sm};
     margin-top: auto;
     padding-top: ${({ theme }) => theme.spacing.md};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        margin-top: ${({ theme }) => theme.spacing.sm};
+
+        button {
+            flex: 1;
+            min-width: 120px;
+        }
+    }
 
     @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
         justify-content: flex-end;
@@ -123,6 +191,11 @@ const QuantityControls = styled.div`
     display: flex;
     align-items: center;
     gap: 1rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-top: 0.5rem;
+        align-self: flex-start;
+    }
 
     button {
         width: 32px;
@@ -160,7 +233,6 @@ export type TripCardProps = {
     customContent?: React.ReactNode;
     shortDescription?: string;
 };
-
 export default function TripCard({
     image,
     title,
@@ -185,37 +257,36 @@ export default function TripCard({
             <CardInfo hasActions={hasActions}>
                 <div>
                     <CardHeader>
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'flex-start',
-                                width: '100%',
-                            }}
-                        >
+                        <LeftContent>
                             <CardTitle size={titleSize}>{title}</CardTitle>
                             {subtitle && <CardSubtitle>{subtitle}</CardSubtitle>}
                             {date && <CardSubtitle>{date}</CardSubtitle>}
-                        </div>
-                        {showQuantityControls ? (
-                            <QuantityControls>
-                                <span>Adult</span>
-                                <button onClick={() => onQuantityChange?.(Math.max(1, quantity - 1))}>-</button>
-                                <span>{quantity}</span>
-                                <button onClick={() => onQuantityChange?.(quantity + 1)}>+</button>
-                            </QuantityControls>
-                        ) : price !== undefined ? (
-                            <CardPrice>${price}</CardPrice>
-                        ) : null}
-                    </CardHeader>
+                        </LeftContent>
 
-                    {status && (
-                        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                            <StatusPill status={status}>
-                                {status === 'waiting' ? 'Awaiting' : status.charAt(0).toUpperCase() + status.slice(1)}
-                            </StatusPill>
-                        </div>
-                    )}
+                        <RightContent>
+                            {showQuantityControls ? (
+                                <QuantityControls>
+                                    <span>Adult</span>
+                                    <button onClick={() => onQuantityChange?.(Math.max(1, quantity - 1))}>-</button>
+                                    <span>{quantity}</span>
+                                    <button onClick={() => onQuantityChange?.(quantity + 1)}>+</button>
+                                </QuantityControls>
+                            ) : price !== undefined ? (
+                                <>
+                                    <CardPrice>${price}</CardPrice>
+                                    {status && (
+                                        <div style={{ marginTop: '8px' }}>
+                                            <StatusPill status={status}>
+                                                {status === 'waiting'
+                                                    ? 'Awaiting'
+                                                    : status.charAt(0).toUpperCase() + status.slice(1)}
+                                            </StatusPill>
+                                        </div>
+                                    )}
+                                </>
+                            ) : null}
+                        </RightContent>
+                    </CardHeader>
 
                     {customContent}
                 </div>

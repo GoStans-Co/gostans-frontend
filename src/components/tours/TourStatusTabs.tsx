@@ -50,7 +50,6 @@ const TabsContainer = styled.div`
     ${({ theme }) => theme.responsive.maxMobile} {
         width: 100%;
         justify-content: flex-start;
-        padding-bottom: ${({ theme }) => theme.spacing.md};
     }
 `;
 

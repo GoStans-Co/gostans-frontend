@@ -13,6 +13,11 @@ const ProfileContentContainer = styled.div`
     padding: ${({ theme }) => theme.spacing.xl};
     width: 100%;
     max-width: 650px;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 1rem;
+        max-width: 100%;
+    }
 `;
 
 const Card = styled.div`
@@ -23,6 +28,12 @@ const Card = styled.div`
     box-shadow: ${({ theme }) => theme.shadows.sm};
     width: 100%;
     box-sizing: border-box;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: ${({ theme }) => theme.borderRadius.md};
+    }
 `;
 
 const FieldsGrid = styled.div`

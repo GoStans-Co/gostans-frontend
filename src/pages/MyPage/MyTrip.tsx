@@ -12,6 +12,11 @@ const TripsContainer = styled.div`
     width: 100%;
     max-width: 720px;
     padding: ${({ theme }) => theme.spacing.xl};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 1rem;
+        max-width: 100%;
+    }
 `;
 
 const PageTitle = styled.h1`
@@ -19,12 +24,21 @@ const PageTitle = styled.h1`
     color: ${({ theme }) => theme.colors.primary};
     margin-bottom: ${({ theme }) => theme.spacing.md};
     text-align: left;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xl};
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const TripsList = styled.div`
     display: flex;
     flex-direction: column;
     gap: ${({ theme }) => theme.spacing.lg};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const EmptyState = styled.div`
@@ -36,26 +50,46 @@ const EmptyState = styled.div`
     background-color: white;
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     text-align: center;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.xl};
+        margin: 0 0.5rem;
+    }
 `;
 
 const EmptyIcon = styled.div`
     font-size: 3rem;
     margin-bottom: ${({ theme }) => theme.spacing.lg};
     color: ${({ theme }) => theme.colors.lightText};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 2.5rem;
+        margin-bottom: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const EmptyTitle = styled.h3`
     font-size: ${({ theme }) => theme.fontSizes.xl};
     margin-bottom: ${({ theme }) => theme.spacing.md};
     color: ${({ theme }) => theme.colors.primary};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.lg};
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const EmptyText = styled.p`
     font-size: ${({ theme }) => theme.fontSizes.md};
     color: ${({ theme }) => theme.colors.lightText};
     margin-bottom: ${({ theme }) => theme.spacing.xl};
-`;
 
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        margin-bottom: ${({ theme }) => theme.spacing.lg};
+        padding: 0 ${({ theme }) => theme.spacing.md};
+    }
+`;
 export default function TripsPage() {
     const [activeTab, setActiveTab] = useState<TripStatus>('all');
     const filteredTrips = tours.filter((trip) => (activeTab === 'all' ? true : trip.status === activeTab));

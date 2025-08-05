@@ -22,6 +22,10 @@ const PageContainer = styled.div`
     min-height: 100vh;
     width: 100%;
     position: relative;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex-direction: column;
+    }
 `;
 
 const SidebarContainer = styled.aside`
@@ -35,6 +39,10 @@ const SidebarContainer = styled.aside`
     height: auto;
     display: flex;
     flex-direction: column;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: none;
+    }
 `;
 
 const ContentContainer = styled.main`
@@ -42,6 +50,10 @@ const ContentContainer = styled.main`
     background-color: #f0f3f5;
     overflow-y: auto;
     padding-bottom: ${({ theme }) => theme.spacing['2xl']};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding-bottom: ${({ theme }) => theme.spacing.xl};
+    }
 `;
 
 export default function MyPage() {
@@ -74,6 +86,17 @@ export default function MyPage() {
         image: '',
         phone: '',
     });
+
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [drawerVisible, setDrawerVisible] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const fetchUserData = async () => {
