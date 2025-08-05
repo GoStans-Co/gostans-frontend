@@ -938,7 +938,7 @@ export default function SearchPackageList() {
 
                     <div
                         style={{
-                            display: window.innerWidth <= 768 ? (showMobileFilters ? 'block' : 'none') : 'block',
+                            display: windowWidth <= 768 ? (showMobileFilters ? 'block' : 'none') : 'block',
                         }}
                     >
                         <FilterBar
