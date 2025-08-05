@@ -508,8 +508,15 @@ export default function SearchPackageList() {
     });
     const [isLoginAlertOpen, setIsLoginAlertOpen] = useState(false);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
     const [messageApi, contextHolder] = message.useMessage();
+
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const PAGE_SIZE = 10;
 
