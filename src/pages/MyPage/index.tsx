@@ -87,7 +87,6 @@ export default function MyPage() {
         phone: '',
     });
 
-    const [drawerVisible, setDrawerVisible] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
