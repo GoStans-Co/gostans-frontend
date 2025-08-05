@@ -32,20 +32,22 @@ type SidebarItemProps = {
 };
 
 const SidebarContainer = styled.div`
-    width: 300px;
+    width: calc(100% - ${({ theme }) => theme.spacing.lg}*2);
+    max-width: 300px;
     background-color: ${({ theme }) => theme.colors.background};
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     padding: ${({ theme }) => theme.spacing.lg};
-    margin: ${({ theme }) => theme.spacing.lg} 0;
+    margin: ${({ theme }) => theme.spacing.lg};
     position: sticky;
-    top: ${({ theme }) => theme.spacing.md};
-    height: 460px;
+    top: 100px;
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 80px);
     overflow-y: auto;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: ${({ theme }) => theme.shadows.md};
+    z-index: 10;
+    align-self: flex-start;
 `;
 
 const ProfileSection = styled.div`

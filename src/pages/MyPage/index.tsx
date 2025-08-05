@@ -30,7 +30,11 @@ const SidebarContainer = styled.aside`
     flex-shrink: 0;
     border-right: 1px solid #e5e5e5;
     background: white;
-    overflow-y: auto;
+    position: relative;
+    overflow: visible;
+    height: auto;
+    display: flex;
+    flex-direction: column;
 `;
 
 const ContentContainer = styled.main`
