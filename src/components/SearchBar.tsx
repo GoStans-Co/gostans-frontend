@@ -37,8 +37,7 @@ const SearchForm = styled.form`
     gap: 0;
     align-items: stretch;
     width: 100%;
-    max-width: none;
-    min-width: 800px;
+    max-width: 100%;
     margin: 0;
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius.lg};
@@ -48,11 +47,24 @@ const SearchForm = styled.form`
     height: 56px;
     position: relative;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         flex-direction: column;
         height: auto;
         min-width: auto;
-        max-width: 100%;
+        border-radius: ${({ theme }) => theme.borderRadius.md};
+        width: calc(100vw - 2rem);
+        max-width: calc(100vw - 2rem);
+        box-sizing: border-box;
+
+        & > div {
+            width: 100%;
+            border-right: none !important;
+            border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
     }
 `;
 
@@ -66,8 +78,10 @@ const InputWrapper = styled.div`
         border-right: 1px solid ${({ theme }) => theme.colors.border};
     }
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         border-right: none;
+        width: 100%;
+        box-sizing: border-box;
 
         &:not(:last-child) {
             border-bottom: 1px solid ${({ theme }) => theme.colors.border};
@@ -233,9 +247,12 @@ const SearchButton = styled(Button)`
     margin: 0;
     flex-shrink: 0;
 
-    @media (max-width: 768px) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         width: 100%;
         border-radius: 0;
+        border-bottom-left-radius: 12px;
+        border-bottom-right-radius: 12px;
+        border-top-right-radius: 0;
     }
 `;
 
@@ -321,19 +338,27 @@ const CounterValue = styled.span`
 const regions = [
     {
         name: 'Uzbekistan',
-        cities: ['Bukhara', 'Khiva', 'Samarkand', 'Tashkent'],
+        cities: ['Tashkent', 'Samarkand', 'Bukhara', 'Khiva', 'Fergana'],
     },
     {
         name: 'Kazakhstan',
-        cities: ['Aktau', 'Almaty', 'Astana', 'Shymkent'],
+        cities: ['Almaty', 'Nur-Sultan', 'Shymkent', 'Aktobe', 'Taraz'],
     },
     {
         name: 'Kyrgyzstan',
-        cities: ['Dushanbe', 'Khorog', 'Khujand', 'Panjikend'],
+        cities: ['Bishkek', 'Osh', 'Jalal-Abad', 'Karakol', 'Tokmok'],
+    },
+    {
+        name: 'Tajikistan',
+        cities: ['Dushanbe', 'Khujand', 'Kulob', 'Qurghonteppa', 'Istaravshan'],
     },
     {
         name: 'Turkmenistan',
-        cities: ['Ashgabat'],
+        cities: ['Ashgabat', 'Turkmenbashi', 'Dashoguz', 'Mary', 'Balkanabat'],
+    },
+    {
+        name: 'Afghanistan',
+        cities: ['Kabul', 'Kandahar', 'Herat', 'Mazar-i-Sharif', 'Jalalabad'],
     },
 ];
 
@@ -356,10 +381,10 @@ export default function SearchBar({
         onDestinationChange?.(value as string);
     };
 
-    const handleDateChange = (dates: any) => {
-        if (dates && dates.length === 2) {
+    const handleDateChange = (dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null) => {
+        if (dates && dates[0] && dates[1]) {
             const [start, end] = dates;
-            const formatDate = (date: any) => {
+            const formatDate = (date: dayjs.Dayjs) => {
                 return date.format('DD MMM YYYY');
             };
             const dateString = `${formatDate(start)} ~ ${formatDate(end)}`;
