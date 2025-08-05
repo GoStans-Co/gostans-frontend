@@ -12,10 +12,11 @@ export type UseFetchOptions = AxiosRequestConfig & {
     immediate?: boolean;
     onSuccess?: (data: any) => void;
     onError?: (error: string) => void;
+    skipGlobalErrorHandler?: boolean;
 };
 
 export type UseFetchReturn<T> = UseFetchState<T> & {
-    execute: (config?: AxiosRequestConfig) => Promise<T>;
+    execute: (config?: AxiosRequestConfig & { skipGlobalErrorHandler?: boolean }) => Promise<T>;
     reset: () => void;
 };
 
@@ -32,17 +33,19 @@ export function useFetch<T = any>(url?: string, options: UseFetchOptions = {}): 
         error: null,
     });
 
-    const { immediate = false, onSuccess, onError, ...axiosConfig } = options;
+    const { immediate = false, onSuccess, onError, skipGlobalErrorHandler, ...axiosConfig } = options;
 
     const execute = useCallback(
-        async (config?: AxiosRequestConfig): Promise<T> => {
+        async (config?: AxiosRequestConfig & { skipGlobalErrorHandler?: boolean }): Promise<T> => {
             setState((prev) => ({ ...prev, loading: true, error: null }));
 
             try {
+                const { skipGlobalErrorHandler, ...restConfig } = config || {};
+
                 const requestConfig: AxiosRequestConfig = {
-                    url: url || config?.url,
+                    url: url || restConfig?.url,
                     ...axiosConfig,
-                    ...config,
+                    ...restConfig,
                 };
 
                 const response: AxiosResponse<T> = await apiClient(requestConfig);
@@ -70,10 +73,14 @@ export function useFetch<T = any>(url?: string, options: UseFetchOptions = {}): 
                     error: errorMessage,
                 });
 
-                onError?.(errorMessage);
+                /* we only call onError if not skipping global error handler */
+                if (!config?.skipGlobalErrorHandler) {
+                    onError?.(errorMessage);
+                }
 
                 const enhancedError = new Error(errorMessage);
                 (enhancedError as any).detail = errorMessage;
+                (enhancedError as any).skipGlobalErrorHandler = config?.skipGlobalErrorHandler || false;
                 throw enhancedError;
             }
         },
