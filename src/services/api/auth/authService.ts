@@ -13,6 +13,8 @@ import {
     SocialLoginResponse,
     VerifyTelegramOtpResponse,
 } from '@/services/api/auth/types';
+import { useStatusHandler } from '@/hooks/api/useStatusHandler';
+import { message } from 'antd';
 
 export const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -27,23 +29,31 @@ export const useAuthService = () => {
     const { userProfile, cacheStatus, updateUserProfileCache, clearProfileCache, forceProfileRefresh } =
         useUserProfileCache();
 
+    const [messageApi] = message.useMessage();
+    const { handleAsyncOperation } = useStatusHandler(messageApi);
+
     const login = async (credentials: LoginCredentials): Promise<Result<AuthResponse, string>> => {
-        const response = await fetchData({
-            url: '/auth/login/',
-            method: 'POST',
-            data: credentials,
-        });
+        const result = await handleAsyncOperation(
+            () =>
+                fetchData({
+                    url: '/auth/login/',
+                    method: 'POST',
+                    data: credentials,
+                    skipGlobalErrorHandler: true,
+                }),
+            {
+                showLoading: false,
+                showSuccess: false,
+                showError: false,
+            },
+        );
 
-        if (response?.token && response?.user) {
-            setAuthCookie(response.token, response.user, response.refresh);
-            updateUserProfileCache(response.user);
-
-            return {
-                success: true,
-                data: response,
-            };
+        if (result.data?.token && result.data?.user) {
+            setAuthCookie(result.data.token, result.data.user, result.data.refresh);
+            updateUserProfileCache(result.data.user);
+            return { success: true, data: result.data };
         } else {
-            throw new Error('Invalid login response structure');
+            return { success: false, error: result.error?.message || 'Login failed' };
         }
     };
 
@@ -120,6 +130,21 @@ export const useAuthService = () => {
         }
     };
 
+    const checkEmailExists = async (email: string): Promise<boolean> => {
+        try {
+            const response = await fetchData({
+                url: '/auth/check-email/',
+                method: 'POST',
+                data: { email },
+            });
+
+            return response?.emailExists === true;
+        } catch (error) {
+            console.error('Email check failed:', error);
+            return false;
+        }
+    };
+
     const logout = async (): Promise<ApiResponse<void>> => {
         const cartData = localStorage.getItem('cart-storage');
         try {
@@ -143,23 +168,23 @@ export const useAuthService = () => {
         };
     };
 
-    const forgotPassword = async (email: string): Promise<ApiResponse<void>> => {
-        try {
-            await fetchData({
-                url: '/auth/forgot-password/',
-                method: 'POST',
-                data: { email },
-            });
+    const forgotPassword = async (email: string): Promise<Result<void, string>> => {
+        const result = await handleAsyncOperation(
+            () =>
+                fetchData({
+                    url: '/auth/forgot-password/',
+                    method: 'POST',
+                    data: { email },
+                    skipGlobalErrorHandler: true,
+                }),
+            {
+                showLoading: false,
+                showSuccess: false,
+                showError: false,
+            },
+        );
 
-            return {
-                data: undefined as void,
-                statusCode: 200,
-                message: 'Password reset email sent',
-            };
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
-            throw errorResponse;
-        }
+        return result.error ? { success: false, error: result.error.message } : { success: true, data: undefined };
     };
 
     const sendOtp = async (phone: string): Promise<OtpResponse> => {
@@ -205,6 +230,63 @@ export const useAuthService = () => {
                 statusCode: errorResponse.response?.status || 500,
                 message: errorResponse.message || 'OTP verification failed',
             };
+        }
+    };
+
+    const verifyOtpEmail = async (email: string, otp: string): Promise<Result<void, string>> => {
+        const result = await handleAsyncOperation(
+            () =>
+                fetchData({
+                    url: '/auth/verify-otp-email/',
+                    method: 'POST',
+                    data: { email, otp },
+                    skipGlobalErrorHandler: true,
+                }),
+            {
+                showLoading: false,
+                showSuccess: false,
+                showError: false,
+            },
+        );
+
+        return result.error ? { success: false, error: result.error.message } : { success: true, data: undefined };
+    };
+
+    const resetPassword = async (email: string, newPassword: string): Promise<Result<void, string>> => {
+        const result = await handleAsyncOperation(
+            () =>
+                fetchData({
+                    url: '/auth/reset-password/',
+                    method: 'POST',
+                    data: { email, new_password: newPassword },
+                    skipGlobalErrorHandler: true,
+                }),
+            {
+                showLoading: false,
+                showSuccess: false,
+                showError: false,
+            },
+        );
+
+        return result.error ? { success: false, error: result.error.message } : { success: true, data: undefined };
+    };
+
+    const resendOtp = async (email: string): Promise<ApiResponse<void>> => {
+        try {
+            await fetchData({
+                url: '/auth/resend-otp/',
+                method: 'POST',
+                data: { email },
+            });
+
+            return {
+                data: undefined as void,
+                statusCode: 200,
+                message: 'OTP resent successfully',
+            };
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            throw errorResponse;
         }
     };
 
@@ -319,10 +401,14 @@ export const useAuthService = () => {
             login,
             signUp,
             socialLogin,
+            checkEmailExists,
             logout,
             forgotPassword,
             sendOtp,
             verifyOtp,
+            verifyOtpEmail,
+            resetPassword,
+            resendOtp,
             verifyTelegramOtp,
             refreshToken,
             clearCache,

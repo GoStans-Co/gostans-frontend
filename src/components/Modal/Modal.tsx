@@ -1,6 +1,7 @@
 import { theme } from '@/styles/theme';
 import { BaseModalProps } from '@/types/common/modal';
 import React, { ReactNode, useEffect } from 'react';
+import { FaTimes } from 'react-icons/fa';
 import styled from 'styled-components';
 
 export type ModalProps = BaseModalProps & {
@@ -28,6 +29,12 @@ const ModalOverlay = styled.div<{ isOpen: boolean; zIndex: number }>`
     opacity: ${({ isOpen }) => (isOpen ? 1 : 0)};
     visibility: ${({ isOpen }) => (isOpen ? 'visible' : 'hidden')};
     transition: ${theme.transitions.default};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        background-color: ${({ isOpen }) => (isOpen ? 'white' : 'transparent')};
+        align-items: flex-start;
+        justify-content: center;
+    }
 `;
 
 const ModalContainer = styled.div<{ width: string; padding: string }>`
@@ -42,6 +49,19 @@ const ModalContainer = styled.div<{ width: string; padding: string }>`
     box-shadow: ${theme.shadows.lg};
     transform: translateY(0);
     transition: ${theme.transitions.default};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        width: 100%;
+        max-width: 100%;
+        max-height: 100vh;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+        padding-top: 60px;
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
 `;
 
 const ModalHeader = styled.div`
@@ -58,6 +78,28 @@ const ModalTitle = styled.h3`
     font-weight: ${theme.typography.fontWeight.bold};
     font-size: ${theme.fontSizes.lg};
     color: ${theme.colors.primary};
+`;
+
+const MobileCloseButton = styled.button`
+    display: none;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: ${theme.colors.text};
+    cursor: pointer;
+    z-index: 10;
+    padding: ${theme.spacing.sm};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: block;
+    }
+
+    &:hover {
+        color: ${theme.colors.primary};
+    }
 `;
 
 export default function Modal({
@@ -98,6 +140,10 @@ export default function Modal({
     return (
         <ModalOverlay isOpen={isOpen} onClick={handleBackdropClick} zIndex={zIndex}>
             <ModalContainer width={width} padding={padding} className={className}>
+                <MobileCloseButton onClick={onClose}>
+                    <FaTimes />
+                </MobileCloseButton>
+
                 {title && (
                     <ModalHeader>
                         <ModalTitle>{title}</ModalTitle>

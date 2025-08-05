@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaShoppingCart, FaBars, FaTimes, FaMoneyBill } from 'react-icons/fa';
+import { FaShoppingCart, FaMoneyBill } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
 import useModal from '@/hooks/ui/useModal';
@@ -10,7 +10,7 @@ import useCookieAuth from '@/services/cache/cookieAuthService';
 import UserProfileModal from '@/components/Modal/UserProfileModal';
 import { ModalAlert } from '@/components/ModalPopup';
 import userImage from '@/assets/user.jpg';
-import { User } from 'lucide-react';
+import { LogInIcon, User } from 'lucide-react';
 import CountriesModal from '@/components/Modal/HeaderModals/CountriesModal';
 import CurrencyModal from '@/components/Modal/HeaderModals/CurrencyModal';
 import CartModal from '@/components/Modal/HeaderModals/CartModal';
@@ -152,19 +152,6 @@ const CartCount = styled.span`
     }
 `;
 
-const MobileMenuButton = styled.button`
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.5rem;
-    color: ${({ theme }) => theme.colors.text};
-
-    ${({ theme }) => theme.responsive.maxMobile} {
-        display: block;
-    }
-`;
-
 const OverlayBackdrop = styled.div<{ isOpen: boolean }>`
     display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
     position: fixed;
@@ -176,17 +163,23 @@ const OverlayBackdrop = styled.div<{ isOpen: boolean }>`
     z-index: 150;
 `;
 
-const CloseButton = styled.button`
+const LoginIconButton = styled.button`
     display: none;
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     color: ${({ theme }) => theme.colors.text};
-    align-self: flex-end;
+    transition: color 0.3s ease;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-        display: block;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &:hover {
+        color: ${({ theme }) => theme.colors.primary};
     }
 `;
 
@@ -265,7 +258,6 @@ export default function Header() {
 
     const userButtonRef = useRef<HTMLButtonElement>(null);
     const countryRef = useRef<HTMLDivElement>(null);
-    // const languageRef = useRef<HTMLDivElement>(null);
     const currencyRef = useRef<HTMLDivElement>(null);
     const cartRef = useRef<HTMLAnchorElement>(null);
 
@@ -274,7 +266,6 @@ export default function Header() {
     const [cartItems, setCartItems] = useRecoilState(cartAtom);
 
     const [showCountries, setShowCountries] = useState(false);
-    // const [showLanguage, setShowLanguage] = useState(false);
     const [showCurrency, setShowCurrency] = useState(false);
     const [showCart, setShowCart] = useState(false);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -294,12 +285,7 @@ export default function Header() {
         name: 'Uzbekistan',
         flag: '🇺🇿',
     });
-    // const [selectedLanguage, setSelectedLanguage] = useState({
-    //     code: 'en',
-    //     name: 'English',
-    //     nativeName: 'English',
-    //     flag: '🇺🇸',
-    // });
+
     const [selectedCurrency, setSelectedCurrency] = useState({
         code: 'USD',
         name: 'United States Dollar',
@@ -373,9 +359,6 @@ export default function Header() {
                 <OverlayBackdrop isOpen={isMenuOpen} onClick={toggleMenu} />
 
                 <Nav isOpen={isMenuOpen}>
-                    <CloseButton onClick={toggleMenu}>
-                        <FaTimes />
-                    </CloseButton>
                     <MobileAuthSection>
                         {isLoggedIn ? (
                             <div>
@@ -415,15 +398,11 @@ export default function Header() {
                 </Nav>
 
                 <RightSection>
-                    {/* <LanguageSelector ref={languageRef} onClick={() => setShowLanguage(true)} isActive={showLanguage}>
-                        <FaGlobe style={{ width: '18px', height: '18px' }} />
-                        <span>{selectedLanguage.name}</span>
-                    </LanguageSelector> */}
-
                     <LanguageSelector ref={currencyRef} onClick={() => setShowCurrency(true)} isActive={showCurrency}>
                         <FaMoneyBill style={{ width: '18px', height: '18px' }} />
                         <span>{selectedCurrency.code}</span>
                     </LanguageSelector>
+
                     <CartLink
                         to="#"
                         ref={cartRef}
@@ -435,6 +414,13 @@ export default function Header() {
                         <FaShoppingCart />
                         <CartCount>{cartItems.reduce((sum, item) => sum + item.quantity, 0)}</CartCount>
                     </CartLink>
+
+                    {!isLoggedIn && (
+                        <LoginIconButton onClick={() => openLoginModal('login')}>
+                            <LogInIcon style={{ width: '20px', height: '20px' }} />
+                        </LoginIconButton>
+                    )}
+
                     {isLoggedIn ? (
                         <>
                             <UserAvatarButton ref={userButtonRef} onClick={toggleUserModal} aria-label="User menu">
@@ -465,10 +451,6 @@ export default function Header() {
                             </Button>
                         </AuthButtons>
                     )}
-
-                    <MobileMenuButton onClick={toggleMenu}>
-                        <FaBars />
-                    </MobileMenuButton>
                 </RightSection>
             </HeaderContent>
             <CountriesModal

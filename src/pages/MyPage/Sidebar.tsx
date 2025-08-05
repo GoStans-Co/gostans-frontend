@@ -25,27 +25,39 @@ type SidebarProps = {
 
 type SidebarItemProps = {
     active?: boolean;
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
     label: string;
     href: string;
     onClick?: () => void;
 };
 
 const SidebarContainer = styled.div`
-    width: 300px;
+    width: calc(100% - ${({ theme }) => theme.spacing.lg}*2);
+    max-width: 300px;
     background-color: ${({ theme }) => theme.colors.background};
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     padding: ${({ theme }) => theme.spacing.lg};
-    margin: ${({ theme }) => theme.spacing.lg} 0;
+    margin: ${({ theme }) => theme.spacing.lg};
     position: sticky;
-    top: ${({ theme }) => theme.spacing.md};
-    height: 460px;
+    top: 100px;
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 80px);
     overflow-y: auto;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: ${({ theme }) => theme.shadows.md};
+    z-index: 10;
+    align-self: flex-start;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        width: calc(100% - 1rem);
+        max-width: none;
+        margin: 0;
+        padding: 1rem;
+        position: static;
+        max-height: none;
+        top: auto;
+    }
 `;
 
 const ProfileSection = styled.div`
@@ -56,6 +68,14 @@ const ProfileSection = styled.div`
     margin-bottom: ${({ theme }) => theme.spacing.xl};
     padding-bottom: ${({ theme }) => theme.spacing.lg};
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex-direction: column;
+        text-align: center;
+        gap: ${({ theme }) => theme.spacing.sm};
+        margin-bottom: ${({ theme }) => theme.spacing.lg};
+        padding-bottom: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const Avatar = styled.div<{ hasImage?: boolean }>`
@@ -140,11 +160,24 @@ const NavItem = styled.button<{ $active?: boolean }>`
     border-radius: ${({ theme }) => theme.borderRadius.md};
     color: ${({ theme, $active }) => ($active ? theme.colors.primary : theme.colors.text)};
     background-color: ${({ theme, $active }) => ($active ? theme.colors.lightBackground : 'transparent')};
-    font-weight: ${({ $active }) => ($active ? '500' : '400')};
     transition: all ${({ theme }) => theme.transitions.default};
+    font-weight: ${({ $active }) => ($active ? '800' : '500')};
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
 
     &:hover {
         background-color: ${({ theme }) => theme.colors.lightBackground};
+        transform: translateY(-2px);
+
+        &::before {
+            width: 4px;
+        }
+    }
+
+    &:active {
+        transform: translateY(0);
     }
 `;
 
@@ -204,21 +237,18 @@ export default function Sidebar({
             <NavSection>
                 <SidebarItem
                     active={activePage === 'profile'}
-                    icon={<FaUser />}
                     label="Personal Info"
                     href="/mypage"
                     onClick={() => onSectionChange(PageSection.PROFILE)}
                 />
                 <SidebarItem
                     active={activePage === 'trips'}
-                    icon={<FaMapMarkedAlt />}
                     label="Trips"
                     href="/mypage/trips"
                     onClick={() => onSectionChange(PageSection.TRIPS)}
                 />
                 <SidebarItem
                     active={activePage === 'favorites'}
-                    icon={<FaCartPlus />}
                     label="Favorites"
                     href="/mypage/favorites"
                     onClick={() => onSectionChange(PageSection.FAVORITES)}

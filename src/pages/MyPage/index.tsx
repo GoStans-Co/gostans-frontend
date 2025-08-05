@@ -22,6 +22,10 @@ const PageContainer = styled.div`
     min-height: 100vh;
     width: 100%;
     position: relative;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex-direction: column;
+    }
 `;
 
 const SidebarContainer = styled.aside`
@@ -30,7 +34,15 @@ const SidebarContainer = styled.aside`
     flex-shrink: 0;
     border-right: 1px solid #e5e5e5;
     background: white;
-    overflow-y: auto;
+    position: relative;
+    overflow: visible;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: none;
+    }
 `;
 
 const ContentContainer = styled.main`
@@ -38,6 +50,10 @@ const ContentContainer = styled.main`
     background-color: #f0f3f5;
     overflow-y: auto;
     padding-bottom: ${({ theme }) => theme.spacing['2xl']};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding-bottom: ${({ theme }) => theme.spacing.xl};
+    }
 `;
 
 export default function MyPage() {
@@ -70,6 +86,7 @@ export default function MyPage() {
         image: '',
         phone: '',
     });
+
 
     useEffect(() => {
         const fetchUserData = async () => {

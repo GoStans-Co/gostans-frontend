@@ -124,7 +124,6 @@ export default function PasswordComponent({ onBack, onContinue, loading = false 
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
 
-    // Password validation rules
     const passwordRequirements = {
         minLength: password.length >= 8,
         hasUpperCase: /[A-Z]/.test(password),
