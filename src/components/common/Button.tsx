@@ -155,7 +155,6 @@ const StyledButton = styled.button<Omit<ButtonProps, 'children'>>`
         }
     }}
 `;
-
 export default function Button({
     children,
     variant = 'primary',
@@ -165,6 +164,7 @@ export default function Button({
     disabled = false,
     type = 'button',
     startIcon,
+    startText,
     endIcon,
     ...rest
 }: ButtonProps) {
@@ -178,7 +178,12 @@ export default function Button({
             type={type}
             {...rest}
         >
-            <div style={{ paddingRight: '5px', display: 'flex', alignItems: 'center' }}>{startIcon && startIcon}</div>
+            {(startIcon || startText) && (
+                <div style={{ paddingRight: '5px', display: 'flex', alignItems: 'center' }}>
+                    {startIcon}
+                    {startText}
+                </div>
+            )}
             {children}
             {endIcon && endIcon}
         </StyledButton>
