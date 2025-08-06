@@ -42,10 +42,15 @@ const PageContainer = styled.div`
     background: ${({ theme }) => theme.colors.background};
     overflow: visible;
 `;
+
 const Header = styled.div`
     background: white;
     padding: 1rem 2rem;
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const MainContent = styled.div`
@@ -57,8 +62,9 @@ const MainContent = styled.div`
     gap: 2rem;
     overflow: visible;
 
-    @media (max-width: 768px) {
-        padding: 1rem;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        gap: ${({ theme }) => theme.spacing.lg};
     }
 `;
 
@@ -74,6 +80,12 @@ const InfoCards = styled.div`
     grid-template-columns: repeat(5, 1fr);
     gap: 1rem;
     margin-top: 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        grid-template-columns: repeat(3, 1fr);
+        gap: ${({ theme }) => theme.spacing.sm};
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const MapContainer = styled.div`
@@ -89,11 +101,27 @@ const MapContainer = styled.div`
     background-position: center;
 `;
 
+const ReviewsContainer = styled.div`
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-top: ${({ theme }) => theme.spacing.sm};
+    }
+`;
+
 const ReviewCard = styled(Card)`
     padding: 1rem;
 
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+        width: 100%;
+        max-width: 100%;
     }
 `;
 
@@ -115,6 +143,11 @@ const RelatedTours = styled.div`
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     overflow: hidden;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const Breadcrumb = styled.div`
@@ -133,6 +166,11 @@ const Breadcrumb = styled.div`
             text-decoration: underline;
         }
     }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const TitleSection = styled.div`
@@ -140,6 +178,13 @@ const TitleSection = styled.div`
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 1rem;
+    gap: ${({ theme }) => theme.spacing.sm};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        align-items: flex-start;
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+        gap: ${({ theme }) => theme.spacing.xs};
+    }
 `;
 
 const Title = styled.h1`
@@ -147,11 +192,40 @@ const Title = styled.h1`
     font-weight: bold;
     color: ${({ theme }) => theme.colors.text};
     margin: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.2;
+    max-width: calc(100% - 100px);
+    text-align: left;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        text-align: left;
+        font-size: ${({ theme }) => theme.fontSizes['2xl']};
+        line-height: 1.3;
+        white-space: nowrap;
+        -webkit-line-clamp: unset;
+        -webkit-box-orient: unset;
+        display: block;
+        text-overflow: ellipsis;
+        max-width: calc(100% - 90px);
+        overflow: hidden;
+    }
 `;
 
 const ActionButtons = styled.div`
     display: flex;
     gap: 0.5rem;
+    flex-shrink: 0;
+    align-items: flex-start;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.sm};
+        flex-shrink: 0;
+    }
 `;
 
 const IconButton = styled.button`
@@ -165,9 +239,19 @@ const IconButton = styled.button`
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: ${({ theme }) => theme.transitions.default};
+    flex-shrink: 0;
 
     &:hover {
         background: ${({ theme }) => theme.colors.lightBackground};
+        border-color: ${({ theme }) => theme.colors.primary};
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        width: 36px;
+        height: 36px;
+        border-radius: ${({ theme }) => theme.borderRadius.sm};
+        box-shadow: ${({ theme }) => theme.shadows.sm};
     }
 `;
 
@@ -176,6 +260,11 @@ const MetaInfo = styled.div`
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.sm};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
 `;
 
 const Rating = styled.div`
@@ -188,6 +277,10 @@ const ImageSection = styled.div`
     width: 100%;
     position: relative;
     margin-bottom: 2rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-bottom: ${({ theme }) => theme.spacing.lg};
+    }
 `;
 
 const ImageGallery = styled.div`
@@ -199,6 +292,13 @@ const ImageGallery = styled.div`
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     overflow: hidden;
     width: 100%;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        height: 300px;
+        gap: 0;
+    }
 `;
 
 const MainImage = styled.div`
@@ -212,6 +312,11 @@ const MainImage = styled.div`
         height: 100%;
         object-fit: cover;
     }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        grid-row: 1;
+        grid-column: 1;
+    }
 `;
 
 const SideImage = styled.div`
@@ -223,6 +328,10 @@ const SideImage = styled.div`
         height: 100%;
         object-fit: cover;
     }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: none;
+    }
 `;
 
 const ContentSection = styled.div`
@@ -232,8 +341,9 @@ const ContentSection = styled.div`
     align-items: start;
     overflow: visible;
 
-    @media (max-width: 768px) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.md};
     }
 `;
 
@@ -245,6 +355,15 @@ const RightSidebar = styled.div`
     top: 100px;
     max-height: calc(100vh - 80px);
     overflow-y: auto;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        position: static;
+        top: auto;
+        max-height: none;
+        overflow-y: visible;
+        order: -1;
+        margin-bottom: ${({ theme }) => theme.spacing.lg};
+    }
 `;
 
 const PriceCard = styled(Card)`
@@ -304,24 +423,46 @@ const Section = styled.div`
     }
 `;
 
-const IncludedExcluded = styled.div`
+const IncludedExcludedContainer = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
 
-    @media (max-width: 768px) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         grid-template-columns: 1fr;
+        gap: 1.5rem;
     }
+`;
+
+const ListColumn = styled.div`
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    background-color: #fff;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+`;
+
+const ListContent = styled.div`
+    padding: 0.5rem 1.5rem 1rem;
 `;
 
 const ListItem = styled.div<{ included?: boolean }>`
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    color: ${({ theme }) => theme.colors.lightText};
+    font-size: 0.95rem;
+
+    &:not(:last-child) {
+        border-bottom: 0.5px solid ${({ theme }) => theme.colors.border};
+    }
 
     .icon {
         color: ${({ included }) => (included ? '#52c41a' : '#ff4d4f')};
+        flex-shrink: 0;
+        font-size: 1.1rem;
     }
 `;
 
@@ -447,6 +588,11 @@ const ReviewsSection = styled.div`
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
 `;
 
 const ReviewerName = styled.span`
@@ -978,7 +1124,10 @@ export default function SearchPackageDetails() {
             <PageContainer>
                 <Header>
                     <Breadcrumb>
-                        <a href="/">Home</a> &gt; <a href="/uzbekistan">Uzbekistan</a> &gt; <span>Registan</span>
+                        <a href="/">Home</a> &gt; <a href="/searchTrips">Tours</a> &gt;
+                        <span>
+                            {tour.country}, {tour.city}
+                        </span>
                     </Breadcrumb>
 
                     <TitleSection>
@@ -1086,34 +1235,43 @@ export default function SearchPackageDetails() {
 
                             <Section>
                                 <h2>Included / Excluded</h2>
-                                <IncludedExcluded>
-                                    <div>
-                                        {tour.includedItem?.map((item, index) => (
-                                            <ListItem key={index} included>
-                                                <FaCheck className="icon" />
-                                                <span>{item.text}</span>
-                                            </ListItem>
-                                        )) || (
-                                            <ListItem included>
-                                                <FaCheck className="icon" />
-                                                <span>No included items available</span>
-                                            </ListItem>
-                                        )}
-                                    </div>
-                                    <div>
-                                        {tour.excludedItem?.map((item, index) => (
-                                            <ListItem key={index}>
-                                                <FaTimes className="icon" />
-                                                <span>{item.text}</span>
-                                            </ListItem>
-                                        )) || (
-                                            <ListItem>
-                                                <FaTimes className="icon" />
-                                                <span>No excluded items available</span>
-                                            </ListItem>
-                                        )}
-                                    </div>
-                                </IncludedExcluded>
+                                <IncludedExcludedContainer>
+                                    <ListColumn>
+                                        <ListContent>
+                                            {tour.includedItem?.length > 0 ? (
+                                                tour.includedItem.map((item, index) => (
+                                                    <ListItem key={index} included>
+                                                        <FaCheck className="icon" />
+                                                        <span>{item.text}</span>
+                                                    </ListItem>
+                                                ))
+                                            ) : (
+                                                <ListItem included>
+                                                    <FaCheck className="icon" />
+                                                    <span>No included items specified.</span>
+                                                </ListItem>
+                                            )}
+                                        </ListContent>
+                                    </ListColumn>
+
+                                    <ListColumn>
+                                        <ListContent>
+                                            {tour.excludedItem?.length > 0 ? (
+                                                tour.excludedItem.map((item, index) => (
+                                                    <ListItem key={index}>
+                                                        <FaTimes className="icon" />
+                                                        <span>{item.text}</span>
+                                                    </ListItem>
+                                                ))
+                                            ) : (
+                                                <ListItem>
+                                                    <FaTimes className="icon" />
+                                                    <span>No excluded items specified.</span>
+                                                </ListItem>
+                                            )}
+                                        </ListContent>
+                                    </ListColumn>
+                                </IncludedExcludedContainer>
                             </Section>
 
                             <Section>
@@ -1151,14 +1309,7 @@ export default function SearchPackageDetails() {
                                         Read all reviews
                                     </Button>
                                 </ReviewsSection>
-                                <div
-                                    style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: '1fr 1fr',
-                                        gap: '1rem',
-                                        marginBottom: '1rem',
-                                    }}
-                                >
+                                <ReviewsContainer>
                                     {reviews.map((review, index) => (
                                         <ReviewCard key={index} variant="outlined">
                                             <ReviewHeader>
@@ -1183,7 +1334,7 @@ export default function SearchPackageDetails() {
                                             <p>{review.text}</p>
                                         </ReviewCard>
                                     ))}
-                                </div>
+                                </ReviewsContainer>
                                 <div
                                     style={{
                                         display: 'flex',
