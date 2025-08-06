@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FaShoppingCart, FaMoneyBill } from 'react-icons/fa';
 import Button from '@/components/Common/Button';
 import { theme } from '@/styles/theme';
@@ -18,6 +18,7 @@ import { useRecoilState } from 'recoil';
 import { cartAtom } from '@/atoms/cart';
 import { useCartService } from '@/services/api/cart/useCartService';
 import { useApiServices } from '@/services/api';
+import goStansLogo from '@/assets/white.jpg';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -152,17 +153,6 @@ const CartCount = styled.span`
     }
 `;
 
-const OverlayBackdrop = styled.div<{ isOpen: boolean }>`
-    display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 150;
-`;
-
 const LoginIconButton = styled.button`
     display: none;
     background: none;
@@ -249,7 +239,64 @@ const LeftSection = styled.div`
     }
 `;
 
+const NavLinks = styled.div`
+    display: flex;
+    gap: 2rem;
+    margin-left: 2rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: none;
+    }
+`;
+
+const NavLink = styled(Link)`
+    color: ${({ theme }) => theme.colors.text};
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+    position: relative;
+    padding: 0.5rem 0;
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 0;
+        left: 50%;
+        background-color: ${({ theme }) => theme.colors.primary};
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+    }
+
+    &:hover::after {
+        width: 100%;
+    }
+
+    &.active::after {
+        width: 100%;
+    }
+`;
+
+const LogoImage = styled.img`
+    width: 140px;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        width: 130px;
+        height: auto;
+        transform: scale(0.9);
+    }
+    &:hover {
+        transform: scale(1.05);
+    }
+`;
+
 export default function Header() {
+    const location = useLocation();
     const { openModal, closeModal } = useModal();
     const { auth: authService } = useApiServices();
     const { clearCartOnLogout, removeFromCart } = useCartService();
@@ -304,10 +351,6 @@ export default function Header() {
         setAuthState(isAuthenticated());
     }, [isAuthenticated]);
 
-    const toggleMenu = useCallback(() => {
-        setIsMenuOpen(!isMenuOpen);
-    }, []);
-
     const handleLogout = useCallback(async () => {
         setIsLoggingOut(true);
         try {
@@ -324,6 +367,13 @@ export default function Header() {
             setIsUserModalOpen(false);
         }
     }, [authService, removeAuthCookie]);
+
+    const isActive = (path: string) => {
+        if (path === '/') {
+            return location.pathname === '/';
+        }
+        return location.pathname.startsWith(path);
+    };
 
     const handleRemoveItem = async (tourId: string) => {
         if (isAuthenticated()) {
@@ -352,11 +402,20 @@ export default function Header() {
             <HeaderContent>
                 <LeftSection>
                     <Logo as={Link} to="/">
-                        GoStans
+                        <LogoImage src={goStansLogo} alt="Xplore Asia Logo" />
                     </Logo>
+                    <NavLinks>
+                        <NavLink to="/top-destinations" className={isActive('/top-destinations') ? 'active' : ''}>
+                            Destinations
+                        </NavLink>
+                        <NavLink to="/searchTrips" className={isActive('/searchTrips') ? 'active' : ''}>
+                            Search Trips
+                        </NavLink>
+                        <NavLink to="/trendingTours" className={isActive('/trendingTours') ? 'active' : ''}>
+                            Trending Tours
+                        </NavLink>
+                    </NavLinks>
                 </LeftSection>
-
-                <OverlayBackdrop isOpen={isMenuOpen} onClick={toggleMenu} />
 
                 <Nav isOpen={isMenuOpen}>
                     <MobileAuthSection>

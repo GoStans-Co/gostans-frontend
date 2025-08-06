@@ -1,7 +1,8 @@
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
 import { AccommodationProps } from '@/types/index';
 import Card from '@/components/Common/Card';
+import { message } from 'antd';
+import Button from '@/components/Common/Button';
 
 const SectionContainer = styled.section`
     padding-top: 2rem;
@@ -45,7 +46,7 @@ const SectionTitle = styled.h2`
     }
 `;
 
-const ViewAllLink = styled(Link)`
+const ViewAllButton = styled(Button)`
     color: ${({ theme }) => theme.colors.primary};
     font-weight: 500;
     display: flex;
@@ -104,10 +105,36 @@ const AccommodationCard = styled(Card)`
     flex-direction: column;
     height: 100%;
     border: 1px solid ${({ theme }) => theme.colors.border};
+    position: relative;
 
     &:hover {
         transform: translateY(-5px);
         box-shadow: ${({ theme }) => theme.shadows.md};
+    }
+`;
+
+const HoverOverlay = styled.div`
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    padding: 1rem;
+    z-index: 2;
+    pointer-events: none;
+
+    ${AccommodationCard}:hover & {
+        opacity: 1;
     }
 `;
 
@@ -185,69 +212,85 @@ type PopularAccommodationsProps = {
 };
 
 export default function PopularAccommodations({ accommodations }: PopularAccommodationsProps) {
-    return (
-        <SectionContainer>
-            <SectionHeader>
-                <SectionTitle>Popular accommodations</SectionTitle>
-                <ViewAllLink to="/accommodations">
-                    Explore All
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M9 18L15 12L9 6"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </ViewAllLink>
-            </SectionHeader>
-            <SectionSubtitle>Sorted by most purchases in the past week</SectionSubtitle>
+    const [messageApi, contextHolder] = message.useMessage();
 
-            <AccommodationsGrid>
-                {accommodations.map((accommodation) => (
-                    <AccommodationCard key={accommodation.id} variant="default" padding={false}>
-                        <CardImageContainer>
-                            <CardImage src={accommodation.image} alt={accommodation.name} />
-                        </CardImageContainer>
-                        <CardContent>
-                            <AccommodationTitle>{accommodation.name}</AccommodationTitle>
-                            <AccommodationLocation>
-                                <svg
-                                    width="16"
-                                    height="16"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <path
-                                        d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                    <circle
-                                        cx="12"
-                                        cy="10"
-                                        r="3"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                    />
-                                </svg>
-                                {accommodation.location}
-                            </AccommodationLocation>
-                            <AccommodationDescription>{accommodation.description}</AccommodationDescription>
-                            <PriceContainer>
-                                <Price>${accommodation.price}</Price>
-                                <PriceLabel>/Person</PriceLabel>
-                            </PriceContainer>
-                        </CardContent>
-                    </AccommodationCard>
-                ))}
-            </AccommodationsGrid>
-        </SectionContainer>
+    const handleComingSoonClick = (feature: string) => {
+        messageApi.info({
+            content: `${feature} is coming soon!`,
+            duration: 3,
+        });
+    };
+    return (
+        <>
+            {contextHolder}
+            <SectionContainer>
+                <SectionHeader>
+                    <SectionTitle>Popular accommodations</SectionTitle>
+                    <ViewAllButton
+                        size="md"
+                        variant="text"
+                        onClick={() => handleComingSoonClick('Accommodation features')}
+                    >
+                        Explore All
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M9 18L15 12L9 6"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </ViewAllButton>
+                </SectionHeader>
+                <SectionSubtitle>Sorted by most purchases in the past week</SectionSubtitle>
+
+                <AccommodationsGrid>
+                    {accommodations.map((accommodation) => (
+                        <AccommodationCard key={accommodation.id} variant="default" padding={false}>
+                            <HoverOverlay>Accommodation features is coming soon!</HoverOverlay>
+                            <CardImageContainer>
+                                <CardImage src={accommodation.image} alt={accommodation.name} />
+                            </CardImageContainer>
+                            <CardContent>
+                                <AccommodationTitle>{accommodation.name}</AccommodationTitle>
+                                <AccommodationLocation>
+                                    <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <path
+                                            d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                        <circle
+                                            cx="12"
+                                            cy="10"
+                                            r="3"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                    {accommodation.location}
+                                </AccommodationLocation>
+                                <AccommodationDescription>{accommodation.description}</AccommodationDescription>
+                                <PriceContainer>
+                                    <Price>${accommodation.price}</Price>
+                                    <PriceLabel>/Person</PriceLabel>
+                                </PriceContainer>
+                            </CardContent>
+                        </AccommodationCard>
+                    ))}
+                </AccommodationsGrid>
+            </SectionContainer>
+        </>
     );
 }

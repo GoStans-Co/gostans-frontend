@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
-import goStansLogo from '@/assets/gostans.svg';
+import goStansLogo from '@/assets/white.jpg';
 
 const FooterContainer = styled.footer`
     background-color: white;
@@ -207,19 +207,13 @@ export default function Footer() {
                             <Link to="/">Home</Link>
                         </FooterNavItem>
                         <FooterNavItem>
-                            <Link to="/destinations">Destinations</Link>
+                            <Link to="/top-destinations">Destinations</Link>
                         </FooterNavItem>
                         <FooterNavItem>
-                            <Link to="/tours">Tours</Link>
+                            <Link to="/searchTrips">Tours</Link>
                         </FooterNavItem>
                         <FooterNavItem>
-                            <Link to="/activities">Activities</Link>
-                        </FooterNavItem>
-                        <FooterNavItem>
-                            <Link to="/hotels">Hotels</Link>
-                        </FooterNavItem>
-                        <FooterNavItem>
-                            <Link to="/blog">Blog</Link>
+                            <Link to="/trendingTours">Trending Tours</Link>
                         </FooterNavItem>
                     </FooterNavList>
                 </FooterColumn>
@@ -231,7 +225,7 @@ export default function Footer() {
                             <Link to="/faq">FAQ</Link>
                         </FooterNavItem>
                         <FooterNavItem>
-                            <Link to="/contact">Contact Us</Link>
+                            <Link to="/contact-us">Contact Us</Link>
                         </FooterNavItem>
                         <FooterNavItem>
                             <Link to="/privacy-policy">Privacy Policy</Link>

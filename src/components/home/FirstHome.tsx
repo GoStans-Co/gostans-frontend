@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from '@/components/SearchBar';
 import { useDefaultSearchValues, useSearchActions, useSearchData } from '@/hooks/utils/useSearchActions';
+import { message } from 'antd';
 
 const HeroContainer = styled.div`
     position: relative;
@@ -155,8 +156,15 @@ const CategoryItem = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
 `;
+
 const IconBox = styled.div<{ $active?: boolean }>`
     width: 60px;
     height: 60px;
@@ -189,6 +197,7 @@ const Subtitle = styled.p`
 `;
 
 export default function FirstHome() {
+    const [messageApi, contextHolder] = message.useMessage();
     const navigate = useNavigate();
 
     const searchData = useSearchData();
@@ -201,6 +210,13 @@ export default function FirstHome() {
         }
     }, []);
 
+    const handleComingSoonClick = (feature: string) => {
+        messageApi.info({
+            content: `${feature} section is coming soon!`,
+            duration: 3,
+        });
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const searchParams = new URLSearchParams();
@@ -212,58 +228,77 @@ export default function FirstHome() {
     };
 
     return (
-        <HeroContainer>
-            <HeroContent>
-                <Title>Discover The Best Lovely Places</Title>
-                <Subtitle>
-                    Let's find your dream destinations here we will recommend you a beautiful place and a cheap trip
-                    with your beloved family.
-                </Subtitle>
-                <CategoryIcons>
-                    <CategoryItem>
-                        <IconBox $active={true}>
-                            <FaSuitcase size={24} />
-                        </IconBox>
-                        <span style={{ color: 'black', fontWeight: 500 }}>Tours</span>
-                    </CategoryItem>
-                    <CategoryItem>
-                        <IconBox>
-                            <FaBed size={24} />
-                        </IconBox>
-                        <span style={{ color: 'black' }}>Hotels</span>
-                    </CategoryItem>
-                    <CategoryItem>
-                        <IconBox>
-                            <FaMountain size={24} />
-                        </IconBox>
-                        <span style={{ color: 'black' }}>Activities</span>
-                    </CategoryItem>
-                </CategoryIcons>
-                <SearchBarWrapper>
-                    <SearchBar
-                        data={searchData}
-                        handlers={{
-                            onDestinationChange: searchActions.handleDestinationChange,
-                            onDatesChange: searchActions.handleDatesChange,
-                            onSubmit: handleSubmit,
-                        }}
-                    />
-                </SearchBarWrapper>
-            </HeroContent>
-            <ImagesGrid>
-                <ImageContainer>
-                    <img src={uzb1} alt="Destination" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </ImageContainer>
-                <ImageContainer>
-                    <img src={uzb2} alt="Destination" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </ImageContainer>
-                <ImageContainer>
-                    <img src={uzb3} alt="Destination" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </ImageContainer>
-                <ImageContainer>
-                    <img src={uzb4} alt="Destination" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                </ImageContainer>
-            </ImagesGrid>
-        </HeroContainer>
+        <>
+            {contextHolder}
+            <HeroContainer>
+                <HeroContent>
+                    <Title>Discover The Best Lovely Places</Title>
+                    <Subtitle>
+                        Let's find your dream destinations here we will recommend you a beautiful place and a cheap trip
+                        with your beloved family.
+                    </Subtitle>
+                    <CategoryIcons>
+                        <CategoryItem>
+                            <IconBox $active={true}>
+                                <FaSuitcase size={24} />
+                            </IconBox>
+                            <span style={{ color: 'black', fontWeight: 500 }}>Tours</span>
+                        </CategoryItem>
+                        <CategoryItem onClick={() => handleComingSoonClick('Hotels')}>
+                            <IconBox>
+                                <FaBed size={24} />
+                            </IconBox>
+                            <span style={{ color: 'black' }}>Hotels</span>
+                        </CategoryItem>
+                        <CategoryItem onClick={() => handleComingSoonClick('Activities')}>
+                            <IconBox>
+                                <FaMountain size={24} />
+                            </IconBox>
+                            <span style={{ color: 'black' }}>Activities</span>
+                        </CategoryItem>
+                    </CategoryIcons>
+                    <SearchBarWrapper>
+                        <SearchBar
+                            data={searchData}
+                            handlers={{
+                                onDestinationChange: searchActions.handleDestinationChange,
+                                onDatesChange: searchActions.handleDatesChange,
+                                onSubmit: handleSubmit,
+                            }}
+                        />
+                    </SearchBarWrapper>
+                </HeroContent>
+                <ImagesGrid>
+                    <ImageContainer>
+                        <img
+                            src={uzb1}
+                            alt="Destination"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                    </ImageContainer>
+                    <ImageContainer>
+                        <img
+                            src={uzb2}
+                            alt="Destination"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                    </ImageContainer>
+                    <ImageContainer>
+                        <img
+                            src={uzb3}
+                            alt="Destination"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                    </ImageContainer>
+                    <ImageContainer>
+                        <img
+                            src={uzb4}
+                            alt="Destination"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                    </ImageContainer>
+                </ImagesGrid>
+            </HeroContainer>
+        </>
     );
 }
