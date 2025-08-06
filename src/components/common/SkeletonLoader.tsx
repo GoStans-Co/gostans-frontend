@@ -20,13 +20,17 @@ const Container = styled.div<{ type: string }>`
     `}
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        gap: ${({ theme, type }) => (type === 'destination' ? theme.spacing.sm : theme.spacing.xl)};
-        padding: 0 ${({ theme }) => theme.spacing.lg};
+        gap: ${({ theme }) => theme.spacing.lg};
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
 
         ${({ type }) =>
             type === 'tour' &&
             `
             grid-template-columns: 1fr; 
+            gap: 2rem;
         `}
     }
 `;
@@ -104,6 +108,12 @@ const TourSkeleton = styled.div`
     overflow: hidden;
     box-shadow: ${({ theme }) => theme.shadows.sm};
 
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin: 0 auto;
+        width: 100%;
+        max-width: 100%;
+    }
+
     .skeleton-image {
         height: 200px;
         background: linear-gradient(
@@ -114,10 +124,18 @@ const TourSkeleton = styled.div`
         );
         background-size: 200% 100%;
         animation: loading 1.5s infinite;
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            height: 180px;
+        }
     }
 
     .skeleton-content {
         padding: ${({ theme }) => theme.spacing.xl};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            padding: ${({ theme }) => theme.spacing.lg};
+        }
     }
 
     .skeleton-title {
@@ -132,6 +150,10 @@ const TourSkeleton = styled.div`
         animation: loading 1.5s infinite;
         border-radius: ${({ theme }) => theme.borderRadius.sm};
         margin-bottom: ${({ theme }) => theme.spacing.sm};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            height: 20px;
+        }
     }
 
     .skeleton-description {
@@ -147,6 +169,11 @@ const TourSkeleton = styled.div`
         animation: loading 1.5s infinite;
         border-radius: ${({ theme }) => theme.borderRadius.sm};
         margin-bottom: ${({ theme }) => theme.spacing.lg};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            height: 14px;
+            margin-bottom: ${({ theme }) => theme.spacing.md};
+        }
     }
 
     .skeleton-price {
@@ -161,6 +188,10 @@ const TourSkeleton = styled.div`
         background-size: 200% 100%;
         animation: loading 1.5s infinite;
         border-radius: ${({ theme }) => theme.borderRadius.sm};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            height: 18px;
+        }
     }
 
     @keyframes loading {

@@ -11,7 +11,6 @@ import {
     useSearchCache,
     useSearchData,
     useSearchFilters,
-    useSearchUIState,
 } from '@/hooks/utils/useSearchActions';
 import FilterBar from '@/components/FilterBar';
 import NoDataFound from '@/components/Common/NoDataFound';
@@ -24,6 +23,7 @@ import { message } from 'antd';
 import { useApiServices } from '@/services/api';
 import { TourListResponse } from '@/services/api/tours';
 import dayjs from 'dayjs';
+import bannerImage from '@/assets/banner1.png';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -38,29 +38,36 @@ const PageContainer = styled.div`
 
 const SearchContainer = styled.div`
     padding: 2rem;
-    padding-left: 10rem;
-    padding-right: 10rem;
+    padding-left: 15rem;
+    padding-right: 15rem;
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     min-height: 150px;
     display: flex;
     align-items: center;
-    background: ${({ theme }) => theme.colors.grayBackground};
+    justify-content: center;
+    background: url(${bannerImage}) center center / cover no-repeat;
     position: relative;
     z-index: 1;
+    overflow: hidden;
+
+    img {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: 1rem;
         min-height: 120px;
         padding-left: 1rem;
         padding-right: 1rem;
-        overflow-x: hidden;
     }
 
     ${({ theme }) => theme.responsive.tablet} {
         padding: 2rem;
         padding-left: 2rem;
         padding-right: 2rem;
+        min-height: 130px;
     }
 `;
 
@@ -465,6 +472,22 @@ const ToggleText = styled.span<{ isActive: boolean }>`
     user-select: none;
 `;
 
+const FilterContainer = styled.div<{ showOnMobile: boolean }>`
+    position: sticky;
+    top: 90px;
+    z-index: 50;
+    background: white;
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: ${({ showOnMobile }) => (showOnMobile ? 'block' : 'none')};
+        position: static;
+        top: auto;
+        z-index: auto;
+        margin-bottom: ${({ theme }) => theme.spacing.md};
+    }
+`;
+
 /**
  * SearchPackageList - Page Component
  * @description This component renders the search package list page, including search bar, filters, and tour results.
@@ -477,7 +500,6 @@ export default function SearchPackageList() {
     const { isAuthenticated } = useCookieAuth();
 
     const searchData = useSearchData();
-    const uiState = useSearchUIState();
     const searchActions = useSearchActions();
     const searchFilters = useSearchFilters();
     const filterActions = useFilterActions();
@@ -503,25 +525,18 @@ export default function SearchPackageList() {
         minPrice: '',
         maxPrice: '',
         dates: '',
-        travelers: '',
         locations: [] as string[],
     });
+
     const [isLoginAlertOpen, setIsLoginAlertOpen] = useState(false);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
     const [messageApi, contextHolder] = message.useMessage();
-
-    useEffect(() => {
-        const handleResize = () => setWindowWidth(window.innerWidth);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     const PAGE_SIZE = 10;
 
     const generateCacheKey = (page: number): string => {
-        return `${searchData.destination || ''}-${page}-${PAGE_SIZE}-${searchFilters.minPrice || ''}-${searchFilters.maxPrice || ''}-${searchData.dates || ''}-${searchData.adults || 0}-${searchData.children || 0}-${searchData.infants || 0}-${searchFilters.locations.join(',') || ''}`;
+        return `${searchData.destination || ''}-${page}-${PAGE_SIZE}-${searchFilters.minPrice || ''}-${searchFilters.maxPrice || ''}-${searchData.dates || ''}-${searchFilters.locations.join(',') || ''}`;
     };
 
     const applyClientSideFilters = (tours: TourListResponse[]): TourListResponse[] => {
@@ -612,16 +627,6 @@ export default function SearchPackageList() {
                 }
             }
 
-            if (searchData.adults && searchData.adults > 0) {
-                searchParams.adults = searchData.adults;
-            }
-            if (searchData.children && searchData.children > 0) {
-                searchParams.children = searchData.children;
-            }
-            if (searchData.infants && searchData.infants > 0) {
-                searchParams.infants = searchData.infants;
-            }
-
             if (searchFilters.minPrice) {
                 searchParams.minPrice = searchFilters.minPrice;
             }
@@ -683,14 +688,10 @@ export default function SearchPackageList() {
     const searchBarHandlers = {
         onDestinationChange: (value: string) => {
             searchActions.handleDestinationChange(value);
-            /* debounced search will be handled by existing useEffect */
         },
         onDatesChange: (value: string) => {
             searchActions.handleDatesChange(value);
-            /* same here, debounced search will be handled by useEffect */
         },
-        onTravelersChange: searchActions.handleTravelersChange,
-        onTravelerCountChange: searchActions.handleTravelerCountChange,
         onSubmit: handleSearch,
     };
 
@@ -703,7 +704,6 @@ export default function SearchPackageList() {
                 minPrice: searchFilters.minPrice,
                 maxPrice: searchFilters.maxPrice,
                 dates: searchData.dates,
-                travelers: searchData.travelers,
                 locations: [] as string[],
             };
 
@@ -799,19 +799,6 @@ export default function SearchPackageList() {
             return () => clearTimeout(timeoutId);
         }
     }, [searchData.dates]);
-
-    useEffect(() => {
-        if (hasInitialized.current && searchData.travelers !== lastSearchParams.travelers) {
-            const timeoutId = setTimeout(() => {
-                setLastSearchParams((prev) => ({ ...prev, travelers: searchData.travelers }));
-                toursService.clearCache();
-                setCurrentPagination((prev) => ({ ...prev, currentPage: 1 }));
-                fetchTours(1);
-            }, 300);
-
-            return () => clearTimeout(timeoutId);
-        }
-    }, [searchData.travelers]);
 
     const handlePageChange = (page: number) => {
         if (page >= 1 && page <= currentPagination.totalPages && !isLoading && page !== currentPagination.currentPage) {
@@ -927,12 +914,7 @@ export default function SearchPackageList() {
             {contextHolder}
             <PageContainer>
                 <SearchContainer>
-                    <SearchBar
-                        data={searchData}
-                        handlers={searchBarHandlers}
-                        showTravelersDropdown={uiState.showTravelersDropdown}
-                        onTravelersDropdownToggle={searchActions.handleTravelersDropdownToggle}
-                    />
+                    <SearchBar data={searchData} handlers={searchBarHandlers} />
                 </SearchContainer>
 
                 <ContentContainer>
@@ -943,18 +925,14 @@ export default function SearchPackageList() {
                         </ToggleSwitch>
                     </FilterToggleButton>
 
-                    <div
-                        style={{
-                            display: windowWidth <= 768 ? (showMobileFilters ? 'block' : 'none') : 'block',
-                        }}
-                    >
+                    <FilterContainer showOnMobile={showMobileFilters}>
                         <FilterBar
                             filters={searchFilters}
                             handlers={filterActions}
                             totalResults={filteredTours.length}
                             tourData={filteredTours}
                         />
-                    </div>
+                    </FilterContainer>
 
                     <ResultsContainer ref={resultsRef}>
                         {!isLoading && filteredTours.length > 0 && (

@@ -7,12 +7,7 @@ import uzb4 from '@/assets/uzb4.jpg';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from '@/components/SearchBar';
-import {
-    useDefaultSearchValues,
-    useSearchActions,
-    useSearchData,
-    useSearchUIState,
-} from '@/hooks/utils/useSearchActions';
+import { useDefaultSearchValues, useSearchActions, useSearchData } from '@/hooks/utils/useSearchActions';
 
 const HeroContainer = styled.div`
     position: relative;
@@ -125,8 +120,10 @@ const ImageContainer = styled.div`
 `;
 
 const SearchBarWrapper = styled.div`
-    width: 100%;
     margin-top: 2rem;
+    padding-right: 5rem;
+    width: 100%;
+    max-width: 800px;
     position: relative;
     z-index: 10;
 
@@ -195,7 +192,6 @@ export default function FirstHome() {
     const navigate = useNavigate();
 
     const searchData = useSearchData();
-    const uiState = useSearchUIState();
     const { initializeDefaults } = useDefaultSearchValues();
     const searchActions = useSearchActions();
 
@@ -249,12 +245,8 @@ export default function FirstHome() {
                         handlers={{
                             onDestinationChange: searchActions.handleDestinationChange,
                             onDatesChange: searchActions.handleDatesChange,
-                            onTravelersChange: searchActions.handleTravelersChange,
-                            onTravelerCountChange: searchActions.handleTravelerCountChange,
                             onSubmit: handleSubmit,
                         }}
-                        showTravelersDropdown={uiState.showTravelersDropdown}
-                        onTravelersDropdownToggle={searchActions.handleTravelersDropdownToggle}
                     />
                 </SearchBarWrapper>
             </HeroContent>

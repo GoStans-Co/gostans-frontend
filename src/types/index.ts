@@ -42,6 +42,7 @@ export type ButtonProps = {
     style?: React.CSSProperties;
     startIcon?: React.ReactNode;
     endIcon?: React.ReactNode;
+    startText?: string;
 };
 
 export type CardProps = {

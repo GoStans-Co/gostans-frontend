@@ -33,10 +33,21 @@ const HeaderSection = styled.div`
     flex-direction: column;
     align-items: flex-start;
     gap: ${({ theme }) => theme.spacing.md};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        text-align: left;
+        margin-bottom: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const BackButtonContainer = styled.div`
     margin-bottom: ${({ theme }) => theme.spacing.md};
+    text-align: left;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-bottom: 0;
+        text-align: center;
+    }
 `;
 
 const PageTitle = styled.h1`
@@ -46,6 +57,7 @@ const PageTitle = styled.h1`
 
     ${({ theme }) => theme.responsive.maxMobile} {
         font-size: ${({ theme }) => theme.fontSizes['2xl']};
+        text-align: left;
     }
 `;
 
@@ -117,6 +129,9 @@ const ToursList = styled.div`
     ${({ theme }) => theme.responsive.maxMobile} {
         grid-template-columns: 1fr;
         gap: ${({ theme }) => theme.spacing.lg};
+        padding: 0 ${({ theme }) => theme.spacing.lg};
+        margin: 0;
+        width: 100%;
     }
 `;
 
@@ -245,8 +260,17 @@ export default function TopDestinationsByCity() {
         <PageContainer>
             <HeaderSection>
                 <BackButtonContainer>
-                    <Button variant="outline" size="sm" onClick={handleBackClick} startIcon={<FaArrowLeft />}>
-                        Back to Destinations
+                    <Button
+                        variant="outline"
+                        size={window.innerWidth <= 768 ? 'xs' : 'sm'}
+                        onClick={handleBackClick}
+                        startIcon={<FaArrowLeft size={window.innerWidth <= 768 ? 12 : 14} />}
+                        style={{
+                            padding: window.innerWidth <= 768 ? '6px 12px' : undefined,
+                            fontSize: window.innerWidth <= 768 ? '0.875rem' : undefined,
+                        }}
+                    >
+                        {window.innerWidth <= 768 ? 'Back' : 'Back to Destinations'}
                     </Button>
                 </BackButtonContainer>
 

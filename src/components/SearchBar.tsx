@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import styled from 'styled-components';
-import { FaMapMarkerAlt, FaCalendarAlt, FaUser, FaSearch } from 'react-icons/fa';
-import { DatePicker, Dropdown, Select } from 'antd';
-import { DownOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
+import { FaMapMarkerAlt, FaCalendarAlt, FaSearch } from 'react-icons/fa';
+import { DatePicker, Select } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 import Button from '@/components/Common/Button';
 import dayjs from 'dayjs';
 
@@ -12,24 +12,18 @@ export type SearchBarData = {
     destination: string;
     dates: string;
     travelers: string;
-    adults?: number;
-    children?: number;
-    infants?: number;
 };
 
 export type SearchBarHandlers = {
     onDestinationChange?: (value: string) => void;
     onDatesChange?: (value: string) => void;
     onTravelersChange?: (value: string) => void;
-    onTravelerCountChange?: (adults: number, children: number, infants: number) => void;
     onSubmit?: (e: React.FormEvent) => void;
 };
 
 export type SearchBarProps = {
     data: SearchBarData;
     handlers?: SearchBarHandlers;
-    showTravelersDropdown?: boolean;
-    onTravelersDropdownToggle?: (show: boolean) => void;
 };
 
 const SearchForm = styled.form`
@@ -37,13 +31,13 @@ const SearchForm = styled.form`
     gap: 0;
     align-items: stretch;
     width: 100%;
-    max-width: 100%;
-    margin: 0;
+    max-width: 900px;
+    margin: 0 auto;
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     background: white;
     overflow: hidden;
-    box-shadow: ${({ theme }) => theme.shadows.sm};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     height: 56px;
     position: relative;
 
@@ -202,37 +196,21 @@ const StyledRangePicker = styled(RangePicker)`
         background: ${({ theme }) => theme.colors.lightBackground} !important;
     }
 `;
-const DropdownButton = styled.button`
-    width: 100%;
-    height: 56px;
-    border: none;
-    background: transparent;
-    text-align: left;
-    padding: 0 1rem;
-    padding-left: 3rem;
+
+const SearchButtonContent = styled.div`
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    font-size: 14px;
-    color: ${({ theme }) => theme.colors.text};
-    cursor: pointer;
+    justify-content: center;
+    gap: 8px;
 
-    &:hover {
-        background: ${({ theme }) => theme.colors.lightBackground};
-    }
+    span {
+        display: none;
 
-    &:focus {
-        outline: none;
-    }
-
-    .dropdown-icon {
-        color: ${({ theme }) => theme.colors.lightText};
-        font-size: 12px;
-        transition: transform 0.2s;
-    }
-
-    &.active .dropdown-icon {
-        transform: rotate(180deg);
+        ${({ theme }) => theme.responsive.maxMobile} {
+            display: inline;
+            font-size: ${({ theme }) => theme.fontSizes.md};
+            font-weight: 500;
+        }
     }
 `;
 
@@ -250,89 +228,9 @@ const SearchButton = styled(Button)`
     ${({ theme }) => theme.responsive.maxMobile} {
         width: 100%;
         border-radius: 0;
-        border-bottom-left-radius: 12px;
-        border-bottom-right-radius: 12px;
         border-top-right-radius: 0;
+        padding: 0 16px;
     }
-`;
-
-const TravelerCategory = styled.div`
-    margin-bottom: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 8px 0;
-
-    &:last-child {
-        margin-bottom: 0;
-    }
-`;
-
-const CategoryHeader = styled.div`
-    margin-bottom: 0;
-    flex: 1;
-    margin-right: 24px;
-`;
-
-const CategoryTitle = styled.h4`
-    margin: 0 0 4px 0;
-    font-weight: 600;
-    color: ${({ theme }) => theme.colors.text};
-    font-size: 16px;
-`;
-
-const CategorySubtitle = styled.p`
-    margin: 0;
-    font-size: 14px;
-    color: ${({ theme }) => theme.colors.lightText};
-`;
-
-const CounterContainer = styled.div`
-    display: flex;
-    flex-direction: row;
-    gap: 16px;
-    align-items: center;
-    justify-content: flex-end;
-    min-width: 120px;
-`;
-
-const CounterControls = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    width: 100%;
-`;
-
-const CounterButton = styled.button`
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid ${({ theme, disabled }) => (disabled ? theme.colors.border : theme.colors.primary)};
-    color: ${({ theme, disabled }) => (disabled ? theme.colors.border : theme.colors.primary)};
-    background: white;
-    cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-    transition: all 0.2s;
-
-    &:hover:not(:disabled) {
-        background: ${({ theme }) => theme.colors.lightBackground};
-    }
-
-    &:disabled {
-        opacity: 0.5;
-    }
-`;
-
-const CounterValue = styled.span`
-    min-width: 40px;
-    text-align: center;
-    font-weight: 500;
-    font-size: 16px;
-    color: ${({ theme }) => theme.colors.text};
 `;
 
 const regions = [
@@ -362,18 +260,12 @@ const regions = [
     },
 ];
 
-export default function SearchBar({
-    data,
-    handlers = {},
-    showTravelersDropdown = false,
-    onTravelersDropdownToggle,
-}: SearchBarProps) {
-    const { destination, dates, travelers, adults = 0, children = 0, infants = 0 } = data;
-    const { onDestinationChange, onDatesChange, onTravelersChange, onTravelerCountChange, onSubmit } = handlers;
+export default function SearchBar({ data, handlers = {} }: SearchBarProps) {
+    const { destination, dates } = data;
+    const { onDestinationChange, onDatesChange, onSubmit } = handlers;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onTravelersDropdownToggle?.(false);
         onSubmit?.(e);
     };
 
@@ -392,34 +284,6 @@ export default function SearchBar({
         } else {
             onDatesChange?.('');
         }
-    };
-
-    const handleTravelerChange = (type: 'adults' | 'children' | 'infants', delta: number) => {
-        let newAdults = adults;
-        let newChildren = children;
-        let newInfants = infants;
-
-        if (type === 'adults') {
-            newAdults = Math.max(0, adults + delta);
-        } else if (type === 'children') {
-            newChildren = Math.max(0, children + delta);
-        } else if (type === 'infants') {
-            newInfants = Math.max(0, infants + delta);
-        }
-
-        onTravelerCountChange?.(newAdults, newChildren, newInfants);
-
-        const parts = [];
-        if (newAdults > 0) {
-            parts.push(`${newAdults} adult${newAdults !== 1 ? 's' : ''}`);
-        }
-        if (newChildren > 0) {
-            parts.push(`${newChildren} ${newChildren === 1 ? 'child' : 'children'}`);
-        }
-        if (newInfants > 0) {
-            parts.push(`${newInfants} infant${newInfants !== 1 ? 's' : ''}`);
-        }
-        onTravelersChange?.(parts.join(', ') || 'Travelers');
     };
 
     const destinationOptions = [
@@ -447,100 +311,6 @@ export default function SearchBar({
         }
         return undefined;
     }, [dates]);
-
-    const handleTravelersVisibleChange = (visible: boolean) => {
-        onTravelersDropdownToggle?.(visible);
-    };
-
-    const travelersDropdownContent = (
-        <div
-            style={{
-                padding: '20px',
-                minWidth: '305px',
-                backgroundColor: 'white',
-                borderRadius: '8px',
-                overflow: 'hidden',
-            }}
-        >
-            <TravelerCategory>
-                <CategoryHeader>
-                    <CategoryTitle>Adults</CategoryTitle>
-                    <CategorySubtitle>Ages 13 or above</CategorySubtitle>
-                </CategoryHeader>
-                <CounterContainer>
-                    <CounterControls>
-                        <CounterButton
-                            type="button"
-                            disabled={adults <= 0}
-                            onClick={() => handleTravelerChange('adults', -1)}
-                        >
-                            <MinusOutlined style={{ fontSize: '14px' }} />
-                        </CounterButton>
-                        <CounterValue>{adults}</CounterValue>
-                        <CounterButton
-                            type="button"
-                            disabled={adults >= 10}
-                            onClick={() => handleTravelerChange('adults', 1)}
-                        >
-                            <PlusOutlined style={{ fontSize: '14px' }} />
-                        </CounterButton>
-                    </CounterControls>
-                </CounterContainer>
-            </TravelerCategory>
-
-            <TravelerCategory>
-                <CategoryHeader>
-                    <CategoryTitle>Children</CategoryTitle>
-                    <CategorySubtitle>Ages 2-12</CategorySubtitle>
-                </CategoryHeader>
-                <CounterContainer>
-                    <CounterControls>
-                        <CounterButton
-                            type="button"
-                            disabled={children <= 0}
-                            onClick={() => handleTravelerChange('children', -1)}
-                        >
-                            <MinusOutlined style={{ fontSize: '14px' }} />
-                        </CounterButton>
-                        <CounterValue>{children}</CounterValue>
-                        <CounterButton
-                            type="button"
-                            disabled={children >= 6}
-                            onClick={() => handleTravelerChange('children', 1)}
-                        >
-                            <PlusOutlined style={{ fontSize: '14px' }} />
-                        </CounterButton>
-                    </CounterControls>
-                </CounterContainer>
-            </TravelerCategory>
-
-            <TravelerCategory>
-                <CategoryHeader>
-                    <CategoryTitle>Infants</CategoryTitle>
-                    <CategorySubtitle>Under 2</CategorySubtitle>
-                </CategoryHeader>
-                <CounterContainer>
-                    <CounterControls>
-                        <CounterButton
-                            type="button"
-                            disabled={infants <= 0}
-                            onClick={() => handleTravelerChange('infants', -1)}
-                        >
-                            <MinusOutlined style={{ fontSize: '14px' }} />
-                        </CounterButton>
-                        <CounterValue>{infants}</CounterValue>
-                        <CounterButton
-                            type="button"
-                            disabled={infants >= 4}
-                            onClick={() => handleTravelerChange('infants', 1)}
-                        >
-                            <PlusOutlined style={{ fontSize: '14px' }} />
-                        </CounterButton>
-                    </CounterControls>
-                </CounterContainer>
-            </TravelerCategory>
-        </div>
-    );
 
     return (
         <>
@@ -578,33 +348,11 @@ export default function SearchBar({
                     />
                 </InputWrapper>
 
-                <InputWrapper>
-                    <div className="input-icon">
-                        <FaUser />
-                    </div>
-                    <Dropdown
-                        popupRender={() => travelersDropdownContent}
-                        placement="bottomLeft"
-                        trigger={['click']}
-                        open={showTravelersDropdown}
-                        onOpenChange={handleTravelersVisibleChange}
-                        overlayStyle={{
-                            backgroundColor: 'white',
-                            borderRadius: '8px',
-                            border: '1px solid #e5e7eb',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                            zIndex: 9999,
-                        }}
-                    >
-                        <DropdownButton type="button" className={showTravelersDropdown ? 'active' : ''}>
-                            <span style={{ color: travelers ? 'inherit' : '#999' }}>{travelers || 'Travelers'}</span>
-                            <DownOutlined className="dropdown-icon" />
-                        </DropdownButton>
-                    </Dropdown>
-                </InputWrapper>
-
                 <SearchButton variant="primary" type="submit" size="md">
-                    <FaSearch size={20} />
+                    <SearchButtonContent>
+                        <FaSearch size={20} />
+                        <span>Search Tours</span>
+                    </SearchButtonContent>
                 </SearchButton>
             </SearchForm>
         </>

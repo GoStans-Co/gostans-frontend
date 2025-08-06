@@ -89,7 +89,7 @@ const CodeContainer = styled.div`
 const CodeInputs = styled.div`
     display: flex;
     justify-content: space-between;
-    gap: 40px;
+    gap: 10px;
     justify-content: center;
     max-width: 100%;
     overflow: hidden;
@@ -97,8 +97,8 @@ const CodeInputs = styled.div`
 `;
 
 const CodeInput = styled.input`
-    width: 60px;
-    height: 60px;
+    width: 55px;
+    height: 55px;
     text-align: center;
     border: 2px solid ${theme.colors.border};
     border-radius: ${theme.borderRadius.lg};
@@ -183,7 +183,7 @@ const CountryOption = styled.div`
 export default function PhoneVerification({ onBack, onComplete }: PhoneVerificationProps) {
     const [step, setStep] = useState<VerificationStep>(VerificationStep.PHONE_INPUT);
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [verificationCode, setVerificationCode] = useState(['', '', '', '']);
+    const [verificationCode, setVerificationCode] = useState(['', '', '', '', '', '']);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [resendCooldown, setResendCooldown] = useState(30);
     const [selectedCountryCode, setSelectedCountryCode] = useState('+82');
@@ -222,7 +222,7 @@ export default function PhoneVerification({ onBack, onComplete }: PhoneVerificat
             }
 
             setPhoneNumber(phoneNumber);
-            setVerificationCode(['', '', '', '']);
+            setVerificationCode(['', '', '', '', '', '']);
             setStep(VerificationStep.CODE_INPUT);
             setResendCooldown(30);
 
@@ -253,7 +253,7 @@ export default function PhoneVerification({ onBack, onComplete }: PhoneVerificat
         newCode[index] = value;
         setVerificationCode(newCode);
 
-        if (value && index < 3) {
+        if (value && index < 6) {
             const nextInput = document.getElementById(`code-input-${index + 1}`);
             nextInput?.focus();
         }
@@ -268,7 +268,7 @@ export default function PhoneVerification({ onBack, onComplete }: PhoneVerificat
 
     const handleVerifyCode = async () => {
         const code = verificationCode.join('');
-        if (code.length !== 4) return;
+        if (code.length !== 6) return;
 
         setIsSubmitting(true);
         try {
@@ -370,7 +370,7 @@ export default function PhoneVerification({ onBack, onComplete }: PhoneVerificat
                 ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm }}>
                         <Description>
-                            Enter the 4-digit code sent to {selectedCountryCode}
+                            Enter the 6-digit code sent to {selectedCountryCode}
                             {phoneNumber}
                         </Description>
 
