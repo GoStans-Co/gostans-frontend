@@ -94,6 +94,7 @@ const FilterSection = styled.div`
         flex-direction: column;
         gap: ${({ theme }) => theme.spacing.lg};
         align-items: stretch;
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
     }
 `;
 
