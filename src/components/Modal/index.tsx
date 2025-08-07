@@ -1,5 +1,5 @@
-import Modal from '@/components/modal/Modal';
-import ModalProvider from '@/components/modal/ModalProvider';
+import Modal from '@/components/Modal/Modal';
+import ModalProvider from '@/components/Modal/ModalProvider';
 import useModal from '@/hooks/ui/useModal';
 
 export { Modal, ModalProvider, useModal };

@@ -7,7 +7,7 @@ import securitySvg from '@/assets/cards/security.svg';
 import masterCard from '@/assets/cards/mastercard.svg';
 import visaCard from '@/assets/cards/visa.svg';
 import paypalIcon from '@/assets/cards/paypal.svg';
-import GuestForm from '@/components/payment/GuestForm';
+import GuestForm from '@/components/Payment/GuestForm';
 import { BillingInfo, CardInfo } from '@/services/api/checkout/types';
 
 type PaymentStepUIProps = {

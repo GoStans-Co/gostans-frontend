@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import Button from '@/components/common/Button';
 import { tours } from '@/data/mockData';
 import { Box } from 'lucide-react';
-import TripCard from '@/components/card/TripCard';
+import TripCard from '@/components/Card/TripCard';
 import TripStatusTabs from '@/components/tours/TourStatusTabs';
 
 type TripStatus = 'all' | 'booked' | 'waiting' | 'complete' | 'cancelled';

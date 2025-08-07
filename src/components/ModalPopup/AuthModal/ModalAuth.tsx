@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { theme } from '@/styles/theme';
 import { Eye, EyeOff } from 'lucide-react';
 import Input from '@/components/common/Input';
-import Modal from '@/components/modal';
+import Modal from '@/components/Modal';
 import SocialLogin from '@/components/modalPopup/AuthModal/SocialLogin';
 import PhoneVerification from '@/components/modalPopup/AuthModal/PhoneVerification';
 import { message } from 'antd';
@@ -13,7 +13,7 @@ import { useApiServices } from '@/services/api';
 import { useStatusHandler } from '@/hooks/api/useStatusHandler';
 import useCookieAuthService from '@/services/cache/cookieAuthService';
 import TelegramVerification from '@/components/modalPopup/AuthModal/TelegramOtpVerify';
-import ForgotPassword from '@/components/password/ForgotPassword';
+import ForgotPassword from '@/components/Password/ForgotPassword';
 
 enum SignupStage {
     FORM = 'form',
