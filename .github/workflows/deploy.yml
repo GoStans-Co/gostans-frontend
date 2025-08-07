@@ -24,21 +24,15 @@ jobs:
             - name: 📦 Install dependencies (clean build)
               run: pnpm install --frozen-lockfile
 
-            - name: 🔍 Debug TypeScript paths
-              run: |
-                  echo "Checking if src/components/Common exists:"
-                  ls -la src/components/
-                  echo "Checking TypeScript config:"
-                  cat tsconfig.json
-
             - name: 🛠️ Build project
               run: pnpm build
 
-            - name: 🚀 Deploy to Firebase
+            - name: 🚀 Deploy to Firebase Hosting
               uses: FirebaseExtended/action-hosting-deploy@v0
               with:
                   repoToken: '${{ secrets.GITHUB_TOKEN }}'
-                  firebaseServiceAccount: ${{ secrets.FIREBASE_DEPLOY_TOKEN }}
+                  firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
                   channelId: live
+                  projectId: xplore-asia
               env:
                   FIREBASE_CLI_EXPERIMENTS: webframeworks
