@@ -1,6 +1,6 @@
+import { CalendarOutlined, HeartOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { AlignVerticalSpaceAround, Camera } from 'lucide-react';
 import React from 'react';
-import { FaArrowRight } from 'react-icons/fa';
 import styled from 'styled-components';
 
 enum PageSection {
@@ -45,9 +45,10 @@ const SidebarContainer = styled.div`
     flex-direction: column;
     max-height: calc(100vh - 80px);
     overflow-y: auto;
-    box-shadow: ${({ theme }) => theme.shadows.md};
+    box-shadow: ${({ theme }) => theme.shadows.lg};
     z-index: 10;
     align-self: flex-start;
+    backdrop-filter: blur(10px);
 
     ${({ theme }) => theme.responsive.maxMobile} {
         width: calc(100% - 1rem);
@@ -155,50 +156,68 @@ const NavSection = styled.div`
 const NavItem = styled.button<{ $active?: boolean }>`
     display: flex;
     align-items: center;
-    padding: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
     text-decoration: none;
     border-radius: ${({ theme }) => theme.borderRadius.md};
     color: ${({ theme, $active }) => ($active ? theme.colors.primary : theme.colors.text)};
     background-color: ${({ theme, $active }) => ($active ? theme.colors.lightBackground : 'transparent')};
     transition: all ${({ theme }) => theme.transitions.default};
-    font-weight: ${({ $active }) => ($active ? '800' : '500')};
+    font-weight: ${({ $active }) => ($active ? '600' : '500')};
     font-size: ${({ theme }) => theme.fontSizes.md};
     cursor: pointer;
     width: 100%;
     text-align: left;
+    border: none;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: ${({ $active }) => ($active ? '2px' : '0')};
+        height: 60%;
+        background: linear-gradient(
+            135deg,
+            ${({ theme }) => theme.colors.primary},
+            ${({ theme }) => theme.colors.secondary}
+        );
+        border-radius: 0 4px 4px 0;
+        transition: width 0.3s ease;
+    }
 
     &:hover {
         background-color: ${({ theme }) => theme.colors.lightBackground};
-        transform: translateY(-2px);
+        transform: translateX(2px);
+        box-shadow: ${({ theme }) => theme.shadows.sm};
 
         &::before {
-            width: 4px;
+            width: 2px;
         }
     }
 
     &:active {
-        transform: translateY(0);
+        transform: translateX(2px);
     }
 `;
 
-const IconWrapper = styled.span`
+const IconWrapper = styled.span<{ $active?: boolean }>`
     display: flex;
     align-items: center;
+    justify-content: center;
     margin-right: ${({ theme }) => theme.spacing.md};
+    width: 20px;
+    height: 20px;
+    color: ${({ theme, $active }) => ($active ? theme.colors.primary : theme.colors.lightText)};
+    transition: color ${({ theme }) => theme.transitions.default};
 
     svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
     }
 `;
-function SidebarItem({ active, icon, label, onClick }: SidebarItemProps) {
-    return (
-        <NavItem $active={active} onClick={onClick}>
-            <IconWrapper>{icon}</IconWrapper>
-            {label}
-        </NavItem>
-    );
-}
 
 export default function Sidebar({
     userName,
@@ -239,18 +258,21 @@ export default function Sidebar({
                     active={activePage === 'profile'}
                     label="Personal Info"
                     href="/mypage"
+                    icon={<UserOutlined />}
                     onClick={() => onSectionChange(PageSection.PROFILE)}
                 />
                 <SidebarItem
                     active={activePage === 'trips'}
                     label="Trips"
                     href="/mypage/trips"
+                    icon={<CalendarOutlined />}
                     onClick={() => onSectionChange(PageSection.TRIPS)}
                 />
                 <SidebarItem
                     active={activePage === 'favorites'}
                     label="Favorites"
                     href="/mypage/favorites"
+                    icon={<HeartOutlined />}
                     onClick={() => onSectionChange(PageSection.FAVORITES)}
                 />
 
@@ -263,8 +285,17 @@ export default function Sidebar({
                     }}
                 ></div>
 
-                <SidebarItem icon={<FaArrowRight />} label="Logout" href="/" onClick={handleLogout} />
+                <SidebarItem icon={<LogoutOutlined />} label="Logout" href="/" onClick={handleLogout} />
             </NavSection>
         </SidebarContainer>
+    );
+}
+
+function SidebarItem({ active, icon, label, onClick }: SidebarItemProps) {
+    return (
+        <NavItem $active={active} onClick={onClick}>
+            <IconWrapper $active={active}>{icon}</IconWrapper>
+            {label}
+        </NavItem>
     );
 }

@@ -11,50 +11,71 @@ import useTrendingTours from '@/hooks/api/useTrendingTours';
 
 const PageContainer = styled.div`
     min-height: 100vh;
-    background-color: ${({ theme }) => theme.colors.background};
+    background: linear-gradient(
+        135deg,
+        ${({ theme }) => theme.colors.lightBackground} 0%,
+        ${({ theme }) => theme.colors.grayBackground} 100%
+    );
+    padding: ${({ theme }) => theme.spacing['2xl']} 0;
+    padding-bottom: ${({ theme }) => theme.spacing['5xl']};
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        padding: 1rem;
+        padding: ${({ theme }) => theme.spacing.md} 0;
     }
 `;
 
-const PageHeader = styled.div`
-    // max-width: 1200px;
-    margin: 0 auto 2rem auto;
-    justify-content: center;
+const ContentContainer = styled.div`
+    padding: 0 ${({ theme }) => theme.spacing.lg};
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 0 ${({ theme }) => theme.spacing.md};
+        margin: 0 auto;
+        gap: ${({ theme }) => theme.spacing.sm};
+    }
+`;
+
+const HeaderSection = styled.div`
+    margin-bottom: ${({ theme }) => theme.spacing.md};
+    padding: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    background-color: ${({ theme }) => theme.colors.lightBackground};
-    padding: 2rem 0 2rem 2rem;
-
-    ${({ theme }) => theme.responsive.maxMobile} {
-        margin-bottom: 2rem;
-    }
+    gap: ${({ theme }) => theme.spacing.sm};
 `;
 
 const PageTitle = styled.h2`
     font-size: ${({ theme }) => theme.fontSizes['3xl']};
-    font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
-    color: ${({ theme }) => theme.colors.text};
-    margin-bottom: 0.5rem;
-    font-family: ${({ theme }) => theme.typography.fontFamily.display};
+    font-weight: 700;
     text-align: left;
+    background: linear-gradient(
+        135deg,
+        ${({ theme }) => theme.colors.primary} 0%,
+        ${({ theme }) => theme.colors.secondary} 100%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: 2rem;
+        font-size: ${({ theme }) => theme.fontSizes['2xl']};
     }
 `;
 
 const PageSubtitle = styled.p`
     font-size: ${({ theme }) => theme.fontSizes.md};
     color: ${({ theme }) => theme.colors.lightText};
-    max-width: 600px;
-    margin: 0;
+    font-weight: 500;
     text-align: left;
+    margin: 0;
+    line-height: 1.6;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: ${({ theme }) => theme.fontSizes.md};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
     }
 `;
 
@@ -166,13 +187,13 @@ export default function TrendingTours() {
     if (filteredTours.length === 0 && !loading) {
         return (
             <PageContainer>
-                <PageHeader>
+                <HeaderSection>
                     <PageTitle>Trending Tours</PageTitle>
                     <PageSubtitle>
                         Discover our most popular tours and experiences. Find your perfect adventure from our curated
                         collection.
                     </PageSubtitle>
-                </PageHeader>
+                </HeaderSection>
 
                 <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="default" />
 
@@ -188,39 +209,41 @@ export default function TrendingTours() {
 
     return (
         <PageContainer>
-            <PageHeader>
-                <PageTitle>Trending Tours</PageTitle>
-                <PageSubtitle>
-                    Discover our most popular tours and experiences. Find your perfect adventure from our curated
-                    collection.
-                </PageSubtitle>
-            </PageHeader>
+            <ContentContainer>
+                <HeaderSection>
+                    <PageTitle>Trending Tours</PageTitle>
+                    <PageSubtitle>
+                        Discover our most popular tours and experiences. Find your perfect adventure from our curated
+                        collection.
+                    </PageSubtitle>
+                </HeaderSection>
 
-            <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="default" />
+                <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="default" />
 
-            <ToursGrid>
-                {filteredTours.map((tour) => (
-                    <Link
-                        to={`/searchTrips/${tour.uuid}`}
-                        style={{ textDecoration: 'none', color: 'inherit' }}
-                        key={tour.id}
-                    >
-                        <TourCard
-                            buttonText="See Details"
-                            id={tour.id}
-                            title={tour.title}
-                            shortDescription={tour.shortDescription}
-                            price={tour.price}
-                            mainImage={tour.mainImage ? tour.mainImage : defaultImage}
-                            country={tour.country}
-                            isLiked={tour.isLiked}
-                            variant="button"
-                            tourType={{ id: tour.tourType?.id || 0, name: tour.tourType?.name || 'General' }}
-                            currency={tour.currency}
-                        />
-                    </Link>
-                ))}
-            </ToursGrid>
+                <ToursGrid>
+                    {filteredTours.map((tour) => (
+                        <Link
+                            to={`/searchTrips/${tour.uuid}`}
+                            style={{ textDecoration: 'none', color: 'inherit' }}
+                            key={tour.id}
+                        >
+                            <TourCard
+                                buttonText="See Details"
+                                id={tour.id}
+                                title={tour.title}
+                                shortDescription={tour.shortDescription}
+                                price={tour.price}
+                                mainImage={tour.mainImage ? tour.mainImage : defaultImage}
+                                country={tour.country}
+                                isLiked={tour.isLiked}
+                                variant="button"
+                                tourType={{ id: tour.tourType?.id || 0, name: tour.tourType?.name || 'General' }}
+                                currency={tour.currency}
+                            />
+                        </Link>
+                    ))}
+                </ToursGrid>
+            </ContentContainer>
         </PageContainer>
     );
 }

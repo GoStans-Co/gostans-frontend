@@ -41,7 +41,7 @@ const Description = styled.p`
     margin: 0;
 
     a {
-        color: ${theme.colors.primary};
+        color: ${theme.colors.info};
         font-weight: ${theme.typography.fontWeight.medium};
     }
 
@@ -99,20 +99,25 @@ const TimerWrapper = styled.div`
 `;
 
 const LinkItem = styled.a`
-    color: ${theme.colors.warning};
+    color: ${theme.colors.primary};
     font-weight: ${theme.typography.fontWeight.medium};
-    transition: color ${theme.transitions.default};
-    highlight: none;
-    position: relative;
-
+    text-decoration: none;
+    transition: color ${theme.transitions.fast};
     &:hover {
-        color: ${theme.colors.success};
+        color: ${theme.colors.error};
+        text-decoration: underline;
+        text-decoration-color: ${theme.colors.primary}40;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 2px;
+        highlight: none;
     }
-
     &:focus {
         outline: none;
-        box-shadow: 0 0 0 1px ${theme.colors.error};
+        box-shadow: 0 0 0 1px ${theme.colors.primary}80;
         text-decoration: underline;
+        text-decoration-color: ${theme.colors.primary}80;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 2px;
     }
 
     &::after {

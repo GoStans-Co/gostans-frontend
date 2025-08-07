@@ -46,6 +46,12 @@ const HeaderSection = styled.div`
     flex-direction: column;
     align-items: flex-start;
     gap: ${({ theme }) => theme.spacing.sm};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 0 ${({ theme }) => theme.spacing.md};
+        margin-bottom: ${({ theme }) => theme.spacing.lg};
+        gap: ${({ theme }) => theme.spacing.xs};
+    }
 `;
 
 const PageTitle = styled.h2`
@@ -95,6 +101,7 @@ const FilterSection = styled.div`
         gap: ${({ theme }) => theme.spacing.lg};
         align-items: stretch;
         margin-bottom: ${({ theme }) => theme.spacing.sm};
+        padding: 0 ${({ theme }) => theme.spacing.md};
     }
 `;
 
@@ -204,6 +211,8 @@ const DestinationsList = styled.div`
     ${({ theme }) => theme.responsive.maxMobile} {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: ${({ theme }) => theme.spacing.md};
+        padding: 0 ${({ theme }) => theme.spacing.md};
+        margin: 0 auto;
     }
 `;
 
@@ -314,6 +323,12 @@ const ResultsCount = styled.div`
     span {
         font-weight: 600;
         color: ${({ theme }) => theme.colors.primary};
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 0 ${({ theme }) => theme.spacing.md};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        margin-bottom: ${({ theme }) => theme.spacing.md};
     }
 `;
 

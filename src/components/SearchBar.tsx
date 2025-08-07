@@ -49,11 +49,14 @@ const SearchForm = styled.form`
         width: calc(100vw - 2rem);
         max-width: calc(100vw - 2rem);
         box-sizing: border-box;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(10px);
 
         & > div {
             width: 100%;
             border-right: none !important;
             border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+            height: 48px;
 
             &:last-child {
                 border-bottom: none;
@@ -76,6 +79,7 @@ const InputWrapper = styled.div`
         border-right: none;
         width: 100%;
         box-sizing: border-box;
+        height: 48px;
 
         &:not(:last-child) {
             border-bottom: 1px solid ${({ theme }) => theme.colors.border};
@@ -89,6 +93,11 @@ const InputWrapper = styled.div`
         transform: translateY(-50%);
         z-index: 2;
         color: ${({ theme }) => theme.colors.lightText};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            left: 0.75rem;
+            font-size: 14px;
+        }
     }
 `;
 
@@ -105,6 +114,12 @@ const StyledSelect = styled(Select)`
         padding-right: 3rem !important;
         display: flex;
         align-items: center;
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            height: 48px !important;
+            padding-left: 2.5rem !important;
+            padding-right: 2.5rem !important;
+        }
     }
 
     .ant-select-selection-item {
@@ -112,6 +127,10 @@ const StyledSelect = styled(Select)`
         align-items: center;
         color: ${({ theme }) => theme.colors.text};
         font-size: 14px;
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            font-size: 13px;
+        }
     }
 
     .ant-select-selection-placeholder {
@@ -119,11 +138,19 @@ const StyledSelect = styled(Select)`
         align-items: center;
         color: #999;
         font-size: 14px;
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            font-size: 13px;
+        }
     }
 
     .ant-select-arrow {
         color: ${({ theme }) => theme.colors.lightText};
         right: 1rem;
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            right: 0.75rem;
+        }
     }
 
     .ant-select-clear {
@@ -133,6 +160,10 @@ const StyledSelect = styled(Select)`
 
         &:hover {
             color: ${({ theme }) => theme.colors.text};
+        }
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            right: 2rem;
         }
     }
 
@@ -165,6 +196,11 @@ const StyledRangePicker = styled(RangePicker)`
         display: flex;
         align-items: center;
         padding: 0 1rem 0 3rem !important;
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            height: 48px;
+            padding: 0 0.75rem 0 2.5rem !important;
+        }
     }
 
     .ant-picker-separator {
@@ -181,6 +217,10 @@ const StyledRangePicker = styled(RangePicker)`
     .ant-picker-input > input {
         font-size: 14px !important;
         padding: 0 !important;
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            font-size: 13px !important;
+        }
     }
 
     .ant-picker-suffix,
@@ -227,9 +267,18 @@ const SearchButton = styled(Button)`
 
     ${({ theme }) => theme.responsive.maxMobile} {
         width: 100%;
+        height: 48px;
         border-radius: 0;
         border-top-right-radius: 0;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
         padding: 0 16px;
+        background: linear-gradient(
+            135deg,
+            ${({ theme }) => theme.colors.primary},
+            ${({ theme }) => theme.colors.secondary}
+        );
+        font-weight: 600;
     }
 `;
 

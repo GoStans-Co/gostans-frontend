@@ -17,8 +17,7 @@ const SocialLoginContainer = styled.div`
 
     @media (max-width: 768px) {
         flex-wrap: wrap;
-        gap: ${theme.spacing.sm};
-        justify-content: space-around;
+        gap: ${theme.spacing.md};
         margin: ${theme.spacing.md} 0;
     }
 `;
