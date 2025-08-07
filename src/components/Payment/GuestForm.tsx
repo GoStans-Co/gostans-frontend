@@ -94,7 +94,7 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
         }
     }, [onValidationReady, validateAllFields]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         if (validateAllFields()) {

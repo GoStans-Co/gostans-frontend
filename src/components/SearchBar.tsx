@@ -298,7 +298,7 @@ export default function SearchBar({ data, handlers = {} }: SearchBarProps) {
     const { destination, dates } = data;
     const { onDestinationChange, onDatesChange, onSubmit } = handlers;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         onSubmit?.(e);
     };

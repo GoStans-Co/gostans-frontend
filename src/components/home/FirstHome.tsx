@@ -217,7 +217,7 @@ export default function FirstHome() {
         });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const searchParams = new URLSearchParams();
         if (searchData.destination) searchParams.set('destination', searchData.destination);

@@ -226,7 +226,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         checkEmail();
     }, [debouncedEmail, activeTab, shouldCheckEmail]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setSuccess('');
 

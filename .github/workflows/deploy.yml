@@ -24,6 +24,13 @@ jobs:
             - name: 📦 Install dependencies (clean build)
               run: pnpm install --frozen-lockfile
 
+            - name: 🔍 Debug TypeScript paths
+              run: |
+                  echo "Checking if src/components/Common exists:"
+                  ls -la src/components/
+                  echo "Checking TypeScript config:"
+                  cat tsconfig.json
+
             - name: 🛠️ Build project
               run: pnpm build
 
