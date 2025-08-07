@@ -21,11 +21,10 @@ jobs:
             - name: 🧶 Install pnpm
               run: npm install -g pnpm
 
-            - name: 📦 Install dependencies
-              run: pnpm install
+            - name: 📦 Install dependencies (clean build)
+              run: pnpm install --frozen-lockfile
 
             - name: 🛠️ Build project
-              run: pnpm install --frozen-lockfile
               run: pnpm build
 
             - name: 🚀 Deploy to Firebase
