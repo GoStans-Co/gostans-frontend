@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import styled from 'styled-components';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ScrollToTop from '@/components/ScollToTop';
 
 const LayoutContainer = styled.div`
     display: flex;
@@ -18,12 +19,15 @@ const Main = styled.main`
 
 export default function MainLayout() {
     return (
-        <LayoutContainer>
-            <Header />
-            <Main>
-                <Outlet />
-            </Main>
-            <Footer />
-        </LayoutContainer>
+        <>
+            <ScrollToTop />
+            <LayoutContainer>
+                <Header />
+                <Main>
+                    <Outlet />
+                </Main>
+                <Footer />
+            </LayoutContainer>
+        </>
     );
 }

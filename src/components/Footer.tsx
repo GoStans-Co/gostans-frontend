@@ -8,6 +8,10 @@ const FooterContainer = styled.footer`
     color: black;
     padding: 3rem 2rem;
     border-top: 1px solid ${({ theme }) => theme.colors.border};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.lg};
+    }
 `;
 
 const FooterContent = styled.div`
@@ -267,7 +271,7 @@ export default function Footer() {
             </FooterContent>
 
             <BottomBar>
-                <Copyright>&copy; {new Date().getFullYear()} XploreASIAN. All rights reserved.</Copyright>
+                <Copyright>&copy; {new Date().getFullYear()} GoStans. All rights reserved.</Copyright>
                 <BottomLinks>
                     <BottomLink href="/privacy-policy">Privacy Policy</BottomLink>
                     <BottomLink href="/terms-conditions">Terms & Conditions</BottomLink>

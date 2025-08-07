@@ -10,7 +10,7 @@ import useCookieAuth from '@/services/cache/cookieAuthService';
 import UserProfileModal from '@/components/Modal/UserProfileModal';
 import { ModalAlert } from '@/components/ModalPopup';
 import userImage from '@/assets/user.jpg';
-import { LogInIcon, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import CountriesModal from '@/components/Modal/HeaderModals/CountriesModal';
 import CurrencyModal from '@/components/Modal/HeaderModals/CurrencyModal';
 import CartModal from '@/components/Modal/HeaderModals/CartModal';
@@ -19,6 +19,18 @@ import { cartAtom } from '@/atoms/cart';
 import { useCartService } from '@/services/api/cart/useCartService';
 import { useApiServices } from '@/services/api';
 import goStansLogo from '@/assets/white.jpg';
+import {
+    CloseOutlined,
+    FireOutlined,
+    HomeOutlined,
+    MenuOutlined,
+    SearchOutlined,
+    UserOutlined,
+    CalendarOutlined,
+    HeartOutlined,
+    LoginOutlined,
+} from '@ant-design/icons';
+import { Drawer, Menu } from 'antd';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -153,26 +165,6 @@ const CartCount = styled.span`
     }
 `;
 
-const LoginIconButton = styled.button`
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    color: ${({ theme }) => theme.colors.text};
-    transition: color 0.3s ease;
-
-    ${({ theme }) => theme.responsive.maxMobile} {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    &:hover {
-        color: ${({ theme }) => theme.colors.primary};
-    }
-`;
-
 const MobileAuthSection = styled.div`
     display: none;
 
@@ -213,14 +205,14 @@ const UserAvatarButton = styled.button`
     transition: background-color 0.3s ease;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        width: 32px;
-        height: 32px;
+        display: none;
     }
 
     &:hover {
         background-color: ${({ theme }) => theme.colors.border};
     }
 `;
+
 const UserImageDefault = styled.img`
     width: 100%;
     height: 100%;
@@ -295,6 +287,62 @@ const LogoImage = styled.img`
     }
 `;
 
+const MobileMenuButton = styled.button`
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: ${({ theme }) => theme.colors.text};
+    padding: 0.5rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &:hover {
+        color: ${({ theme }) => theme.colors.primary};
+    }
+`;
+
+const DrawerContent = styled.div`
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+`;
+
+const DrawerFooter = styled.div`
+    position: absolute;
+    bottom: 2rem;
+    left: 1rem;
+    right: 1rem;
+`;
+
+const UserSection = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const UserInfo = styled.div`
+    flex: 1;
+`;
+
+const UserName = styled.div`
+    font-weight: bold;
+    font-size: 14px;
+    color: ${({ theme }) => theme.colors.text};
+`;
+
+const LogoutButtonContainer = styled.div`
+    margin-top: 0.5rem;
+    width: 100%;
+`;
+
 export default function Header() {
     const location = useLocation();
     const { openModal, closeModal } = useModal();
@@ -318,6 +366,7 @@ export default function Header() {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [authState, setAuthState] = useState(isAuthenticated());
     const [modalConfig, setModalConfig] = useState<{
         isOpen: boolean;
@@ -350,6 +399,18 @@ export default function Header() {
     useEffect(() => {
         setAuthState(isAuthenticated());
     }, [isAuthenticated]);
+
+    const getMenuSelectedKeys = () => {
+        const path = location.pathname;
+        const search = location.search;
+
+        if (path === '/mypage') {
+            const params = new URLSearchParams(search);
+            const section = params.get('section') || 'profile';
+            return [`/mypage?section=${section}`];
+        }
+        return [path];
+    };
 
     const handleLogout = useCallback(async () => {
         setIsLoggingOut(true);
@@ -474,11 +535,9 @@ export default function Header() {
                         <CartCount>{cartItems.reduce((sum, item) => sum + item.quantity, 0)}</CartCount>
                     </CartLink>
 
-                    {!isLoggedIn && (
-                        <LoginIconButton onClick={() => openLoginModal('login')}>
-                            <LogInIcon style={{ width: '20px', height: '20px' }} />
-                        </LoginIconButton>
-                    )}
+                    <MobileMenuButton onClick={() => setMobileMenuOpen(true)}>
+                        <MenuOutlined />
+                    </MobileMenuButton>
 
                     {isLoggedIn ? (
                         <>
@@ -505,13 +564,158 @@ export default function Header() {
                         </>
                     ) : (
                         <AuthButtons>
-                            <Button variant="primary" onClick={() => openLoginModal('login')}>
+                            <Button
+                                variant="primary"
+                                onClick={() => openLoginModal('login')}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontWeight: '500',
+                                }}
+                            >
+                                <LoginOutlined />
                                 Login
                             </Button>
                         </AuthButtons>
                     )}
                 </RightSection>
             </HeaderContent>
+            <Drawer
+                placement="right"
+                onClose={() => setMobileMenuOpen(false)}
+                open={mobileMenuOpen}
+                width={280}
+                closeIcon={<CloseOutlined />}
+                styles={{
+                    body: { padding: 0 },
+                    header: { borderBottom: `1px solid ${theme.colors.border}` },
+                }}
+            >
+                <DrawerContent>
+                    <Menu
+                        mode="vertical"
+                        selectedKeys={getMenuSelectedKeys()}
+                        style={{ border: 'none', height: '100%' }}
+                        items={[
+                            {
+                                key: '/top-destinations',
+                                icon: <HomeOutlined />,
+                                label: 'Destinations',
+                                onClick: () => {
+                                    navigate('/top-destinations');
+                                    setMobileMenuOpen(false);
+                                },
+                            },
+                            {
+                                key: '/searchTrips',
+                                icon: <SearchOutlined />,
+                                label: 'Search Trips',
+                                onClick: () => {
+                                    navigate('/searchTrips');
+                                    setMobileMenuOpen(false);
+                                },
+                            },
+                            {
+                                key: '/trendingTours',
+                                icon: <FireOutlined />,
+                                label: 'Trending Tours',
+                                onClick: () => {
+                                    navigate('/trendingTours');
+                                    setMobileMenuOpen(false);
+                                },
+                            },
+                            ...(isLoggedIn
+                                ? [
+                                      {
+                                          type: 'divider' as const,
+                                      },
+                                      {
+                                          key: '/mypage?section=profile',
+                                          icon: <UserOutlined />,
+                                          label: 'Personal Info',
+                                          onClick: () => {
+                                              navigate('/mypage?section=profile');
+                                              setMobileMenuOpen(false);
+                                          },
+                                      },
+                                      {
+                                          key: '/mypage?section=trips',
+                                          icon: <CalendarOutlined />,
+                                          label: 'My Trips',
+                                          onClick: () => {
+                                              navigate('/mypage?section=trips');
+                                              setMobileMenuOpen(false);
+                                          },
+                                      },
+                                      {
+                                          key: '/mypage?section=favorites',
+                                          icon: <HeartOutlined />,
+                                          label: 'Favorites',
+                                          onClick: () => {
+                                              navigate('/mypage?section=favorites');
+                                              setMobileMenuOpen(false);
+                                          },
+                                      },
+                                  ]
+                                : []),
+                        ]}
+                    />
+
+                    <DrawerFooter>
+                        {isLoggedIn ? (
+                            <UserSection>
+                                <UserImageDefault
+                                    src={userImage}
+                                    alt="User Avatar"
+                                    style={{ width: '40px', height: '40px' }}
+                                />
+                                <UserInfo>
+                                    <UserName>{userData?.name || 'User'}</UserName>
+                                    <LogoutButtonContainer>
+                                        <Button
+                                            variant="light"
+                                            size="mini"
+                                            onClick={() => {
+                                                showLogoutConfirmation();
+                                                setMobileMenuOpen(false);
+                                            }}
+                                            fullWidth
+                                            disabled={isLoggingOut}
+                                        >
+                                            Logout
+                                        </Button>
+                                    </LogoutButtonContainer>
+                                </UserInfo>
+                            </UserSection>
+                        ) : (
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => {
+                                    openLoginModal('login');
+                                    setMobileMenuOpen(false);
+                                }}
+                                style={{
+                                    width: '100%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    background: 'linear-gradient(135deg, #0F2846, #1F65A0)',
+                                    border: 'none',
+                                    fontWeight: '600',
+                                    borderRadius: '8px',
+                                    height: '40px',
+                                }}
+                            >
+                                <LoginOutlined />
+                                Login
+                            </Button>
+                        )}
+                    </DrawerFooter>
+                </DrawerContent>
+            </Drawer>
             <CountriesModal
                 isOpen={showCountries}
                 onClose={() => setShowCountries(false)}
@@ -519,14 +723,6 @@ export default function Header() {
                 selectedCountry={selectedCountry}
                 onCountrySelect={setSelectedCountry}
             />
-
-            {/* <LanguageModal
-                isOpen={showLanguage}
-                onClose={() => setShowLanguage(false)}
-                anchorElement={languageRef.current}
-                selectedLanguage={selectedLanguage}
-                onLanguageSelect={setSelectedLanguage}
-            /> */}
 
             <CurrencyModal
                 isOpen={showCurrency}
