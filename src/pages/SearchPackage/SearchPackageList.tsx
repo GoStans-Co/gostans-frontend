@@ -18,7 +18,7 @@ import { motion } from 'framer-motion';
 import useFavorite from '@/hooks/ui/useFavorite';
 import useModal from '@/hooks/ui/useModal';
 import useCookieAuth from '@/services/cache/cookieAuthService';
-import { ModalAlert, ModalAuth } from '@/components/modalPopup';
+import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
 import { message } from 'antd';
 import { useApiServices } from '@/services/api';
 import { TourListResponse } from '@/services/api/tours';

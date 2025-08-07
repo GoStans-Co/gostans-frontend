@@ -31,7 +31,7 @@ import { useRecoilValue, useRecoilState, useSetRecoilState } from 'recoil';
 import useFavorite from '@/hooks/ui/useFavorite';
 import useCookieAuth from '@/services/cache/cookieAuthService';
 import useModal from '@/hooks/ui/useModal';
-import { ModalAlert, ModalAuth } from '@/components/modalPopup';
+import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
 import { TourDetailsResponse } from '@/services/api/tours';
 import { CartItem } from '@/services/api/cart';
 import { useApiServices } from '@/services/api';

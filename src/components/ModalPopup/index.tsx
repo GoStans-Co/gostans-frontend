@@ -1,6 +1,6 @@
-import BaseModalPopup from '@/components/modalPopup/CoreModal/CoreModalPopup';
-import ModalAlert from '@/components/modalPopup/ModalAlert';
-import ModalAuth from '@/components/modalPopup/AuthModal/ModalAuth';
+import BaseModalPopup from '@/components/ModalPopup/CoreModal/CoreModalPopup';
+import ModalAlert from '@/components/ModalPopup/ModalAlert';
+import ModalAuth from '@/components/ModalPopup/AuthModal/ModalAuth';
 
 export { BaseModalPopup, ModalAlert, ModalAuth };
 

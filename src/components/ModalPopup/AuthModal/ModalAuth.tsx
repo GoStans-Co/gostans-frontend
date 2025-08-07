@@ -4,15 +4,15 @@ import { theme } from '@/styles/theme';
 import { Eye, EyeOff } from 'lucide-react';
 import Input from '@/components/common/Input';
 import Modal from '@/components/Modal';
-import SocialLogin from '@/components/modalPopup/AuthModal/SocialLogin';
-import PhoneVerification from '@/components/modalPopup/AuthModal/PhoneVerification';
+import SocialLogin from '@/components/ModalPopup/AuthModal/SocialLogin';
+import PhoneVerification from '@/components/ModalPopup/AuthModal/PhoneVerification';
 import { message } from 'antd';
-import PasswordComponent from '@/components/modalPopup/AuthModal/PasswordComponent';
+import PasswordComponent from '@/components/ModalPopup/AuthModal/PasswordComponent';
 import { LoginCredentials, SignUpData, SocialLoginData } from '@/services/api/auth';
 import { useApiServices } from '@/services/api';
 import { useStatusHandler } from '@/hooks/api/useStatusHandler';
 import useCookieAuthService from '@/services/cache/cookieAuthService';
-import TelegramVerification from '@/components/modalPopup/AuthModal/TelegramOtpVerify';
+import TelegramVerification from '@/components/ModalPopup/AuthModal/TelegramOtpVerify';
 import ForgotPassword from '@/components/Password/ForgotPassword';
 
 enum SignupStage {
