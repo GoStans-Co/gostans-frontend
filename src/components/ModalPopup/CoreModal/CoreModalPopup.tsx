@@ -1,6 +1,6 @@
 import styled from 'styled-components';
-import Modal from '@/components/Modal/Modal';
-import Button from '@/components/Common/Button';
+import Modal from '@/components/modal/Modal';
+import Button from '@/components/common/Button';
 import { theme } from '@/styles/theme';
 import { AdvancedModalProps } from '@/types/common/modal';
 

@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import Button from '@/components/Common/Button';
+import Button from '@/components/common/Button';
 import { TourPropsResponse } from '@/services/api/tours';
 
 const CardContainer = styled.div`

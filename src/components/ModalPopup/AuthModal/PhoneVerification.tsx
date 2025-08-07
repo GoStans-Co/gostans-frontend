@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
-import Input from '@/components/Common/Input';
-import Button from '@/components/Common/Button';
+import Input from '@/components/common/Input';
+import Button from '@/components/common/Button';
 import { ArrowLeft, ChevronDown } from 'lucide-react';
 import { message } from 'antd';
 import { COUNTRY_CODES } from '@/constants/countryCodes';

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { TourPropsResponse } from '@/services/api/tours';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
-import BannerCard from '@/components/Card/BannerCard';
+import BannerCard from '@/components/card/BannerCard';
 import defaultImage from '@/assets/default/default_1.jpg';
 
 type TrendingToursProps = {

@@ -1,9 +1,9 @@
 import { ShoppingCart, X } from 'lucide-react';
-import { ModalHeader, ModalTitle } from '@/components/Common/DropdownElemStyles';
-import Button from '@/components/Common/Button';
+import { ModalHeader, ModalTitle } from '@/components/common/DropdownElemStyles';
+import Button from '@/components/common/Button';
 import { theme } from '@/styles/theme';
 import styled from 'styled-components';
-import AtomicDropdownModal from '@/components/Common/AtomicDropdownElements';
+import AtomicDropdownModal from '@/components/common/AtomicDropdownElements';
 import { useEffect } from 'react';
 import { CartItem } from '@/services/api/cart';
 

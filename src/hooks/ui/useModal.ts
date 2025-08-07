@@ -1,4 +1,4 @@
-import { ModalContext } from '@/components/Modal/ModalProvider';
+import { ModalContext } from '@/components/modal/ModalProvider';
 import { useContext } from 'react';
 
 export default function useModal() {

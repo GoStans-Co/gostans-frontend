@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
-import Input from '@/components/Common/Input';
-import Button from '@/components/Common/Button';
+import Input from '@/components/common/Input';
+import Button from '@/components/common/Button';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 type PasswordComponentProps = {

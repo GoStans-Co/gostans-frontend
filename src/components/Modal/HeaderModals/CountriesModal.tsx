@@ -1,5 +1,5 @@
-import AtomicDropdownModal from '@/components/Common/AtomicDropdownElements';
-import { MenuItem, MenuItemIcon, MenuItemLabel, MenuItemText } from '@/components/Common/DropdownElemStyles';
+import AtomicDropdownModal from '@/components/common/AtomicDropdownElements';
+import { MenuItem, MenuItemIcon, MenuItemLabel, MenuItemText } from '@/components/common/DropdownElemStyles';
 
 type Country = {
     code: string;

@@ -2,7 +2,7 @@ import { createBrowserRouter, RouteObject } from 'react-router-dom';
 import React, { Suspense } from 'react';
 import NotFoundPage from '@/components/NotFound';
 import ProtectedRoute from '@/routes/protectedRoute';
-import MainLayout from '@/components/Layout/Layout';
+import MainLayout from '@/components/layout/Layout';
 
 const ComponentLoading = () => (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>

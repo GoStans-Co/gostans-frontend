@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import Input from '@/components/Common/Input';
+import Input from '@/components/common/Input';
 
 type ProfileContentProps = {
     userData: {

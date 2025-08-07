@@ -6,7 +6,7 @@ import FavoritesPage from '@/pages/MyPage/MyFavorites';
 import TripsPage from '@/pages/MyPage/MyTrip';
 import { useSearchParams } from 'react-router-dom';
 import useCookieAuth from '@/services/cache/cookieAuthService';
-import { ModalAlert } from '@/components/ModalPopup';
+import { ModalAlert } from '@/components/modalPopup';
 import { message } from 'antd';
 import { useApiServices } from '@/services/api';
 
@@ -86,7 +86,6 @@ export default function MyPage() {
         image: '',
         phone: '',
     });
-
 
     useEffect(() => {
         const fetchUserData = async () => {

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { theme } from '@/styles/theme';
 import { User, BookOpen, Heart, LogOut } from 'lucide-react';
 import useCookieAuth from '@/services/cache/cookieAuthService';
-import { ModalOverlay } from '@/components/Common/DropdownElemStyles';
+import { ModalOverlay } from '@/components/common/DropdownElemStyles';
 import { useApiServices } from '@/services/api';
 
 type UserProfileModalProps = {

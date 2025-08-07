@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Card from '@/components/Common/Card';
-import Button from '@/components/Common/Button';
-import Input from '@/components/Common/Input';
+import Card from '@/components/common/Card';
+import Button from '@/components/common/Button';
+import Input from '@/components/common/Input';
 import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
-import TripCard from '@/components/Card/TripCard';
-import OrderSummary from '@/components/Payment/OrderSummary';
+import TripCard from '@/components/card/TripCard';
+import OrderSummary from '@/components/payment/OrderSummary';
 import { EnterInfoStepProps, Participant } from '@/services/api/cart';
 
 const StepContainer = styled.div`

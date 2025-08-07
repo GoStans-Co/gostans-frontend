@@ -17,21 +17,21 @@ import {
     FaArrowRight,
 } from 'react-icons/fa';
 import { DatePicker, message } from 'antd';
-import Button from '@/components/Common/Button';
-import Card from '@/components/Common/Card';
+import Button from '@/components/common/Button';
+import Card from '@/components/common/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import { tourDetailsAtom } from '@/atoms/tours';
 import CopyLink from '@/components/CopyLink';
 import default_n1 from '@/assets/default/default_1.jpg';
 import default_n2 from '@/assets/default/default_2.jpg';
-import TourCard from '@/components/Tours/ToursCard';
+import TourCard from '@/components/tours/ToursCard';
 import { cartAtom } from '@/atoms/cart';
 import { useRecoilValue, useRecoilState, useSetRecoilState } from 'recoil';
 import useFavorite from '@/hooks/ui/useFavorite';
 import useCookieAuth from '@/services/cache/cookieAuthService';
 import useModal from '@/hooks/ui/useModal';
-import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
+import { ModalAlert, ModalAuth } from '@/components/modalPopup';
 import { TourDetailsResponse } from '@/services/api/tours';
 import { CartItem } from '@/services/api/cart';
 import { useApiServices } from '@/services/api';

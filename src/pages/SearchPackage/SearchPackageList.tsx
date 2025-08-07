@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaMapMarkerAlt, FaHeart, FaStar, FaChevronRight, FaChevronLeft } from 'react-icons/fa';
-import Button from '@/components/Common/Button';
-import Card from '@/components/Common/Card';
+import Button from '@/components/common/Button';
+import Card from '@/components/common/Card';
 import SearchBar from '@/components/SearchBar';
 import {
     useFilterActions,
@@ -13,12 +13,12 @@ import {
     useSearchFilters,
 } from '@/hooks/utils/useSearchActions';
 import FilterBar from '@/components/FilterBar';
-import NoDataFound from '@/components/Common/NoDataFound';
+import NoDataFound from '@/components/common/NoDataFound';
 import { motion } from 'framer-motion';
 import useFavorite from '@/hooks/ui/useFavorite';
 import useModal from '@/hooks/ui/useModal';
 import useCookieAuth from '@/services/cache/cookieAuthService';
-import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
+import { ModalAlert, ModalAuth } from '@/components/modalPopup';
 import { message } from 'antd';
 import { useApiServices } from '@/services/api';
 import { TourListResponse } from '@/services/api/tours';

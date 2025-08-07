@@ -6,10 +6,10 @@ import { FaSearch, FaMapMarkerAlt, FaPlane } from 'react-icons/fa';
 import { TopDestination } from '@/services/api/tours';
 import { useDestinationsCache } from '@/hooks/api/useDestinationCache';
 import { Link } from 'react-router-dom';
-import Tabs, { TabItem } from '@/components/Common/Tabs';
-import Input from '@/components/Common/Input';
-import SkeletonLoader from '@/components/Common/SkeletonLoader';
-import Button from '@/components/Common/Button';
+import Tabs, { TabItem } from '@/components/common/Tabs';
+import Input from '@/components/common/Input';
+import SkeletonLoader from '@/components/common/SkeletonLoader';
+import Button from '@/components/common/Button';
 
 type DestinationData = {
     id: string;

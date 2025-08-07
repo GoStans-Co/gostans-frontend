@@ -1,11 +1,11 @@
 import { theme } from '@/styles/theme';
 import React from 'react';
 import styled from 'styled-components';
-import Button from '@/components/Common/Button';
+import Button from '@/components/common/Button';
 import { CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 import { FaInfoCircle } from 'react-icons/fa';
 import { ConfirmationModalProps } from '@/types/common/modal';
-import CoreModalPopup from '@/components/ModalPopup/CoreModal/CoreModalPopup';
+import CoreModalPopup from '@/components/modalPopup/CoreModal/CoreModalPopup';
 
 type AlertType = 'info' | 'success' | 'warning' | 'error';
 

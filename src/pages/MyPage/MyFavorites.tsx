@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Button from '@/components/Common/Button';
+import Button from '@/components/common/Button';
 import { Heart, HeartOff } from 'lucide-react';
-import Card from '@/components/Common/Card';
+import Card from '@/components/common/Card';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { wishlistAtom } from '@/atoms/wishlist';
 import { message } from 'antd';

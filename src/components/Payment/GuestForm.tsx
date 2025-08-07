@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Input from '@/components/Common/Input';
+import Input from '@/components/common/Input';
 import { useValidation } from '@/hooks/utils/useValidation';
 import { COUNTRY_CODES } from '@/constants/countryCodes';
 

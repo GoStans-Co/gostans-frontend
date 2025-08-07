@@ -2,8 +2,8 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { message } from 'antd';
 import { Send, Mail, Phone, MapPin } from 'lucide-react';
-import Input from '@/components/Common/Input';
-import Button from '@/components/Common/Button';
+import Input from '@/components/common/Input';
+import Button from '@/components/common/Button';
 
 const ContactSection = styled.section`
     padding: ${({ theme }) => theme.spacing['5xl']} ${({ theme }) => theme.spacing['4xl']};

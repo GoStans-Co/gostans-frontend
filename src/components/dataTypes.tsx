@@ -1,4 +1,4 @@
-import { NoDataType } from '@/components/Common/NoDataFound';
+import { NoDataType } from '@/components/common/NoDataFound';
 import { FaSearch, FaExclamationTriangle, FaInbox, FaMapMarkerAlt, FaCalendarAlt } from 'react-icons/fa';
 
 export default function getDefaultContent(type: NoDataType) {

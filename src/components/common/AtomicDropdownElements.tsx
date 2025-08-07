@@ -1,5 +1,5 @@
 import React from 'react';
-import { ModalOverlay, DropdownModal, ModalContent } from '@/components/Common/DropdownElemStyles';
+import { ModalOverlay, DropdownModal, ModalContent } from '@/components/common/DropdownElemStyles';
 import useDropdownModal from '@/hooks/ui/useDropdownModal';
 
 type AtomicDropdownModalProps = {

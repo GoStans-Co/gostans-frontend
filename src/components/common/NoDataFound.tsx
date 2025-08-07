@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import getDefaultContent from '@/components/dataTypes';
-import Button from '@/components/Common/Button';
+import Button from '@/components/common/Button';
 
 export type NoDataType = 'search' | 'error' | 'empty' | 'location' | 'date' | 'general';
 

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import TourCard from '@/components/Tours/ToursCard';
-import Button from '@/components/Common/Button';
+import TourCard from '@/components/tours/ToursCard';
+import Button from '@/components/common/Button';
 import defaultImage from '@/assets/default/default_1.jpg';
-import { TabItem } from '@/components/Common/Tabs';
-import Tabs from '@/components/Common/Tabs';
+import { TabItem } from '@/components/common/Tabs';
+import Tabs from '@/components/common/Tabs';
 import { TourPropsResponse } from '@/services/api/tours';
 import useTrendingTours from '@/hooks/api/useTrendingTours';
 

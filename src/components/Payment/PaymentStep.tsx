@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import Button from '@/components/Common/Button';
-import Input from '@/components/Common/Input';
+import Button from '@/components/common/Button';
+import Input from '@/components/common/Input';
 import { useValidation } from '@/hooks/utils/useValidation';
 import securitySvg from '@/assets/cards/security.svg';
 import masterCard from '@/assets/cards/mastercard.svg';
 import visaCard from '@/assets/cards/visa.svg';
 import paypalIcon from '@/assets/cards/paypal.svg';
-import GuestForm from '@/components/Payment/GuestForm';
+import GuestForm from '@/components/payment/GuestForm';
 import { BillingInfo, CardInfo } from '@/services/api/checkout/types';
 
 type PaymentStepUIProps = {

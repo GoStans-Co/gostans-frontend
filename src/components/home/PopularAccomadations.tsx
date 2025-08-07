@@ -1,8 +1,8 @@
 import styled from 'styled-components';
 import { AccommodationProps } from '@/types/index';
-import Card from '@/components/Common/Card';
+import Card from '@/components/common/Card';
 import { message } from 'antd';
-import Button from '@/components/Common/Button';
+import Button from '@/components/common/Button';
 
 const SectionContainer = styled.section`
     padding-top: 2rem;

@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useApiServices } from '@/services/api';
 import { TourListResponse } from '@/services/api/tours/types';
-import TourCard from '@/components/Tours/ToursCard';
-import Button from '@/components/Common/Button';
-import SkeletonLoader from '@/components/Common/SkeletonLoader';
+import TourCard from '@/components/tours/ToursCard';
+import Button from '@/components/common/Button';
+import SkeletonLoader from '@/components/common/SkeletonLoader';
 
 const PageContainer = styled.div`
     min-height: 100vh;

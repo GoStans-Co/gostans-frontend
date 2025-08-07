@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useApiServices } from '@/services/api';
-import PopularDestinations from '@/components/Home/PopularDestinations';
+import PopularDestinations from '@/components/home/PopularDestinations';
 import CityExpertSection from '@/pages/Home/CityExpert';
 import NewsletterSection from '@/pages/Home/NewsLetter';
-import PopularAccommodations from '@/components/Home/PopularAccomadations';
-import FirstHome from '@/components/Home/FirstHome';
+import PopularAccommodations from '@/components/home/PopularAccomadations';
+import FirstHome from '@/components/home/FirstHome';
 import { accommodations } from '@/data/mockData';
-import TrendingTours from '@/components/Home/TrendingTours';
+import TrendingTours from '@/components/home/TrendingTours';
 import { useDestinationsCache } from '@/hooks/api/useDestinationCache';
 import { TopDestination } from '@/services/api/tours';
 import useTrendingTours from '@/hooks/api/useTrendingTours';

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { FaEnvelope, FaArrowLeft, FaKey, FaEye, FaEyeSlash } from 'react-icons/fa';
-import Button from '@/components/Common/Button';
+import Button from '@/components/common/Button';
 
 type ForgotPasswordStep = 'email' | 'otp' | 'reset';
 

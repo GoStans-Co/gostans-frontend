@@ -1,10 +1,10 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import DestinationCard, { DestinationProps } from '@/components/Destinations/DestinationCard';
+import DestinationCard, { DestinationProps } from '@/components/destinations/DestinationCard';
 import { useState } from 'react';
-import TabContainer, { TabItem } from '@/components/Common/Tabs';
+import TabContainer, { TabItem } from '@/components/common/Tabs';
 import { TopDestination } from '@/services/api/tours';
-import SkeletonLoader from '@/components/Common/SkeletonLoader';
+import SkeletonLoader from '@/components/common/SkeletonLoader';
 
 type PopularDestinationsProps = {
     destinations: DestinationProps[];

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { FaMapMarkerAlt, FaCalendarAlt, FaSearch } from 'react-icons/fa';
 import { DatePicker, Select } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
-import Button from '@/components/Common/Button';
+import Button from '@/components/common/Button';
 import dayjs from 'dayjs';
 import { COUNTRY_WITH_CITIES } from '@/constants/countryWithCities';
 

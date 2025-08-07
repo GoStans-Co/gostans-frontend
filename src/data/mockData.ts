@@ -1,4 +1,4 @@
-import { DestinationProps } from '@/components/Destinations/DestinationCard';
+import { DestinationProps } from '@/components/destinations/DestinationCard';
 import { AccommodationProps, TourPropsMock } from '../types';
 
 export const tours: TourPropsMock[] = [
