@@ -52,6 +52,11 @@ const ButtonsContainer = styled.div`
     }
 `;
 
+/**
+ * NotFoundPage - Atom Component
+ * This component is used to display a 404 Not Found page.
+ * It includes a large error code, title, description, and buttons to navigate back to the homepage or explore destinations.
+ */
 export default function NotFoundPage() {
     return (
         <NotFoundContainer>

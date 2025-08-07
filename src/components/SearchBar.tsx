@@ -5,6 +5,7 @@ import { DatePicker, Select } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import Button from '@/components/Common/Button';
 import dayjs from 'dayjs';
+import { COUNTRY_WITH_CITIES } from '@/constants/countryWithCities';
 
 const { RangePicker } = DatePicker;
 
@@ -282,33 +283,17 @@ const SearchButton = styled(Button)`
     }
 `;
 
-const regions = [
-    {
-        name: 'Uzbekistan',
-        cities: ['Tashkent', 'Samarkand', 'Bukhara', 'Khiva', 'Fergana'],
-    },
-    {
-        name: 'Kazakhstan',
-        cities: ['Almaty', 'Nur-Sultan', 'Shymkent', 'Aktobe', 'Taraz'],
-    },
-    {
-        name: 'Kyrgyzstan',
-        cities: ['Bishkek', 'Osh', 'Jalal-Abad', 'Karakol', 'Tokmok'],
-    },
-    {
-        name: 'Tajikistan',
-        cities: ['Dushanbe', 'Khujand', 'Kulob', 'Qurghonteppa', 'Istaravshan'],
-    },
-    {
-        name: 'Turkmenistan',
-        cities: ['Ashgabat', 'Turkmenbashi', 'Dashoguz', 'Mary', 'Balkanabat'],
-    },
-    {
-        name: 'Afghanistan',
-        cities: ['Kabul', 'Kandahar', 'Herat', 'Mazar-i-Sharif', 'Jalalabad'],
-    },
-];
+const regions = COUNTRY_WITH_CITIES.map((region) => ({
+    name: region.name,
+    cities: region.cities.map((city) => city).sort((a, b) => a.localeCompare(b)),
+}));
 
+/**
+ * SearchBar - Molecule Component
+ * This component is used to search for tours based on destination and dates.
+ * It includes a dropdown for selecting a destination, a date range picker, and a search button.
+ * It also handles the submission of the search form and the selection of destination and dates.
+ */
 export default function SearchBar({ data, handlers = {} }: SearchBarProps) {
     const { destination, dates } = data;
     const { onDestinationChange, onDatesChange, onSubmit } = handlers;
