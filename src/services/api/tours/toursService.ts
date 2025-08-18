@@ -2,6 +2,7 @@ import {
     TopDestinationsResponse,
     TourDetailsResponse,
     TourListResponse,
+    TourLocationUpdateResponseData,
     ToursListApiResponse,
 } from '@/services/api/tours/types';
 import { useFetch } from '@/hooks/api/useFetch';
@@ -144,6 +145,31 @@ export const useToursService = () => {
                     return apiResponse;
                 } catch (error) {
                     console.error('Trending tours fetch error:', error);
+                    throw error;
+                }
+            },
+
+            updateTourLocationData: async (
+                tourUuid: string,
+                locations: Record<number, { latitude: number; longitude: number }>,
+            ): Promise<ApiResponse<TourLocationUpdateResponseData>> => {
+                try {
+                    const response = await fetchData({
+                        url: `/tours/update-tour-location/`,
+                        method: 'POST',
+                        data: {
+                            tour_uuid: tourUuid,
+                            days: locations,
+                        },
+                    });
+
+                    return {
+                        data: response.data || response,
+                        statusCode: response.statusCode || 200,
+                        message: response.message || 'Location updated successfully',
+                    };
+                } catch (error) {
+                    console.error('Error updating tour location:', error);
                     throw error;
                 }
             },

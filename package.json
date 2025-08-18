@@ -12,11 +12,13 @@
     "dependencies": {
         "@paypal/react-paypal-js": "^8.8.3",
         "@react-oauth/google": "^0.12.2",
+        "@types/mapbox-gl": "^3.4.1",
         "antd": "^5.25.4",
         "axios": "^1.9.0",
         "firebase-tools": "^14.2.2",
         "framer-motion": "^12.16.0",
         "lucide-react": "^0.509.0",
+        "mapbox-gl": "^3.14.0",
         "react": "^18.3.1",
         "react-cookie": "^8.0.1",
         "react-dom": "^18.3.1",

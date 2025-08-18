@@ -36,6 +36,7 @@ import { TourDetailsResponse } from '@/services/api/tours';
 import { CartItem } from '@/services/api/cart';
 import { useApiServices } from '@/services/api';
 import useTrendingTours from '@/hooks/api/useTrendingTours';
+import MapBox from '@/pages/SearchPackage/MapBox';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -1298,9 +1299,38 @@ export default function SearchPackageDetails() {
 
                             <Section id="map">
                                 <h2>Location</h2>
-                                <MapContainer>
-                                    <p>Interactive Map Component</p>
-                                </MapContainer>
+                                {tour.itineraries && tour.itineraries.length > 0 ? (
+                                    <MapBox
+                                        key={tour.uuid + '-' + tour.itineraries?.length}
+                                        itineraries={tour.itineraries.map((item) => ({
+                                            dayNumber: item.dayNumber,
+                                            dayTitle: item.dayTitle,
+                                            description: item.description,
+                                            locationName: item.locationName || '',
+                                            latitude: item.latitude,
+                                            longitude: item.longitude,
+                                        }))}
+                                        tourUuid={tour.uuid}
+                                        height="500px"
+                                    />
+                                ) : (
+                                    <MapContainer>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                height: '200px',
+                                                color: '#666666',
+                                                fontFamily: 'Inter, sans-serif',
+                                            }}
+                                        >
+                                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗺️</div>
+                                            <div>No itinerary available</div>
+                                        </div>
+                                    </MapContainer>
+                                )}
                             </Section>
                             <Section>
                                 <ReviewsSection>

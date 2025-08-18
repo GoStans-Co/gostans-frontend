@@ -130,3 +130,10 @@ export type TopDestinationsResponse = {
     message: string;
     data: TopDestination[];
 };
+
+export type TourLocationUpdateResponseData = {
+    success: boolean;
+    updated_days: string[];
+    tour_uuid: string;
+    message?: string;
+};

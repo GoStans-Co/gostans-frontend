@@ -574,7 +574,6 @@ export default function Header() {
                                     fontWeight: '500',
                                 }}
                             >
-                                <LoginOutlined />
                                 Login
                             </Button>
                         </AuthButtons>
