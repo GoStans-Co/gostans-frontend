@@ -25,7 +25,7 @@ export type AccommodationProps = {
     description: string;
     price: number;
     image: string;
-    location?: string;
+    location: string;
     rating?: number;
 };
 
