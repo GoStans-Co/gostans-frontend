@@ -148,9 +148,19 @@ export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
         }
     };
 
-    const handleGoogleError = () => {
-        console.error('Google authentication failed');
-        alert('Google sign-in failed. Please try again.');
+    const handleManualGoogleLogin = () => {
+        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+        const redirectUri = `${window.location.origin}`;
+
+        const googleAuthUrl =
+            `https://accounts.google.com/o/oauth2/v2/auth?` +
+            `client_id=${clientId}&` +
+            `redirect_uri=${redirectUri}&` +
+            `response_type=code&` +
+            `scope=openid email profile&` +
+            `state=google_login`;
+
+        window.location.href = googleAuthUrl;
     };
 
     return (
@@ -158,7 +168,10 @@ export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
             <GoogleLoginWrapper>
                 <GoogleLogin
                     onSuccess={handleGoogleSuccess}
-                    onError={handleGoogleError}
+                    onError={() => {
+                        console.error('Google auth failed, trying manual flow');
+                        handleManualGoogleLogin();
+                    }}
                     useOneTap={false}
                     type="icon"
                     theme="outline"
