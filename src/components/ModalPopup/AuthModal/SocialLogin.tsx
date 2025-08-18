@@ -150,7 +150,7 @@ export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
 
     const handleManualGoogleLogin = () => {
         const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-        const redirectUri = `${window.location.origin}`;
+        const redirectUri = 'https://gostans.com/oauth2/redirect';
 
         const googleAuthUrl =
             `https://accounts.google.com/o/oauth2/v2/auth?` +
