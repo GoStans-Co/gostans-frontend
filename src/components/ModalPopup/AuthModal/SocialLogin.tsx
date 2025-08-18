@@ -1,7 +1,6 @@
 import { FaApple, FaFacebook, FaTelegram } from 'react-icons/fa';
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
-import { CredentialResponse, GoogleLogin } from '@react-oauth/google';
 
 type SocialProvider = 'google' | 'apple' | 'facebook' | 'telegram';
 
@@ -22,7 +21,7 @@ const SocialLoginContainer = styled.div`
     }
 `;
 
-const SocialLoginButton = styled.button<{ provider: Exclude<SocialProvider, 'google'> }>`
+const SocialLoginButton = styled.button<{ provider: SocialProvider }>`
     display: flex;
     align-items: center;
     justify-content: center;
@@ -38,6 +37,8 @@ const SocialLoginButton = styled.button<{ provider: Exclude<SocialProvider, 'goo
     &:hover {
         background: ${(props) => {
             switch (props.provider) {
+                case 'google':
+                    return '#fef7f7';
                 case 'apple':
                     return '#f2f2f2';
                 case 'facebook':
@@ -70,119 +71,57 @@ const SocialLoginButton = styled.button<{ provider: Exclude<SocialProvider, 'goo
     }
 `;
 
-const GoogleLoginWrapper = styled.div`
-    position: relative;
-    width: 56px;
-    height: 56px;
-
-    > div {
-        opacity: 0;
-        width: 56px !important;
-        height: 56px !important;
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 9;
-        cursor: pointer;
-
-        > div {
-            width: 100% !important;
-            height: 100% !important;
-
-            iframe {
-                width: 100% !important;
-                height: 100% !important;
-            }
-        }
-    }
-
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 56px;
-        height: 56px;
-        border-radius: 19px;
-        border: 1px solid ${theme.colors.border};
-        background: ${theme.colors.background};
-        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
-        transition: ${theme.transitions.default};
-        z-index: 1;
-        pointer-events: none;
-    }
-
-    &:hover::before {
-        background: #fef7f7;
-        transform: translateY(-2px);
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    &::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 28px;
-        height: 28px;
-        background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=');
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        z-index: 1;
-        pointer-events: none;
-    }
+const GoogleIcon = styled.div`
+    width: 28px;
+    height: 28px;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIj48cGF0aCBkPSJNMTcuNiA5LjJsLS4xLTEuOEg5djMuNGg0LjhDMTMuNiAxMiAxMyAxMyAxMiAxMy42djIuMmgzYTguOCA4LjggMCAwIDAgMi42LTYuNnoiIGZpbGw9IiM0Mjg1RjQiIGZpbGwtcnVsZT0ibm9uemVybyIvPjxwYXRoIGQ9Ik05IDE4YzIuNCAwIDQuNS0uOCA2LTIuMmwtMy0yLjJhNS40IDUuNCAwIDAgMS04LTIuOUgxVjEzYTkgOSAwIDAgMCA4IDV6IiBmaWxsPSIjMzRBODUzIiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNNCAxMC43YTUuNCA1LjQgMCAwIDEgMC0zLjRWNUgxYTkgOSAwIDAgMCAwIDhsMy0yLjN6IiBmaWxsPSIjRkJCQzA1IiBmaWxsLXJ1bGU9Im5vbnplcm8iLz48cGF0aCBkPSJNOSAzLjZjMS4zIDAgMi41LjQgMy40IDEuM0wxNSAyLjNBOSA5IDAgMCAwIDEgNWwzIDIuNGE1LjQgNS40IDAgMCAxIDUtMy43eiIgZmlsbD0iI0VBNDMzNSIgZmlsbC1ydWxlPSJub256ZXJvIi8+PHBhdGggZD0iTTAgMGgxOHYxOEgweiIvPjwvZz48L3N2Zz4=');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 `;
 
 export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
-    const handleSocialLogin = (provider: SocialProvider) => {
-        onSocialLogin(provider);
-    };
-
-    const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
-        if (credentialResponse.credential) {
-            onSocialLogin('google', credentialResponse.credential);
-        } else {
-            console.error('Google authentication failed: No credential received');
-        }
-    };
-
-    const handleManualGoogleLogin = () => {
+    const handleGoogleLogin = () => {
         const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+        if (!clientId) {
+            console.error('Google Client ID not found');
+            return;
+        }
+
         const redirectUri = 'https://gostans.com/oauth2/redirect';
 
-        const googleAuthUrl =
-            `https://accounts.google.com/o/oauth2/v2/auth?` +
-            `client_id=${clientId}&` +
-            `redirect_uri=${redirectUri}&` +
-            `response_type=code&` +
-            `scope=openid email profile&` +
-            `state=google_login`;
+        const params = new URLSearchParams({
+            client_id: clientId,
+            redirect_uri: redirectUri,
+            response_type: 'code',
+            scope: 'openid email profile',
+            state: 'google_login',
+            access_type: 'online',
+            prompt: 'select_account',
+        });
 
-        window.location.href = googleAuthUrl;
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+        window.location.href = authUrl;
+    };
+
+    const handleSocialLogin = (provider: SocialProvider) => {
+        if (provider === 'google') {
+            handleGoogleLogin();
+        } else {
+            onSocialLogin(provider);
+        }
     };
 
     return (
         <SocialLoginContainer>
-            <GoogleLoginWrapper>
-                <GoogleLogin
-                    onSuccess={handleGoogleSuccess}
-                    onError={() => {
-                        console.error('Google auth failed, trying manual flow');
-                        handleManualGoogleLogin();
-                    }}
-                    useOneTap={false}
-                    type="icon"
-                    theme="outline"
-                    size="large"
-                    shape="circle"
-                    width={56}
-                    auto_select={false}
-                    cancel_on_tap_outside={false}
-                    use_fedcm_for_prompt={false}
-                />
-            </GoogleLoginWrapper>
+            <SocialLoginButton
+                provider="google"
+                onClick={() => handleSocialLogin('google')}
+                aria-label="Sign in with Google"
+            >
+                <GoogleIcon />
+            </SocialLoginButton>
 
             <SocialLoginButton
                 provider="apple"

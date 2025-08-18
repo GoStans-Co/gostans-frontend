@@ -3,6 +3,7 @@ import React, { Suspense } from 'react';
 import NotFoundPage from '@/components/NotFound';
 import ProtectedRoute from '@/routes/protectedRoute';
 import MainLayout from '@/components/layout/Layout';
+import OAuthRedirect from '@/pages/OAuthRedirect';
 
 const ComponentLoading = () => (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -32,6 +33,10 @@ const routes: RouteObject[] = [
             {
                 index: true,
                 element: withSuspense(React.lazy(() => import('@/pages/Home'))),
+            },
+            {
+                path: '/oauth2/redirect',
+                element: <OAuthRedirect />,
             },
             {
                 path: 'top-destinations',

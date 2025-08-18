@@ -7,7 +7,6 @@ import { RouterProvider } from 'react-router-dom';
 import { ModalProvider } from '@/components/Modal';
 import { RecoilRoot } from 'recoil';
 import { CookiesProvider } from 'react-cookie';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { router } from '@/routes/routes';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import AuthProvider from '@/context/AuthProvider';
@@ -20,21 +19,19 @@ const initialOptions = {
 
 export default function App() {
     return (
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-            <CookiesProvider>
-                <RecoilRoot>
-                    <AuthProvider>
-                        <ThemeProvider theme={theme}>
-                            <ModalProvider>
-                                <GlobalStyles />
-                                <PayPalScriptProvider options={initialOptions}>
-                                    <RouterProvider router={router} />
-                                </PayPalScriptProvider>
-                            </ModalProvider>
-                        </ThemeProvider>
-                    </AuthProvider>
-                </RecoilRoot>
-            </CookiesProvider>
-        </GoogleOAuthProvider>
+        <CookiesProvider>
+            <RecoilRoot>
+                <AuthProvider>
+                    <ThemeProvider theme={theme}>
+                        <ModalProvider>
+                            <GlobalStyles />
+                            <PayPalScriptProvider options={initialOptions}>
+                                <RouterProvider router={router} />
+                            </PayPalScriptProvider>
+                        </ModalProvider>
+                    </ThemeProvider>
+                </AuthProvider>
+            </RecoilRoot>
+        </CookiesProvider>
     );
 }
