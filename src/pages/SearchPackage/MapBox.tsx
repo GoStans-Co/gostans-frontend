@@ -9,8 +9,6 @@ import MapPopup from '@/components/Map/MapPopup';
 import MapMarker from '@/components/Map/MapMarker';
 import { theme } from '@/styles/theme';
 
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
-
 type EnhancedMapComponentProps = {
     itineraries: ItineraryItem[];
     tourUuid: string;
@@ -188,6 +186,16 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
     const [processedItineraries, setProcessedItineraries] = useState<ItineraryItem[]>([]);
 
     const { geocodeLocation } = useMapboxGeocoding();
+
+    const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+
+    if (!accessToken) {
+        console.error('Mapbox access token is missing');
+        setError('Map configuration error: Access token not found');
+        return;
+    }
+
+    mapboxgl.accessToken = accessToken;
 
     const processAllItineraries = useCallback(async () => {
         if (!itineraries || itineraries.length === 0) {
