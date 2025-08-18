@@ -26,6 +26,11 @@ jobs:
 
             - name: 🛠️ Build project
               run: pnpm build
+              env:
+                  VITE_MAPBOX_ACCESS_TOKEN: ${{ secrets.VITE_MAPBOX_ACCESS_TOKEN }}
+                  VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+                  VITE_PAYPAL_CLIENT_ID: ${{ secrets.VITE_PAYPAL_CLIENT_ID }}
+                  VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
             - name: 🚀 Deploy to Firebase Hosting
               uses: FirebaseExtended/action-hosting-deploy@v0

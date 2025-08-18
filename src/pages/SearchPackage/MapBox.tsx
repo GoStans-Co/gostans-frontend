@@ -189,12 +189,6 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
 
     const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-    if (!accessToken) {
-        console.error('Mapbox access token is missing');
-        setError('Map configuration error: Access token not found');
-        return;
-    }
-
     mapboxgl.accessToken = accessToken;
 
     const processAllItineraries = useCallback(async () => {
