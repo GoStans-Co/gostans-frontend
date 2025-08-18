@@ -150,6 +150,7 @@ export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
 
     const handleGoogleError = () => {
         console.error('Google authentication failed');
+        alert('Google sign-in failed. Please try again.');
     };
 
     return (
@@ -164,6 +165,9 @@ export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
                     size="large"
                     shape="circle"
                     width={56}
+                    auto_select={false}
+                    cancel_on_tap_outside={false}
+                    use_fedcm_for_prompt={false}
                 />
             </GoogleLoginWrapper>
 
