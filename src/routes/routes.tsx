@@ -39,6 +39,10 @@ const routes: RouteObject[] = [
                 element: <OAuthRedirect />,
             },
             {
+                path: 'become-partner',
+                element: withSuspense(React.lazy(() => import('@/pages/Partner/BecomePartner'))),
+            },
+            {
                 path: 'top-destinations',
                 element: withSuspense(React.lazy(() => import('@/pages/Home/Destinations/TopDestinationsList'))),
             },

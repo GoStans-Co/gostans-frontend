@@ -11,6 +11,7 @@ import { useMemo } from 'react';
 import { useRecoilState } from 'recoil';
 import { CACHE_DURATION } from '@/services/api/auth/authService';
 import { tourDetailsAtom, toursCacheStatusAtom, toursDataAtom } from '@/atoms/tours';
+import { countriesWithCitiesAtom, CountriesWithCitiesState, CountryWithCities } from '@/atoms/countryWithCities';
 
 export const isCacheValid = (lastFetch: number | null): boolean => {
     if (!lastFetch) return false;
@@ -27,6 +28,8 @@ export const useToursService = () => {
     const [toursData, setToursData] = useRecoilState(toursDataAtom);
     const [cacheStatus, setCacheStatus] = useRecoilState(toursCacheStatusAtom);
     const [tourDetailsCache, setTourDetailsCache] = useRecoilState(tourDetailsAtom);
+    const [countriesWithCities, setCountriesWithCities] =
+        useRecoilState<CountriesWithCitiesState>(countriesWithCitiesAtom);
 
     return useMemo(
         () => ({
@@ -230,6 +233,46 @@ export const useToursService = () => {
                     return apiResponse;
                 } catch (error) {
                     console.error('Tours by destination fetch error:', error);
+                    throw error;
+                }
+            },
+
+            getCountriesWithCities: async (): Promise<ApiResponse<CountryWithCities[]>> => {
+                const now = Date.now();
+                const FIVE_HOURS = 5 * 60 * 60 * 1000;
+
+                if (
+                    countriesWithCities.data &&
+                    countriesWithCities.lastFetch &&
+                    now - countriesWithCities.lastFetch < FIVE_HOURS
+                ) {
+                    return {
+                        data: countriesWithCities.data,
+                        statusCode: 200,
+                        message: 'Countries with cities retrieved from cache',
+                    };
+                }
+
+                try {
+                    const response = await fetchData({
+                        url: '/location/countries-with-cities/',
+                        method: 'GET',
+                    });
+
+                    const freshData: CountryWithCities[] = response.data?.countryData || [];
+
+                    setCountriesWithCities({
+                        data: freshData,
+                        lastFetch: now,
+                    });
+
+                    return {
+                        data: freshData,
+                        statusCode: response.statusCode || 200,
+                        message: response.message || 'Countries with cities retrieved successfully',
+                    };
+                } catch (error) {
+                    console.error('Countries with cities fetch error:', error);
                     throw error;
                 }
             },

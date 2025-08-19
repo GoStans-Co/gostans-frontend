@@ -343,6 +343,41 @@ const LogoutButtonContainer = styled.div`
     width: 100%;
 `;
 
+const PartnerLink = styled(Link)`
+    color: ${theme.colors.secondary};
+    font-size: ${theme.fontSizes.sm};
+    font-weight: ${theme.typography.fontWeight.medium};
+    text-decoration: none;
+    padding: 0.5rem 0;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 0;
+        left: 50%;
+        background-color: ${({ theme }) => theme.colors.primary};
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+    }
+
+    &:hover::after {
+        width: 100%;
+    }
+
+    &.active::after {
+        width: 100%;
+    }
+
+    ${theme.responsive.mobile} {
+        display: none;
+    }
+`;
+
 export default function Header() {
     const location = useLocation();
     const { openModal, closeModal } = useModal();
@@ -518,6 +553,7 @@ export default function Header() {
                 </Nav>
 
                 <RightSection>
+                    <PartnerLink to="/become-partner">Become a Partner</PartnerLink>
                     <LanguageSelector ref={currencyRef} onClick={() => setShowCurrency(true)} isActive={showCurrency}>
                         <FaMoneyBill style={{ width: '18px', height: '18px' }} />
                         <span>{selectedCurrency.code}</span>
@@ -621,6 +657,15 @@ export default function Header() {
                                 label: 'Trending Tours',
                                 onClick: () => {
                                     navigate('/trendingTours');
+                                    setMobileMenuOpen(false);
+                                },
+                            },
+                            {
+                                key: '/become-partner',
+                                icon: <UserOutlined />,
+                                label: 'Become a Partner',
+                                onClick: () => {
+                                    navigate('/become-partner');
                                     setMobileMenuOpen(false);
                                 },
                             },

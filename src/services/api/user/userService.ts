@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useFetch } from '@/hooks/api/useFetch';
 import { useUserProfileCache } from '@/hooks/api/useProfileCache';
 import useCookieAuth from '@/services/cache/cookieAuthService';
-import { ChangePasswordData, UpdateUserData, UserProfile } from '@/services/api/user/types';
+import { BecomePartnersData, ChangePasswordData, UpdateUserData, UserProfile } from '@/services/api/user/types';
 import { Result } from '@/services/api/auth/types';
 
 export const CACHE_DURATION = 5 * 60 * 1000;
@@ -198,6 +198,28 @@ export const useUserService = () => {
             };
         }
     };
+
+    const registerPartner = async (data: BecomePartnersData): Promise<Result<void, string>> => {
+        try {
+            await fetchData({
+                url: '/user/register-partner/',
+                method: 'POST',
+                data,
+            });
+
+            return {
+                success: true,
+                data: undefined,
+            };
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            return {
+                success: false,
+                error: errorResponse.message || 'Failed to become partner',
+            };
+        }
+    };
+
     return useMemo(
         () => ({
             getUserProfile,
@@ -207,6 +229,7 @@ export const useUserService = () => {
             uploadProfileImage,
             verifyEmail,
             resendEmailVerification,
+            registerPartner,
             userProfile,
         }),
         [fetchData, userProfile, updateUserProfileCache, clearProfileCache, removeAuthCookie],

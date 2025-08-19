@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import Button from '@/components/common/Button';
+import { Link } from 'react-router-dom';
 
 const ExpertSectionContainer = styled.section`
     display: flex;
@@ -94,7 +95,7 @@ export default function CityExpertSection() {
                 <ExpertDescription>Join 2000+ locals & 1200+ contributors from 3000 cities</ExpertDescription>
                 <ButtonWrapper>
                     <Button variant="secondary" size="xs">
-                        Become a Local Expert
+                        <Link to="become-partner">Become a Local Expert</Link>
                     </Button>
                 </ButtonWrapper>
             </ExpertContent>

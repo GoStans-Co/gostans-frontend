@@ -32,3 +32,15 @@ export type ChangePasswordData = {
     new_password: string;
     confirm_password: string;
 };
+
+export type BecomePartnersData = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    country: number;
+    city: number;
+    about: string;
+    password: string;
+    message: string;
+};
