@@ -52,9 +52,8 @@ export type SocialLoginResponse = ApiResponse<SocialAuthResponse>;
 
 export type SocialLoginData = {
     provider: 'google' | 'facebook' | 'apple' | 'telegram';
-    id_token?: string;
-    authorization_code?: string;
-    redirect_uri?: string;
+    authorization_code: string;
+    redirect_uri: string;
 };
 
 export type RefreshTokenRequest = {

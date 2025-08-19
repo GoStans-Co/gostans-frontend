@@ -8,7 +8,7 @@ import {
     CartItemResponse,
     RemoveFromCartResponse,
 } from '@/services/api/cart/types';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useRecoilState } from 'recoil';
 import { cartAtom } from '@/atoms/cart';
 import useCookieAuth from '@/services/cache/cookieAuthService';
@@ -22,6 +22,12 @@ export const useCartService = () => {
     const { execute: fetchData } = useFetch();
     const [cart, setCart] = useRecoilState(cartAtom);
     const { isAuthenticated } = useCookieAuth();
+
+    const syncStatus = useRef({
+        isInProgress: false,
+        lastSyncTime: 0,
+        SYNC_COOLDOWN: 3000,
+    });
 
     const mapApiToCartItem = (apiItem: ApiCartItem): CartItem => {
         return {
@@ -45,7 +51,20 @@ export const useCartService = () => {
     };
 
     const syncCartOnLogin = async (): Promise<void> => {
+        const now = Date.now();
+
+        if (syncStatus.current.isInProgress) {
+            return;
+        }
+
+        if (now - syncStatus.current.lastSyncTime < syncStatus.current.SYNC_COOLDOWN) {
+            return;
+        }
+
         try {
+            syncStatus.current.isInProgress = true;
+            syncStatus.current.lastSyncTime = now;
+
             const serverCartResponse = await getCartList();
             const serverCart = serverCartResponse.data?.data || [];
 
@@ -61,7 +80,7 @@ export const useCartService = () => {
                             quantity: localItem.quantity,
                         });
                     } catch (error) {
-                        console.log('Item already exists on server or failed to add');
+                        console.error('Item already exists on server or failed to add');
                     }
                 }
             }
@@ -72,6 +91,8 @@ export const useCartService = () => {
             setCart(mappedCart);
         } catch (error) {
             console.error('Error syncing cart on login:', error);
+        } finally {
+            syncStatus.current.isInProgress = false;
         }
     };
 
@@ -168,6 +189,12 @@ export const useCartService = () => {
     const clearCartOnLogout = () => {
         setCart([]);
         localStorage.removeItem('cart-storage');
+
+        syncStatus.current = {
+            isInProgress: false,
+            lastSyncTime: 0,
+            SYNC_COOLDOWN: 3000,
+        };
     };
 
     return useMemo(
