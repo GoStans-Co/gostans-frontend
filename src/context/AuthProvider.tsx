@@ -25,6 +25,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userProfile, setUserProfile] = useState<UserProfile>();
+    const [hasInitializedCart, setHasInitializedCart] = useState(false);
 
     useEffect(() => {
         const initializeAuth = async () => {
@@ -39,8 +40,13 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                         /* we try to refresh token to verify it is still valid */
                         await auth.refreshToken();
                         setIsAuthenticated(true);
-                        /* then sync cart when user is authenticated */
-                        await syncCartOnLogin();
+
+                        /* then sync cart when user is authenticated - but only once per session */
+                        if (!hasInitializedCart) {
+                            await syncCartOnLogin();
+                            setHasInitializedCart(true);
+                        }
+
                         const profile = await user.getUserProfile();
                         if (profile.success) {
                             setUserProfile(profile.data);
@@ -48,12 +54,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                     } catch (error) {
                         console.error('Token refresh failed during initialization:', error);
                         setIsAuthenticated(false);
+                        setHasInitializedCart(false);
                     }
                 } else {
                     setIsAuthenticated(false);
+                    setHasInitializedCart(false);
                 }
             } else {
                 setIsAuthenticated(false);
+                setHasInitializedCart(false);
             }
 
             setIsLoading(false);
@@ -68,6 +77,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                     auth.refreshToken().catch(() => {
                         console.error('Automatic token refresh failed');
                         setIsAuthenticated(false);
+                        setHasInitializedCart(false);
                     });
                 }
             },
@@ -76,6 +86,22 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
         return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        const handleAuthChange = async () => {
+            /* we only run if auth state changed to true and we haven't synced yet */
+            if (isAuthenticated && !hasInitializedCart && !isLoading) {
+                try {
+                    await syncCartOnLogin();
+                    setHasInitializedCart(true);
+                } catch (error) {
+                    console.error('Cart sync failed after authentication change:', error);
+                }
+            }
+        };
+
+        handleAuthChange();
+    }, [isAuthenticated, hasInitializedCart, isLoading]);
 
     return (
         <AuthContext.Provider

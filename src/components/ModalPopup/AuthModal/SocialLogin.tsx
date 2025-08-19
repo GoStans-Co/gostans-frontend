@@ -81,59 +81,23 @@ const GoogleIcon = styled.div`
 `;
 
 export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
-    const handleGoogleLogin = () => {
-        const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-        if (!clientId) {
-            console.error('Google Client ID not found');
-            return;
-        }
-
-        const redirectUri = 'https://gostans.com/oauth2/redirect';
-
-        const params = new URLSearchParams({
-            client_id: clientId,
-            redirect_uri: redirectUri,
-            response_type: 'code',
-            scope: 'openid email profile',
-            state: 'google_login',
-            access_type: 'online',
-            prompt: 'select_account',
-        });
-
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-        window.location.href = authUrl;
-    };
-
-    const handleSocialLogin = (provider: SocialProvider) => {
-        if (provider === 'google') {
-            handleGoogleLogin();
-        } else {
-            onSocialLogin(provider);
-        }
-    };
-
     return (
         <SocialLoginContainer>
             <SocialLoginButton
                 provider="google"
-                onClick={() => handleSocialLogin('google')}
+                onClick={() => onSocialLogin('google')}
                 aria-label="Sign in with Google"
             >
                 <GoogleIcon />
             </SocialLoginButton>
 
-            <SocialLoginButton
-                provider="apple"
-                onClick={() => handleSocialLogin('apple')}
-                aria-label="Sign in with Apple"
-            >
+            <SocialLoginButton provider="apple" onClick={() => onSocialLogin('apple')} aria-label="Sign in with Apple">
                 <FaApple />
             </SocialLoginButton>
 
             <SocialLoginButton
                 provider="facebook"
-                onClick={() => handleSocialLogin('facebook')}
+                onClick={() => onSocialLogin('facebook')}
                 aria-label="Sign in with Facebook"
             >
                 <FaFacebook />
@@ -141,7 +105,7 @@ export default function SocialLogin({ onSocialLogin }: SocialLoginProps) {
 
             <SocialLoginButton
                 provider="telegram"
-                onClick={() => handleSocialLogin('telegram')}
+                onClick={() => onSocialLogin('telegram')}
                 aria-label="Sign in with Telegram"
             >
                 <FaTelegram />

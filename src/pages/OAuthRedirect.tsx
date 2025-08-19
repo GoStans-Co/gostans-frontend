@@ -56,10 +56,15 @@ export default function OAuthRedirect() {
     const { auth: authService } = useApiServices();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isProcessed, setIsProcessed] = useState(false);
 
     useEffect(() => {
+        if (isProcessed) return;
+
         const handleOAuthCallback = async () => {
             try {
+                setIsProcessed(true);
+
                 const code = searchParams.get('code');
                 const state = searchParams.get('state');
                 const oauthError = searchParams.get('error');
@@ -72,7 +77,9 @@ export default function OAuthRedirect() {
                     return;
                 }
 
-                if (!code || state !== 'google_login') {
+                const provider = state?.split('_')[0] as 'google' | 'facebook' | 'apple';
+
+                if (!code || !provider || !state?.endsWith('_login')) {
                     setError('Invalid OAuth callback parameters');
                     setTimeout(() => {
                         window.location.href = '/';
@@ -80,25 +87,47 @@ export default function OAuthRedirect() {
                     return;
                 }
 
+                const redirectUri =
+                    window.location.hostname === 'localhost'
+                        ? 'http://localhost:5173/oauth2/redirect'
+                        : 'https://gostans.com/oauth2/redirect';
+
                 const socialData: SocialLoginData = {
-                    provider: 'google',
+                    provider: provider,
                     authorization_code: code,
-                    redirect_uri: 'https://gostans.com/oauth2/redirect',
+                    redirect_uri: redirectUri,
                 };
 
                 const result = await authService.socialLogin(socialData);
 
-                if (result && result.statusCode === 200) {
-                    window.location.href = '/';
+                const isSuccess =
+                    result &&
+                    (result.statusCode === 200 ||
+                        (result.data && !result.error) ||
+                        result.message === 'Login successful');
+
+                if (isSuccess) {
+                    window.location.replace('/');
                 } else {
-                    setError('Login failed. Please try again.');
+                    let errorMessage = 'Login failed. Please try again.';
+                    if (result?.error) {
+                        errorMessage = `Login failed: ${result.error}`;
+                    } else if (result?.message) {
+                        errorMessage = `Login failed: ${result.message}`;
+                    }
+
+                    setError(errorMessage);
                     setTimeout(() => {
                         window.location.href = '/';
                     }, 3000);
                 }
             } catch (error) {
-                console.error('OAuth callback failed:', error);
-                setError('Authentication failed. Please try again.');
+                let errorMessage = `Authentication failed. Please try again`;
+
+                if (error instanceof Error) {
+                    errorMessage = `Authentication failed: ${error.message}`;
+                }
+                setError(errorMessage);
                 setTimeout(() => {
                     window.location.href = '/';
                 }, 3000);
@@ -108,7 +137,7 @@ export default function OAuthRedirect() {
         };
 
         handleOAuthCallback();
-    }, [searchParams]);
+    }, [searchParams, isProcessed]);
 
     if (error) {
         return (

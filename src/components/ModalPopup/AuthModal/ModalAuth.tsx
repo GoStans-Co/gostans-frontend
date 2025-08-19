@@ -8,7 +8,7 @@ import SocialLogin from '@/components/ModalPopup/AuthModal/SocialLogin';
 import PhoneVerification from '@/components/ModalPopup/AuthModal/PhoneVerification';
 import { message } from 'antd';
 import PasswordComponent from '@/components/ModalPopup/AuthModal/PasswordComponent';
-import { LoginCredentials, SignUpData, SocialLoginData } from '@/services/api/auth';
+import { LoginCredentials, SignUpData } from '@/services/api/auth';
 import { useApiServices } from '@/services/api';
 import { useStatusHandler } from '@/hooks/api/useStatusHandler';
 import useCookieAuthService from '@/services/cache/cookieAuthService';
@@ -280,11 +280,67 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         }
     };
 
-    const handleSocialLogin = async (provider: string, credential?: string) => {
-        setIsLoading(true);
-
+    const handleSocialLogin = async (provider: string) => {
         if (provider === 'telegram') {
             setTelegramStage(true);
+            return;
+        }
+
+        if (provider === 'google' || provider === 'facebook' || provider === 'apple') {
+            const clientIds = {
+                google: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+                facebook: import.meta.env.VITE_FACEBOOK_APP_ID,
+                apple: import.meta.env.VITE_APPLE_CLIENT_ID,
+            };
+
+            const clientId = clientIds[provider as keyof typeof clientIds];
+            if (!clientId) {
+                messageApi.error(`${provider} Client ID not configured`);
+                return;
+            }
+
+            const redirectUri =
+                window.location.hostname === 'localhost'
+                    ? 'http://localhost:5173/oauth2/redirect'
+                    : 'https://gostans.com/oauth2/redirect';
+
+            let authUrl = '';
+
+            if (provider === 'google') {
+                const params = new URLSearchParams({
+                    client_id: clientId,
+                    redirect_uri: redirectUri,
+                    response_type: 'code',
+                    scope: 'openid email profile',
+                    state: `${provider}_login`,
+                    access_type: 'online',
+                    prompt: 'select_account',
+                });
+                authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+            } else if (provider === 'facebook') {
+                const params = new URLSearchParams({
+                    client_id: clientId,
+                    redirect_uri: redirectUri,
+                    response_type: 'code',
+                    scope: 'email,public_profile',
+                    state: `${provider}_login`,
+                });
+                authUrl = `https://www.facebook.com/v18.0/dialog/oauth?${params.toString()}`;
+            } else if (provider === 'apple') {
+                const params = new URLSearchParams({
+                    client_id: clientId,
+                    redirect_uri: redirectUri,
+                    response_type: 'code',
+                    scope: 'name email',
+                    state: `${provider}_login`,
+                    response_mode: 'form_post',
+                });
+                authUrl = `https://appleid.apple.com/auth/authorize?${params.toString()}`;
+            }
+
+            if (authUrl) {
+                window.location.href = authUrl;
+            }
             return;
         }
 
@@ -296,26 +352,9 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             content: `Logging in with ${provider}...`,
             duration: 0,
         });
+
         try {
             setSuccess('');
-            if (!credential) return;
-
-            const socialData: SocialLoginData = {
-                provider: provider as 'telegram' | 'google' | 'apple' | 'facebook',
-                authorization_code: credential,
-            };
-
-            const result = await authService.socialLogin(socialData);
-
-            if (result) {
-                messageApi.open({
-                    key,
-                    type: 'success',
-                    content: `Login with ${provider} is successful!`,
-                    duration: 2,
-                });
-                await cart.syncCartOnLogin();
-            }
         } catch (err) {
             messageApi.open({
                 key,
