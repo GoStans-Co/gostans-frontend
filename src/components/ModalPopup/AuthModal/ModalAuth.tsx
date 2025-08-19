@@ -301,8 +301,8 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             if (!credential) return;
 
             const socialData: SocialLoginData = {
-                provider: provider as 'google' | 'facebook' | 'twitter',
-                id_token: credential,
+                provider: provider as 'telegram' | 'google' | 'apple' | 'facebook',
+                authorization_code: credential,
             };
 
             const result = await authService.socialLogin(socialData);

@@ -6,11 +6,11 @@ import { useUserProfileCache } from '@/hooks/api/useProfileCache';
 import {
     AuthResponse,
     LoginCredentials,
+    OAuthCodeExchangeData,
     RefreshTokenResponse,
     Result,
     SignUpData,
     SocialLoginData,
-    SocialLoginResponse,
     VerifyTelegramOtpResponse,
 } from '@/services/api/auth/types';
 import { useStatusHandler } from '@/hooks/api/useStatusHandler';
@@ -81,47 +81,80 @@ export const useAuthService = () => {
         }
     };
 
-    const socialLogin = async (socialData: SocialLoginData): Promise<ApiResponse<AuthResponse>> => {
+    const exchangeOAuthCode = async (data: OAuthCodeExchangeData): Promise<ApiResponse<AuthResponse>> => {
         try {
-            const url = socialData.provider === 'google' ? '/auth/google/' : `/auth/${socialData.provider}/`;
-
             const response = await fetchData({
-                url: url,
+                url: '/auth/oauth/exchange/',
                 method: 'POST',
-                data: { id_token: socialData.id_token },
+                data: data,
             });
 
-            const apiResponse = response as unknown as SocialLoginResponse;
-            const authData = apiResponse.data;
+            if (response?.token && response?.user) {
+                setAuthCookie(response.token, response.user, response.refresh);
+                updateUserProfileCache(response.user);
+            }
 
-            if (authData && authData.accessToken && authData.id) {
-                const userForCookie = {
-                    id: authData.id,
-                    email: authData.email,
-                    name: authData.name,
-                    phone: authData.phone,
-                    avatar: authData.imageURL,
-                };
+            return {
+                data: response,
+                statusCode: 200,
+                message: 'OAuth login successful',
+            };
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            throw errorResponse;
+        }
+    };
 
-                setAuthCookie(authData.accessToken, userForCookie, authData.refresh);
-                updateUserProfileCache(authData);
+    const socialLogin = async (socialData: SocialLoginData): Promise<ApiResponse<AuthResponse>> => {
+        try {
+            if (socialData.authorization_code) {
+                return exchangeOAuthCode({
+                    provider: socialData.provider,
+                    authorization_code: socialData.authorization_code,
+                    redirect_uri: socialData.redirect_uri!,
+                });
+            } else if (socialData.id_token) {
+                const url = socialData.provider === 'google' ? '/auth/google/' : `/auth/${socialData.provider}/`;
 
-                return {
-                    data: {
-                        token: authData.accessToken,
-                        refresh: authData.refresh,
-                        user: {
-                            id: authData.id,
-                            email: authData.email,
-                            name: authData.name,
-                            phone: authData.phone,
+                const response = await fetchData({
+                    url: url,
+                    method: 'POST',
+                    data: { id_token: socialData.id_token },
+                });
+
+                const authData = response;
+
+                if (authData && authData.accessToken && authData.id) {
+                    const userForCookie = {
+                        id: authData.id,
+                        email: authData.email,
+                        name: authData.name,
+                        phone: authData.phone,
+                        avatar: authData.imageURL,
+                    };
+
+                    setAuthCookie(authData.accessToken, userForCookie, authData.refresh);
+                    updateUserProfileCache(userForCookie);
+
+                    return {
+                        data: {
+                            token: authData.accessToken,
+                            refresh: authData.refresh,
+                            user: {
+                                id: authData.id,
+                                email: authData.email,
+                                name: authData.name,
+                                phone: authData.phone,
+                            },
                         },
-                    },
-                    statusCode: 200,
-                    message: '',
-                };
+                        statusCode: 200,
+                        message: 'Social login successful',
+                    };
+                } else {
+                    throw new Error('Invalid response structure');
+                }
             } else {
-                throw new Error('Invalid response structure');
+                throw new Error('Invalid OAuth data: Missing id_token or authorization_code');
             }
         } catch (error: unknown) {
             const errorResponse = error as { response?: { status?: number }; message?: string };
@@ -400,6 +433,7 @@ export const useAuthService = () => {
         () => ({
             login,
             signUp,
+            exchangeOAuthCode,
             socialLogin,
             checkEmailExists,
             logout,

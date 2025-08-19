@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useApiServices } from '@/services/api';
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
+import { SocialLoginData } from '@/services/api/auth';
 
 const LoadingContainer = styled.div`
     display: flex;
@@ -61,9 +62,9 @@ export default function OAuthRedirect() {
             try {
                 const code = searchParams.get('code');
                 const state = searchParams.get('state');
-                const error = searchParams.get('error');
+                const oauthError = searchParams.get('error');
 
-                if (error) {
+                if (oauthError) {
                     setError('Authentication was cancelled or failed');
                     setTimeout(() => {
                         window.location.href = '/';
@@ -79,9 +80,10 @@ export default function OAuthRedirect() {
                     return;
                 }
 
-                const socialData = {
-                    provider: 'google' as const,
-                    id_token: code,
+                const socialData: SocialLoginData = {
+                    provider: 'google',
+                    authorization_code: code,
+                    redirect_uri: 'https://gostans.com/oauth2/redirect',
                 };
 
                 const result = await authService.socialLogin(socialData);

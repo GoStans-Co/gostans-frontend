@@ -23,6 +23,12 @@ export type AuthResponse = {
     };
 };
 
+export type OAuthCodeExchangeData = {
+    provider: 'google' | 'facebook' | 'apple' | 'telegram';
+    authorization_code: string;
+    redirect_uri: string;
+};
+
 export type ApiResponse<T> = {
     message: string;
     data: T;
@@ -45,8 +51,10 @@ export type SocialAuthResponse = {
 export type SocialLoginResponse = ApiResponse<SocialAuthResponse>;
 
 export type SocialLoginData = {
-    provider: 'google' | 'facebook' | 'twitter';
-    id_token: string;
+    provider: 'google' | 'facebook' | 'apple' | 'telegram';
+    id_token?: string;
+    authorization_code?: string;
+    redirect_uri?: string;
 };
 
 export type RefreshTokenRequest = {
