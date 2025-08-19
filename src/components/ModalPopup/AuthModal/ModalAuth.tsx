@@ -537,6 +537,11 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
         resendDisabled,
     };
 
+    const isSignupContinueDisabled =
+        activeTab === 'signup' &&
+        signupStage === SignupStage.FORM &&
+        (name.trim().length < 6 || emailValidMessage !== 'Email is available to sign up');
+
     return (
         <>
             {contextHolder}
@@ -658,7 +663,7 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
                                 type={
                                     activeTab === 'signup' && signupStage === SignupStage.COMPLETE ? 'button' : 'submit'
                                 }
-                                disabled={isLoading}
+                                disabled={isLoading || isSignupContinueDisabled}
                                 onClick={
                                     activeTab === 'signup' && signupStage === SignupStage.COMPLETE
                                         ? handleFinalSignup

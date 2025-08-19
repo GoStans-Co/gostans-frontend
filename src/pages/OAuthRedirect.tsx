@@ -46,6 +46,10 @@ const ErrorText = styled.div`
     margin-top: ${theme.spacing.md};
 `;
 
+/**
+ * OAuthRedirect - Page Component
+ * @description This component handles the OAuth redirection process for user authentication.
+ */
 export default function OAuthRedirect() {
     const [searchParams] = useSearchParams();
     const { auth: authService } = useApiServices();
@@ -102,7 +106,7 @@ export default function OAuthRedirect() {
         };
 
         handleOAuthCallback();
-    }, [searchParams, authService]);
+    }, [searchParams]);
 
     if (error) {
         return (

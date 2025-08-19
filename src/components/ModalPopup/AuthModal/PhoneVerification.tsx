@@ -201,24 +201,10 @@ export default function PhoneVerification({ onBack, onComplete }: PhoneVerificat
         setIsSubmitting(true);
         try {
             const fullPhoneNumber = `${selectedCountryCode}${phoneNumber}`;
-            console.log('Sending verification code to:', fullPhoneNumber);
-
             const response = await sendOtp(fullPhoneNumber);
-            console.log('Response received:', response);
 
             if (response.statusCode !== 200) {
                 throw new Error(response.message || 'Failed to send verification code');
-            }
-
-            /**
-             * hozirchalik shuyerda alert orqali ko'rsatamiz,
-             * keyinchalik sms servis orqali yuboramiz
-             */
-            if (response.data?.otp) {
-                messageApi.info({
-                    content: `Verification code: ${response.data.otp}`,
-                    duration: 10,
-                });
             }
 
             setPhoneNumber(phoneNumber);
@@ -273,10 +259,8 @@ export default function PhoneVerification({ onBack, onComplete }: PhoneVerificat
         setIsSubmitting(true);
         try {
             const fullPhoneNumber = `${selectedCountryCode}${phoneNumber}`;
-            console.log('Verifying code:', code, 'for phone:', fullPhoneNumber);
 
             const response = await verifyOtp(fullPhoneNumber, code);
-            console.log('Verify response:', response);
 
             if (response.statusCode !== 200 || !response.data?.success) {
                 throw new Error(response.message || 'Invalid verification code');
