@@ -105,7 +105,6 @@ const CardWrapper = styled(Link)`
 `;
 
 export default function TourCard({
-    id,
     title,
     shortDescription: description,
     price,
