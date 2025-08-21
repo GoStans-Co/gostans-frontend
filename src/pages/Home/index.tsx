@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
+import { useRecoilValue } from 'recoil';
 import { useApiServices } from '@/services/api';
 import PopularDestinations from '@/components/home/PopularDestinations';
 import CityExpertSection from '@/pages/Home/CityExpert';
 import NewsletterSection from '@/pages/Home/NewsLetter';
 import PopularAccommodations from '@/components/home/PopularAccomadations';
 import FirstHome from '@/components/home/FirstHome';
+import RecentlyAddedTours from '@/components/home/RecentlyAddedTours';
 import { accommodations } from '@/data/mockData';
 import TrendingTours from '@/components/home/TrendingTours';
 import { useDestinationsCache } from '@/hooks/api/useDestinationCache';
-import { TopDestination } from '@/services/api/tours';
+import { TopDestination, TourListResponse } from '@/services/api/tours';
 import useTrendingTours from '@/hooks/api/useTrendingTours';
+import { toursDataAtom } from '@/atoms/tours';
 
 export type Destinations = {
     id: string;
@@ -24,15 +27,19 @@ export type Destinations = {
 export default function HomePage() {
     const { tours: toursService } = useApiServices();
     const { cachedData, fetchTopDestinations } = useDestinationsCache();
-
     const { homepageTours, loading: toursLoading, fetchTrendingTours } = useTrendingTours();
 
+    const toursData = useRecoilValue(toursDataAtom);
+
     const hasFetchedDestinations = useRef(false);
+    const hasFetchedRecentTours = useRef(false);
 
     const [destinations, setDestinations] = useState<Destinations[]>([]);
     const [destinationsLoading, setDestinationsLoading] = useState(true);
 
-    /* trending tours on component mount */
+    const [recentTours, setRecentTours] = useState<TourListResponse[]>([]);
+    const [recentToursLoading, setRecentToursLoading] = useState(true);
+
     useEffect(() => {
         fetchTrendingTours();
     }, [fetchTrendingTours]);
@@ -70,6 +77,43 @@ export default function HomePage() {
         loadDestinations();
     }, [fetchTopDestinations]);
 
+    useEffect(() => {
+        if (hasFetchedRecentTours.current) return;
+        hasFetchedRecentTours.current = true;
+
+        const loadRecentTours = async () => {
+            setRecentToursLoading(true);
+            try {
+                let toursList: TourListResponse[] = [];
+
+                if (toursData?.results && toursData.results.length > 0) {
+                    toursList = toursData.results;
+                } else {
+                    const response = await toursService.getTours({
+                        page: 1,
+                        pageSize: 20,
+                    });
+
+                    if (response.data?.results) {
+                        toursList = response.data.results;
+                    }
+                }
+
+                const sortedTours = [...toursList].sort((a, b) => b.id - a.id);
+                const recentlyAddedTours = sortedTours.slice(0, 10);
+
+                setRecentTours(recentlyAddedTours);
+            } catch (error) {
+                console.info('Failed to load recent tours:', error);
+                setRecentTours([]);
+            } finally {
+                setRecentToursLoading(false);
+            }
+        };
+
+        loadRecentTours();
+    }, [toursData]);
+
     return (
         <>
             <FirstHome />
@@ -80,6 +124,7 @@ export default function HomePage() {
             />
             <TrendingTours tours={homepageTours} loading={toursLoading} />
             <CityExpertSection />
+            <RecentlyAddedTours tours={recentTours} loading={recentToursLoading} />
             <PopularAccommodations accommodations={accommodations} />
             <NewsletterSection />
         </>

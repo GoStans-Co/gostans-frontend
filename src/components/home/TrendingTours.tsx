@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import BannerCard from '@/components/Card/BannerCard';
 import defaultImage from '@/assets/default/default_1.jpg';
+import { ArrowRightIcon } from 'lucide-react';
 
 type TrendingToursProps = {
     tours: TourPropsResponse[];
@@ -14,8 +15,10 @@ type TrendingToursProps = {
 const SectionContainer = styled.section`
     padding: 4rem 2rem;
     background-color: ${({ theme }) => theme.colors.lightBackground};
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
 
     ${({ theme }) => theme.responsive.maxMobile} {
+        border-radius: 0;
         padding: 2rem 1rem;
     }
 `;
@@ -218,15 +221,7 @@ export default function TrendingTours({ tours, loading = false }: TrendingToursP
                     <SectionTitle>Trending Tours</SectionTitle>
                     <ViewAllLink to="/trendingTours">
                         Explore All
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M9 18L15 12L9 6"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
+                        <ArrowRightIcon size={18} />
                     </ViewAllLink>
                 </SectionHeader>
                 <LoadingContainer>Loading tours...</LoadingContainer>
@@ -241,15 +236,7 @@ export default function TrendingTours({ tours, loading = false }: TrendingToursP
                     <SectionTitle>Trending Tours</SectionTitle>
                     <ViewAllLink to="/trendingTours">
                         Explore All
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M9 18L15 12L9 6"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
+                        <ArrowRightIcon size={18} />
                     </ViewAllLink>
                 </SectionHeader>
                 <EmptyContainer>
@@ -266,15 +253,7 @@ export default function TrendingTours({ tours, loading = false }: TrendingToursP
                 <SectionTitle>Trending Tours</SectionTitle>
                 <ViewAllLink to="/trendingTours">
                     Explore All
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M9 18L15 12L9 6"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
+                    <ArrowRightIcon size={18} />
                 </ViewAllLink>
             </SectionHeader>
 
