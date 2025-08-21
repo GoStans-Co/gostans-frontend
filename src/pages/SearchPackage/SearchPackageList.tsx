@@ -32,7 +32,7 @@ const PageContainer = styled.div`
     box-sizing: border-box;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        padding-top: 10px;
+        padding-top: 0;
     }
 `;
 

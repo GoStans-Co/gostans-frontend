@@ -5,6 +5,7 @@ import { useState } from 'react';
 import TabContainer, { TabItem } from '@/components/common/Tabs';
 import { TopDestination } from '@/services/api/tours';
 import SkeletonLoader from '@/components/common/SkeletonLoader';
+import { ArrowRightIcon } from 'lucide-react';
 
 type PopularDestinationsProps = {
     destinations: DestinationProps[];
@@ -148,15 +149,7 @@ export default function PopularDestinations({ destinations, loading = false, cou
                     <SectionTitle>Top destinations</SectionTitle>
                     <ViewAllLink to="/top-destinations">
                         Explore All
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M9 18L15 12L9 6"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
+                        <ArrowRightIcon size={18} />
                     </ViewAllLink>
                 </SectionHeader>
 
@@ -171,15 +164,7 @@ export default function PopularDestinations({ destinations, loading = false, cou
                 <SectionTitle>Top destinations</SectionTitle>
                 <ViewAllLink to="/top-destinations">
                     Explore All
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M9 18L15 12L9 6"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
+                    <ArrowRightIcon size={18} />
                 </ViewAllLink>
             </SectionHeader>
 

@@ -3,10 +3,13 @@ import { AccommodationProps } from '@/types/index';
 import Card from '@/components/common/Card';
 import { message } from 'antd';
 import Button from '@/components/common/Button';
+import { ArrowRightIcon } from 'lucide-react';
 
 const SectionContainer = styled.section`
     padding-top: 2rem;
     padding-bottom: 2rem;
+
+    padding: 4rem 2rem;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: 1rem;
@@ -26,7 +29,8 @@ const SectionHeader = styled.div`
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: 0;
-        margin-bottom: 1rem;
+        margin-bottom: 0.2rem;
+        gap: 2rem;
     }
 `;
 
@@ -232,15 +236,7 @@ export default function PopularAccommodations({ accommodations }: PopularAccommo
                         onClick={() => handleComingSoonClick('Accommodation features')}
                     >
                         Explore All
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M9 18L15 12L9 6"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
+                        <ArrowRightIcon size={18} />
                     </ViewAllButton>
                 </SectionHeader>
                 <SectionSubtitle>Sorted by most purchases in the past week</SectionSubtitle>

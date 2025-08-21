@@ -43,6 +43,10 @@ const CardContent = styled.div`
     align-items: flex-start;
     text-align: left;
     min-width: 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 1rem;
+    }
 `;
 
 const Title = styled.h3`
@@ -51,6 +55,12 @@ const Title = styled.h3`
     margin-bottom: 0.5rem;
     color: ${({ theme }) => theme.colors.text};
     line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 2.8em;
 `;
 
 const Description = styled.p`
@@ -102,6 +112,7 @@ export default function TourCard({
     mainImage: image,
     variant = 'button',
     buttonText = 'Book Now',
+    uuid,
 }: TourPropsResponse) {
     const content = (
         <CardContainer>
@@ -117,7 +128,7 @@ export default function TourCard({
                         <PriceLabel>/Person</PriceLabel>
                     </Price>
                     {variant === 'button' && (
-                        <Button variant="light" size="mini" as={Link} to={`/tours/${id}`}>
+                        <Button variant="light" size="mini" as={Link} to={`/searchTrips/${uuid}`}>
                             {buttonText}
                         </Button>
                     )}
@@ -125,5 +136,5 @@ export default function TourCard({
             </CardContent>
         </CardContainer>
     );
-    return variant === 'link' ? <CardWrapper to={`/tours/${id}`}>{content}</CardWrapper> : content;
+    return variant === 'link' ? <CardWrapper to={`/searchTrips/${uuid}`}>{content}</CardWrapper> : content;
 }

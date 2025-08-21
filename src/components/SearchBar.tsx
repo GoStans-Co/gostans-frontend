@@ -6,6 +6,7 @@ import { DownOutlined } from '@ant-design/icons';
 import Button from '@/components/common/Button';
 import dayjs from 'dayjs';
 import { COUNTRY_WITH_CITIES } from '@/constants/countryWithCities';
+import { theme } from '@/styles/theme';
 
 const { RangePicker } = DatePicker;
 
@@ -243,22 +244,30 @@ const SearchButtonContent = styled.div`
     align-items: center;
     justify-content: center;
     gap: 8px;
+    font-size: 17px;
 
-    span {
-        display: none;
+    & > svg {
+        font-size: inherit !important;
+        vertical-align: middle;
+    }
 
-        ${({ theme }) => theme.responsive.maxMobile} {
-            display: inline;
-            font-size: ${({ theme }) => theme.fontSizes.md};
-            font-weight: 500;
-        }
+    & > p {
+        font-size: inherit;
+        font-weight: 500;
+        margin: 0;
+        vertical-align: middle;
+        display: inline;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${theme.fontSizes.md};
     }
 `;
 
 const SearchButton = styled(Button)`
     min-height: auto;
     height: 56px;
-    width: 50px;
+    width: 120px;
     border-radius: 0;
     border-top-right-radius: 12px;
     border-bottom-right-radius: 12px;
@@ -384,8 +393,8 @@ export default function SearchBar({ data, handlers = {} }: SearchBarProps) {
 
                 <SearchButton variant="primary" type="submit" size="md">
                     <SearchButtonContent>
-                        <FaSearch size={20} />
-                        <span>Search Tours</span>
+                        <FaSearch />
+                        <p>Search</p>
                     </SearchButtonContent>
                 </SearchButton>
             </SearchForm>
