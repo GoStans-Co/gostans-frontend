@@ -82,6 +82,18 @@ const routes: RouteObject[] = [
                 path: 'payment-cancel/return',
                 element: withSuspense(React.lazy(() => import('@/pages/Checkout/Cancel/PaymentCancel'))),
             },
+            {
+                path: '/terms-conditions',
+                element: withSuspense(React.lazy(() => import('@/pages/Legal/TermsConditions'))),
+            },
+            {
+                path: '/privacy-policy',
+                element: withSuspense(React.lazy(() => import('@/pages/Legal/PrivacyPolicy'))),
+            },
+            {
+                path: '/cancellation-policy',
+                element: withSuspense(React.lazy(() => import('@/pages/Legal/CancellationPolicy'))),
+            },
         ],
     },
     {
