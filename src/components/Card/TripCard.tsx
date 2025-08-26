@@ -1,6 +1,26 @@
 import React from 'react';
 import styled from 'styled-components';
 
+export type TripCardProps = {
+    id: string;
+    image: string;
+    title: string;
+    subtitle?: string;
+    date?: string;
+    price?: number;
+    status?: 'waiting' | 'booked' | 'complete' | 'cancelled' | 'all';
+    variant?: 'default' | 'compact';
+    imageSize?: 'default' | 'small';
+    titleSize?: 'default' | 'large';
+    showQuantityControls?: boolean;
+    quantity?: number;
+    onQuantityChange?: (quantity: number) => void;
+    actions?: React.ReactNode;
+    customContent?: React.ReactNode;
+    shortDescription?: string;
+    onClick?: () => void;
+};
+
 const CardContainer = styled.div<{ variant?: 'default' | 'compact' }>`
     display: flex;
     border: 1px solid ${({ theme }) => theme.colors.border};
@@ -215,24 +235,15 @@ const QuantityControls = styled.div`
     }
 `;
 
-export type TripCardProps = {
-    id: string;
-    image: string;
-    title: string;
-    subtitle?: string;
-    date?: string;
-    price?: number;
-    status?: 'waiting' | 'booked' | 'complete' | 'cancelled' | 'all';
-    variant?: 'default' | 'compact';
-    imageSize?: 'default' | 'small';
-    titleSize?: 'default' | 'large';
-    showQuantityControls?: boolean;
-    quantity?: number;
-    onQuantityChange?: (quantity: number) => void;
-    actions?: React.ReactNode;
-    customContent?: React.ReactNode;
-    shortDescription?: string;
-};
+const CardWrapper = styled.div`
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+`;
+
 export default function TripCard({
     image,
     title,
@@ -248,51 +259,54 @@ export default function TripCard({
     onQuantityChange,
     actions,
     customContent,
+    onClick,
 }: TripCardProps) {
     const hasActions = !!actions || !!status;
 
     return (
-        <CardContainer variant={variant}>
-            <CardImage imageUrl={image} size={imageSize} />
-            <CardInfo hasActions={hasActions}>
-                <div>
-                    <CardHeader>
-                        <LeftContent>
-                            <CardTitle size={titleSize}>{title}</CardTitle>
-                            {subtitle && <CardSubtitle>{subtitle}</CardSubtitle>}
-                            {date && <CardSubtitle>{date}</CardSubtitle>}
-                        </LeftContent>
+        <CardWrapper onClick={onClick}>
+            <CardContainer variant={variant}>
+                <CardImage imageUrl={image} size={imageSize} />
+                <CardInfo hasActions={hasActions}>
+                    <div>
+                        <CardHeader>
+                            <LeftContent>
+                                <CardTitle size={titleSize}>{title}</CardTitle>
+                                {subtitle && <CardSubtitle>{subtitle}</CardSubtitle>}
+                                {date && <CardSubtitle>{date}</CardSubtitle>}
+                            </LeftContent>
 
-                        <RightContent>
-                            {showQuantityControls ? (
-                                <QuantityControls>
-                                    <span>Adult</span>
-                                    <button onClick={() => onQuantityChange?.(Math.max(1, quantity - 1))}>-</button>
-                                    <span>{quantity}</span>
-                                    <button onClick={() => onQuantityChange?.(quantity + 1)}>+</button>
-                                </QuantityControls>
-                            ) : price !== undefined ? (
-                                <>
-                                    <CardPrice>${price}</CardPrice>
-                                    {status && (
-                                        <div style={{ marginTop: '8px' }}>
-                                            <StatusPill status={status}>
-                                                {status === 'waiting'
-                                                    ? 'Awaiting'
-                                                    : status.charAt(0).toUpperCase() + status.slice(1)}
-                                            </StatusPill>
-                                        </div>
-                                    )}
-                                </>
-                            ) : null}
-                        </RightContent>
-                    </CardHeader>
+                            <RightContent>
+                                {showQuantityControls ? (
+                                    <QuantityControls>
+                                        <span>Adult</span>
+                                        <button onClick={() => onQuantityChange?.(Math.max(1, quantity - 1))}>-</button>
+                                        <span>{quantity}</span>
+                                        <button onClick={() => onQuantityChange?.(quantity + 1)}>+</button>
+                                    </QuantityControls>
+                                ) : price !== undefined ? (
+                                    <>
+                                        <CardPrice>${price}</CardPrice>
+                                        {status && (
+                                            <div style={{ marginTop: '8px' }}>
+                                                <StatusPill status={status}>
+                                                    {status === 'waiting'
+                                                        ? 'Awaiting'
+                                                        : status.charAt(0).toUpperCase() + status.slice(1)}
+                                                </StatusPill>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : null}
+                            </RightContent>
+                        </CardHeader>
 
-                    {customContent}
-                </div>
+                        {customContent}
+                    </div>
 
-                {actions && <CardActions>{actions}</CardActions>}
-            </CardInfo>
-        </CardContainer>
+                    {actions && <CardActions>{actions}</CardActions>}
+                </CardInfo>
+            </CardContainer>
+        </CardWrapper>
     );
 }

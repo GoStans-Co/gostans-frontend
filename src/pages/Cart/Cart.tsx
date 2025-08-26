@@ -15,7 +15,15 @@ import { AlertCircle } from 'lucide-react';
 import { useValidation } from '@/hooks/utils/useValidation';
 import { useApiServices } from '@/services/api';
 import { BookingFormData, PaymentDetails, PaymentMethod } from '@/services/api/cart';
-import { BillingInfo, CardInfo, CardPaymentRequest } from '@/services/api/checkout';
+import {
+    BillingInfo,
+    CardInfo,
+    CardPaymentRequest,
+    CardPaymentResponse,
+    Participant,
+    PaymentExecuteResponse,
+    PaymentStatus,
+} from '@/services/api/checkout';
 
 type CheckoutStep = 'cart' | 'checkout' | 'payment' | 'confirmation';
 
@@ -24,7 +32,6 @@ const Container = styled.div`
     margin: 0 auto;
     padding: 2rem 2rem;
     min-height: 100vh;
-    // overflow-x: hidden;
     background-color: ${({ theme }) => theme.colors.lightBackground || '#f8f9fa'};
 `;
 
@@ -346,6 +353,8 @@ export default function CartPage() {
     const { checkout } = useApiServices();
 
     const [cartItems, setCartItems] = useRecoilState(cartAtom);
+    const [paymentCreated, setPaymentCreated] = useState<CardPaymentResponse | null>(null);
+
     const [currentStep, setCurrentStep] = useState<CheckoutStep>(getCurrentStep());
     const [formData, setFormData] = useState<BookingFormData>({
         participants: [],
@@ -353,7 +362,6 @@ export default function CartPage() {
         paymentMethod: undefined,
         paymentDetails: undefined,
     });
-    const [paymentCreated, setPaymentCreated] = useState<any>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string>('');
     const [success, setSuccess] = useState<string>('');
@@ -415,13 +423,15 @@ export default function CartPage() {
                 amount: Number(total.toFixed(2)),
                 currency: 'USD',
                 tour_uuid: mainTour.tourId,
-                participants: formData.participants.map((participant: any) => ({
-                    firstName: participant.firstName || participant.first_name,
-                    lastName: participant.lastName || participant.last_name,
-                    idType: participant.idType || participant.id_type || 'passport',
-                    idNumber: participant.idNumber || participant.id_number,
-                    dateOfBirth: participant.dateOfBirth || participant.date_of_birth,
+                participants: formData.participants.map((participant: Participant) => ({
+                    firstName: participant.firstName,
+                    lastName: participant.lastName,
+                    idType: participant.idType || 'passport',
+                    idNumber: participant.idNumber,
+                    dateOfBirth: participant.dateOfBirth,
                 })),
+                trip_start_date: formatDateToYMD(mainTour.trip_start_date || new Date()),
+                trip_end_date: formatDateToYMD(mainTour.trip_end_date || new Date()),
             };
 
             const response = await checkout.createPayment(paymentRequest);
@@ -433,34 +443,38 @@ export default function CartPage() {
             } else {
                 throw new Error(response.message);
             }
-        } catch (err: any) {
-            setError(err.message || 'Failed to initialize payment');
+        } catch (err) {
+            const error = err as Error;
+            setError(error.message || 'Failed to initialize payment');
             hasInitialized.current = false;
         } finally {
             setIsProcessing(false);
         }
     };
 
-    const handlePaymentReturn = async (payment_id: string, payer_id: string) => {
+    const handlePaymentReturn = async (paymentId: string, PayerID: string) => {
         try {
             setIsProcessing(true);
             setError('');
 
             const calculatedTotal = calculateTotal();
 
-            const executeResponse = await checkout.executePayment({ payment_id, payer_id });
+            const executeResponse = await checkout.executePayment({ paymentId, PayerID });
 
             if (executeResponse.statusCode === 200) {
                 const paymentDetails: PaymentDetails = {
+                    id: executeResponse.data.id,
                     orderId: executeResponse.data.id,
-                    payerId: payer_id,
-                    payerEmail: executeResponse.data.payer.payer_info?.email || '',
-                    payerName:
-                        `${executeResponse.data.payer.payer_info?.first_name || ''} ${executeResponse.data.payer.payer_info?.last_name || ''}`.trim(),
                     amount: calculatedTotal.toFixed(2),
-                    currency: executeResponse.data.transactions?.[0]?.amount?.currency || 'USD',
-                    status: executeResponse.data.state,
+                    currency: 'USD',
+                    status: executeResponse.data.status as PaymentStatus,
+                    paymentMethod: 'paypal',
+                    payerId: PayerID,
                     transactionId: executeResponse.data.id,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    details: executeResponse.data,
+                    booking: 0,
                 };
 
                 const cartItemsForConfirmation = [...cartItems];
@@ -478,8 +492,9 @@ export default function CartPage() {
             } else {
                 throw new Error(executeResponse.message);
             }
-        } catch (err: any) {
-            setError(err.message || 'Payment execution failed');
+        } catch (err) {
+            const error = err as Error;
+            setError(error.message || 'Payment execution failed');
         } finally {
             setIsProcessing(false);
         }
@@ -520,12 +535,15 @@ export default function CartPage() {
                 card_info: cardInfo,
                 billing_info: billingInfo,
                 save_card: saveCard,
+                trip_start_date: formatDateToYMD(mainTour.trip_start_date || new Date()),
+                trip_end_date: formatDateToYMD(mainTour.trip_end_date || new Date()),
             };
 
             const response = await checkout.createVisaPayment(cardPaymentRequest);
 
             if (response.statusCode === 200) {
                 const paymentDetails: PaymentDetails = {
+                    id: response.data.payment_id,
                     orderId: response.data.payment_id,
                     payerId: billingInfo.email,
                     payerEmail: billingInfo.email,
@@ -552,12 +570,14 @@ export default function CartPage() {
             } else {
                 throw new Error(response.message);
             }
-        } catch (err: any) {
-            setError(err.message || 'Card payment failed');
+        } catch (err) {
+            const error = err as Error;
+            setError(error.message || 'Payment execution failed');
         } finally {
             setIsProcessing(false);
         }
     };
+
     const validateCartItems = () => {
         return validateCart(cartItems, selectedDates, guestCounts, isFamilyPackage);
     };
@@ -576,6 +596,11 @@ export default function CartPage() {
         const tax = subtotal * 0.1;
         return subtotal + tax;
     };
+
+    function formatDateToYMD(date: string | Date): string {
+        const d = typeof date === 'string' ? new Date(date) : date;
+        return d.toISOString().slice(0, 10);
+    }
 
     const getDaysInMonth = (date: Date) => {
         const year = date.getFullYear();

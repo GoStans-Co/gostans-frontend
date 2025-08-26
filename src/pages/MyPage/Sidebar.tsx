@@ -7,6 +7,7 @@ enum PageSection {
     TRIPS = 'trips',
     FAVORITES = 'favorites',
     PROFILE = 'profile',
+    ORDER_HISTORY = 'order_history',
 }
 
 type SidebarProps = {
