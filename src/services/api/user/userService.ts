@@ -65,6 +65,34 @@ export const useUserService = () => {
         }
     };
 
+    const getBookingDetail = async (bookingId: string): Promise<Result<BookingDetail, string>> => {
+        try {
+            const response = await fetchData({
+                url: '/user/booking-detail/',
+                method: 'POST',
+                data: { booking_id: bookingId },
+            });
+
+            if (response && response.data) {
+                return {
+                    success: true,
+                    data: response.data,
+                };
+            } else {
+                return {
+                    success: false,
+                    error: 'Invalid booking detail response',
+                };
+            }
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            return {
+                success: false,
+                error: errorResponse.message || 'Failed to fetch booking details',
+            };
+        }
+    };
+
     const updateUserProfile = async (userData: UpdateUserData): Promise<Result<UserProfile, string>> => {
         const response = await fetchData({
             url: '/user/profile/',

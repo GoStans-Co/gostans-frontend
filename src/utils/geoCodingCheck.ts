@@ -42,9 +42,7 @@ export class MapboxGeocodingService {
         }
 
         try {
-            let cleanedLocation = locationName
-                .replace(/^[A-Z0-9]{4,8}\+[A-Z0-9]{2,3}\s*,?\s*/, '') // Remove Plus Code from start
-                .trim();
+            let cleanedLocation = locationName.replace(/^[A-Z0-9]{4,8}\+[A-Z0-9]{2,3}\s*,?\s*/, '').trim();
 
             const searchLocation = cleanedLocation || locationName;
 
