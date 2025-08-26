@@ -31,34 +31,46 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         const initializeAuth = async () => {
             setIsLoading(true);
 
-            /* we check if user has cookies (tokens) */
+            /* check if user has valid cookies */
             if (cookieAuth()) {
-                const refreshTokenValue = getRefreshToken();
+                setIsAuthenticated(true);
 
-                if (refreshTokenValue) {
+                /* sync cart only once per session */
+                if (!hasInitializedCart) {
                     try {
-                        /* we try to refresh token to verify it is still valid */
-                        await auth.refreshToken();
-                        setIsAuthenticated(true);
-
-                        /* then sync cart when user is authenticated - but only once per session */
-                        if (!hasInitializedCart) {
-                            await syncCartOnLogin();
-                            setHasInitializedCart(true);
-                        }
-
-                        const profile = await user.getUserProfile();
-                        if (profile.success) {
-                            setUserProfile(profile.data);
-                        }
+                        await syncCartOnLogin();
+                        setHasInitializedCart(true);
                     } catch (error) {
-                        console.error('Token refresh failed during initialization:', error);
-                        setIsAuthenticated(false);
-                        setHasInitializedCart(false);
+                        console.error('Cart sync failed:', error);
                     }
-                } else {
-                    setIsAuthenticated(false);
-                    setHasInitializedCart(false);
+                }
+
+                /* then get user the profile */
+                try {
+                    const profile = await user.getUserProfile();
+                    if (profile.success) {
+                        setUserProfile(profile.data);
+                    }
+                } catch (error: unknown) {
+                    /* if profile fetch fails with 401, then refresh token */
+                    if (
+                        typeof error === 'object' &&
+                        error !== null &&
+                        'response' in error &&
+                        (error as { response?: { status?: number } }).response?.status === 401
+                    ) {
+                        try {
+                            await auth.refreshToken();
+                            /* try to fetch the profile */
+                            const profile = await user.getUserProfile();
+                            if (profile.success) {
+                                setUserProfile(profile.data);
+                            }
+                        } catch (refreshError) {
+                            setIsAuthenticated(false);
+                            setHasInitializedCart(false);
+                        }
+                    }
                 }
             } else {
                 setIsAuthenticated(false);
@@ -75,7 +87,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             () => {
                 if (cookieAuth() && getRefreshToken()) {
                     auth.refreshToken().catch(() => {
-                        console.error('Automatic token refresh failed');
                         setIsAuthenticated(false);
                         setHasInitializedCart(false);
                     });

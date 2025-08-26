@@ -14,14 +14,13 @@ import PaymentStep from '@/components/Payment/PaymentStep';
 import { AlertCircle } from 'lucide-react';
 import { useValidation } from '@/hooks/utils/useValidation';
 import { useApiServices } from '@/services/api';
-import { BookingFormData, PaymentDetails, PaymentMethod } from '@/services/api/cart';
+import { BookingFormData, CartItem, PaymentDetails, PaymentMethod } from '@/services/api/cart';
 import {
     BillingInfo,
     CardInfo,
     CardPaymentRequest,
     CardPaymentResponse,
     Participant,
-    PaymentExecuteResponse,
     PaymentStatus,
 } from '@/services/api/checkout';
 
@@ -191,7 +190,6 @@ const CalendarContainer = styled.div`
     background: ${({ theme }) => theme.colors.background};
     border-radius: 8px;
     padding: 1rem;
-    // box-shadow: 0 1px 2px ${({ theme }) => theme.colors.border};
 `;
 
 const CalendarHeader = styled.div`
@@ -337,6 +335,11 @@ const ValidationError = styled.div`
     border-radius: ${({ theme }) => theme.borderRadius.sm};
 `;
 
+/**
+ * Cart - Page Component
+ * @description This component renders the shopping cart page and its contents
+ * @returns JSX.Element
+ */
 export default function CartPage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -525,12 +528,12 @@ export default function CartPage() {
                 amount: Number(total.toFixed(2)),
                 currency: 'USD',
                 tour_uuid: mainTour.tourId,
-                participants: formData.participants.map((participant: any) => ({
-                    firstName: participant.firstName || participant.first_name,
-                    lastName: participant.lastName || participant.last_name,
-                    idType: participant.idType || participant.id_type || 'passport',
-                    idNumber: participant.idNumber || participant.id_number,
-                    dateOfBirth: participant.dateOfBirth || participant.date_of_birth,
+                participants: formData.participants.map((participant: Participant) => ({
+                    firstName: participant.firstName,
+                    lastName: participant.lastName,
+                    idType: participant.idType || 'passport',
+                    idNumber: participant.idNumber,
+                    dateOfBirth: participant.dateOfBirth,
                 })),
                 card_info: cardInfo,
                 billing_info: billingInfo,
@@ -729,7 +732,7 @@ export default function CartPage() {
         return counts.adults + counts.children + counts.infants;
     };
 
-    const calculateItemTotal = (item: any) => {
+    const calculateItemTotal = (item: CartItem) => {
         const counts = guestCounts[item.tourId] || { adults: 1, children: 0, infants: 0 };
         const basePrice = parseFloat(item.tourData.price);
 

@@ -56,7 +56,6 @@ export default function useCookieAuthService() {
     );
 
     const removeAuthCookie = useCallback(() => {
-        console.log('Removing auth cookies');
         removeCookie(AUTH_COOKIE_NAME, { path: '/' });
         removeCookie(USER_COOKIE_NAME, { path: '/' });
         removeCookie(REFRESH_COOKIE_NAME, { path: '/' });

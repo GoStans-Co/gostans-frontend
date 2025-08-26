@@ -4,6 +4,7 @@ import { useUserProfileCache } from '@/hooks/api/useProfileCache';
 import useCookieAuth from '@/services/cache/cookieAuthService';
 import { BecomePartnersData, ChangePasswordData, UpdateUserData, UserProfile } from '@/services/api/user/types';
 import { Result } from '@/services/api/auth/types';
+import { BookingDetail } from '@/services/api/checkout/types';
 
 export const CACHE_DURATION = 5 * 60 * 1000;
 
@@ -25,204 +26,161 @@ export const useUserService = () => {
             };
         }
 
-        try {
-            const response = await fetchData({
-                url: '/user/profile/',
-                method: 'GET',
-            });
+        const response = await fetchData({
+            url: '/user/profile/',
+            method: 'GET',
+        });
 
-            if (response && response.data) {
-                updateUserProfileCache(response.data);
-                return {
-                    success: true,
-                    data: response,
-                };
-            } else {
-                return {
-                    success: false,
-                    error: 'Invalid profile response',
-                };
-            }
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
+        if (response && response.data) {
+            updateUserProfileCache(response.data);
+            return {
+                success: true,
+                data: response,
+            };
+        } else {
             return {
                 success: false,
-                error: errorResponse.message || 'Failed to fetch user profile',
+                error: 'Invalid profile response',
+            };
+        }
+    };
+
+    const getBookingDetail = async (bookingId: string): Promise<Result<BookingDetail, string>> => {
+        const response = await fetchData({
+            url: '/user/booking-detail/',
+            method: 'POST',
+            data: { booking_id: bookingId },
+        });
+
+        if (response && response.data) {
+            return {
+                success: true,
+                data: response.data,
+            };
+        } else {
+            return {
+                success: false,
+                error: 'Invalid booking detail response',
             };
         }
     };
 
     const updateUserProfile = async (userData: UpdateUserData): Promise<Result<UserProfile, string>> => {
-        try {
-            const response = await fetchData({
-                url: '/user/profile/',
-                method: 'PUT',
-                data: userData,
-            });
+        const response = await fetchData({
+            url: '/user/profile/',
+            method: 'PUT',
+            data: userData,
+        });
 
-            if (response) {
-                updateUserProfileCache(response);
-                return {
-                    success: true,
-                    data: response,
-                };
-            } else {
-                return {
-                    success: false,
-                    error: 'Invalid update response',
-                };
-            }
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
+        if (response) {
+            updateUserProfileCache(response);
+            return {
+                success: true,
+                data: response,
+            };
+        } else {
             return {
                 success: false,
-                error: errorResponse.message || 'Failed to update profile',
+                error: 'Invalid update response',
             };
         }
     };
 
     const changePassword = async (passwordData: ChangePasswordData): Promise<Result<void, string>> => {
-        try {
-            await fetchData({
-                url: '/user/change-password/',
-                method: 'POST',
-                data: passwordData,
-            });
+        await fetchData({
+            url: '/user/change-password/',
+            method: 'POST',
+            data: passwordData,
+        });
 
-            return {
-                success: true,
-                data: undefined,
-            };
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
-            return {
-                success: false,
-                error: errorResponse.message || 'Failed to change password',
-            };
-        }
+        return {
+            success: true,
+            data: undefined,
+        };
     };
 
     const deleteAccount = async (): Promise<Result<void, string>> => {
-        try {
-            await fetchData({
-                url: '/user/profile/',
-                method: 'DELETE',
-            });
+        await fetchData({
+            url: '/user/profile/',
+            method: 'DELETE',
+        });
 
-            /* we clear everything after successful account deletion */
-            clearProfileCache();
-            removeAuthCookie();
-            localStorage.removeItem('cart-storage');
+        /* we clear everything after successful account deletion */
+        clearProfileCache();
+        removeAuthCookie();
+        localStorage.removeItem('cart-storage');
 
-            return {
-                success: true,
-                data: undefined,
-            };
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
-            return {
-                success: false,
-                error: errorResponse.message || 'Failed to delete account',
-            };
-        }
+        return {
+            success: true,
+            data: undefined,
+        };
     };
     const uploadProfileImage = async (imageFile: File): Promise<Result<UserProfile, string>> => {
-        try {
-            const formData = new FormData();
-            formData.append('image', imageFile);
+        const formData = new FormData();
+        formData.append('image', imageFile);
 
-            const response = await fetchData({
-                url: '/user/update-image/',
-                method: 'PATCH',
-                data: formData,
-            });
+        const response = await fetchData({
+            url: '/user/update-image/',
+            method: 'PATCH',
+            data: formData,
+        });
 
-            if (response) {
-                updateUserProfileCache(response);
-                return {
-                    success: true,
-                    data: response,
-                };
-            } else {
-                return {
-                    success: false,
-                    error: 'Invalid image upload response',
-                };
-            }
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
+        if (response) {
+            updateUserProfileCache(response);
+            return {
+                success: true,
+                data: response,
+            };
+        } else {
             return {
                 success: false,
-                error: errorResponse.message || 'Failed to upload profile image',
+                error: 'Invalid image upload response',
             };
         }
     };
 
     const verifyEmail = async (token: string): Promise<Result<void, string>> => {
-        try {
-            await fetchData({
-                url: '/auth/verify-email/',
-                method: 'POST',
-                data: { token },
-            });
+        await fetchData({
+            url: '/auth/verify-email/',
+            method: 'POST',
+            data: { token },
+        });
 
-            return {
-                success: true,
-                data: undefined,
-            };
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
-            return {
-                success: false,
-                error: errorResponse.message || 'Failed to verify email',
-            };
-        }
+        return {
+            success: true,
+            data: undefined,
+        };
     };
 
     const resendEmailVerification = async (): Promise<Result<void, string>> => {
-        try {
-            await fetchData({
-                url: '/auth/resend-verification/',
-                method: 'POST',
-            });
+        await fetchData({
+            url: '/auth/resend-verification/',
+            method: 'POST',
+        });
 
-            return {
-                success: true,
-                data: undefined,
-            };
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
-            return {
-                success: false,
-                error: errorResponse.message || 'Failed to resend verification email',
-            };
-        }
+        return {
+            success: true,
+            data: undefined,
+        };
     };
 
     const registerPartner = async (data: BecomePartnersData): Promise<Result<void, string>> => {
-        try {
-            await fetchData({
-                url: '/user/register-partner/',
-                method: 'POST',
-                data,
-            });
+        await fetchData({
+            url: '/user/register-partner/',
+            method: 'POST',
+            data,
+        });
 
-            return {
-                success: true,
-                data: undefined,
-            };
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
-            return {
-                success: false,
-                error: errorResponse.message || 'Failed to become partner',
-            };
-        }
+        return {
+            success: true,
+            data: undefined,
+        };
     };
 
     return useMemo(
         () => ({
             getUserProfile,
+            getBookingDetail,
             updateUserProfile,
             changePassword,
             deleteAccount,

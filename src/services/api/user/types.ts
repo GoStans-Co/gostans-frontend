@@ -7,6 +7,49 @@ export type Wishlist = {
     updatedAt: string;
 };
 
+export type Booking = {
+    id: number;
+    uuid: string;
+    tourTitle: string;
+    tourType: string;
+    mainImage: string;
+    amount: string;
+    currency: string;
+    status: 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'CONFIRMED';
+    tripStartDate: string;
+    tripEndDate: string;
+    createdAt: string;
+};
+
+export type UserBookings = {
+    all: Booking[];
+    upcoming: Booking[];
+    completed: Booking[];
+};
+
+export type UserData = {
+    name: string;
+    dateJoined: string;
+    email: string;
+    image: string;
+    phone: string;
+    bookings: UserBookings;
+};
+
+// This is a function (value), not a type - export it directly
+export const createDefaultUserData = (): UserData => ({
+    name: '',
+    dateJoined: '',
+    email: '',
+    image: '',
+    phone: '',
+    bookings: {
+        all: [],
+        upcoming: [],
+        completed: [],
+    },
+});
+
 export type UserProfile = {
     data: {
         id: string;
@@ -17,7 +60,12 @@ export type UserProfile = {
         dateJoined: string;
         updatedAt: string;
         isVerified: boolean;
-        wishLists: Wishlist[];
+        bookings: {
+            all: Booking[];
+            upcoming: Booking[];
+            completed: Booking[];
+        };
+        wishlists: Wishlist[];
     };
 };
 

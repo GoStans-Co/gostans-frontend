@@ -338,13 +338,22 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
                 container: mapContainer.current,
                 style: 'mapbox://styles/mapbox/streets-v12',
                 bounds: bounds,
-                fitBoundsOptions: { padding: 60 },
+                fitBoundsOptions: {
+                    padding: {
+                        top: 100,
+                        bottom: 100,
+                        left: 100,
+                        right: 100,
+                    },
+                    maxZoom: 14,
+                },
                 attributionControl: false,
             });
 
             map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
             map.current.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
 
+            /* single load handler for only one location */
             map.current.on('load', () => {
                 if (!map.current) return;
 

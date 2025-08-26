@@ -1,49 +1,84 @@
+import { ApiResponse } from '@/types/common/fetch';
+import { CartItem } from '../cart';
+
+export type PaymentStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+export type IdType = 'passport' | 'license' | 'national_id';
+export type PaymentMethod = 'mastercard' | 'apple-pay' | 'visa-pay' | 'paypal' | 'google-pay' | 'bank-transfer';
+
 export type Participant = {
     firstName: string;
     lastName: string;
-    idType: string;
+    idType: IdType | string;
     idNumber: string;
     dateOfBirth: string;
 };
 
-export type PaymentCreateRequest = {
-    amount: number;
-    currency?: string;
-    tour_uuid: string;
+export type Payment = {
+    id: number;
+    paymentId: string;
+    amount: string;
+    currency: string;
+    status: PaymentStatus;
+    paymentMethod: PaymentMethod | string;
+    payerId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    details: any | null;
+    booking: number;
+};
+
+export type BookingDetail = {
+    id: number;
+    uuid: string;
+    tourTitle: string;
+    tourType: string | null;
+    mainImage: string;
+    amount: string;
+    currency: string;
+    status: BookingStatus;
+    tripStartDate: string | null;
+    tripEndDate: string | null;
+    createdAt: string;
+    payments: Payment[];
     participants: Participant[];
 };
 
-export type PaymentCreateResponse = {
-    bookingId: number;
-    approvalUrl: string;
+export type BookingDetailResponse = {
+    statusCode: number;
+    message: string;
+    data: BookingDetail;
+};
+
+export type PaymentDetails = {
+    id: number;
     paymentId: string;
+    amount: string;
+    currency: string;
+    status: PaymentStatus;
+    paymentMethod: PaymentMethod | string;
+    payerId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    details: any | null;
+    booking: number;
 };
 
-export type PaymentExecuteRequest = {
-    payment_id: string;
-    payer_id: string;
+export type BookingFormData = {
+    participants: Participant[];
+    cardDetails?: CardDetails;
+    paymentMethod?: PaymentMethod;
+    paymentDetails?: PaymentDetails;
+    cartItems?: CartItem[];
+    totalAmount?: number;
 };
 
-export type PaymentExecuteResponse = {
-    id: string;
-    state: string;
-    payer: {
-        payment_method: string;
-        status: string;
-        payer_info?: {
-            email?: string;
-            first_name?: string;
-            last_name?: string;
-            payer_id?: string;
-        };
-    };
-    transactions?: Array<{
-        amount: {
-            total: string;
-            currency: string;
-        };
-        description?: string;
-    }>;
+export type CardDetails = {
+    number: string;
+    expiryMonth: string;
+    expiryYear: string;
+    cvv: string;
+    saveCard: boolean;
 };
 
 export type BookingDetails = {
@@ -109,9 +144,11 @@ export type CardPaymentRequest = {
     currency?: string;
     tour_uuid: string;
     participants: Participant[];
-    card_info: CardInfo;
-    billing_info: BillingInfo;
-    save_card: boolean;
+    trip_start_date: string;
+    trip_end_date: string;
+    card_info?: CardInfo;
+    billing_info?: BillingInfo;
+    save_card?: boolean;
 };
 
 export type CardPaymentResponse = {
@@ -120,4 +157,19 @@ export type CardPaymentResponse = {
     amount: number;
     currency: string;
     status: string;
+    approvalUrl?: string;
 };
+
+export type PaymentExecuteRequest = {
+    paymentId: string;
+    PayerID: string;
+};
+
+export type PaymentExecuteResponse = {
+    id: string;
+    state: string;
+    payer: { payment_method: PaymentMethod | string; status: string };
+    status: string;
+};
+
+export type CheckoutPromise = ApiResponse<PaymentExecuteResponse> | ApiResponse<void>;
