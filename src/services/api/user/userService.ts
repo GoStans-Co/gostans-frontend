@@ -6,7 +6,7 @@ import { BecomePartnersData, ChangePasswordData, UpdateUserData, UserProfile } f
 import { Result } from '@/services/api/auth/types';
 import { BookingDetail } from '@/services/api/checkout/types';
 
-export const CACHE_DURATION = 5 * 60 * 1000;
+export const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * User Fetch Service - User Profile Operations
@@ -35,7 +35,7 @@ export const useUserService = () => {
             updateUserProfileCache(response.data);
             return {
                 success: true,
-                data: response,
+                data: response.data,
             };
         } else {
             return {

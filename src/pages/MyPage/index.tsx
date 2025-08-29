@@ -12,6 +12,7 @@ import { useApiServices } from '@/services/api';
 import { createDefaultUserData, type UserData } from '@/services/api/user/types';
 import { BookingDetail } from '@/services/api/checkout';
 import OrderHistory from '@/pages/MyPage/Order/OrderHistory';
+import { useUserProfileQuery } from '@/hooks/queries/userProfileQuery';
 
 enum PageSection {
     TRIPS = 'trips',
@@ -68,6 +69,9 @@ const ContentContainer = styled.main`
  * @returns {JSX.Element}
  */
 export default function MyPage() {
+    const { removeAuthCookie } = useCookieAuth();
+    const { auth: authService, user: userService } = useApiServices();
+    const { data: profileData, isLoading: profileLoading } = useUserProfileQuery();
     const [searchParams, setSearchParams] = useSearchParams();
     const sectionParam = searchParams.get('section');
 
@@ -87,14 +91,22 @@ export default function MyPage() {
     const [bookingLoading, setBookingLoading] = useState(false);
     const [bookingError, setBookingError] = useState<string | null>(null);
 
-    const { removeAuthCookie } = useCookieAuth();
-    const { auth: authService, user: userService } = useApiServices();
-
     useEffect(() => {
         if (sectionParam === 'trips') setActiveSection(PageSection.TRIPS);
         else if (sectionParam === 'favorites') setActiveSection(PageSection.FAVORITES);
         else setActiveSection(PageSection.PROFILE);
     }, [sectionParam]);
+
+    useEffect(() => {
+        const profile = profileData?.success ? profileData.data : null;
+        if (profile) {
+            const transformedData = transformUserResponse(profile);
+            setUserData(transformedData);
+            setProfileImage(transformedData.image || null);
+        } else if (!profileLoading) {
+            handleUserDataError();
+        }
+    }, [profileData]);
 
     const transformUserResponse = (apiData: any): UserData => {
         const createdDate = new Date(apiData.dateJoined);
@@ -158,30 +170,12 @@ export default function MyPage() {
         setProfileImage(null);
     };
 
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const userResponse = await userService.getUserProfile();
-
-                if (userResponse.success) {
-                    const transformedData = transformUserResponse(userResponse.data.data);
-                    setUserData(transformedData);
-                    setProfileImage(transformedData.image || null);
-                } else {
-                    handleUserDataError();
-                }
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                handleUserDataError();
-            }
-        };
-
-        fetchUserData();
-    }, [messageApi]);
-
     const handleSectionChange = (section: PageSection) => {
         setActiveSection(section);
         setSearchParams({ section });
+        setSelectedBookingId(null);
+        setBookingDetail(null);
+        setBookingError(null);
     };
 
     const handleSectionLogout = useCallback(async () => {
@@ -229,7 +223,6 @@ export default function MyPage() {
                     setProfileImage(e.target?.result as string);
                 };
                 reader.readAsDataURL(file);
-                console.log('Upload successful:', response);
             }
         } catch (error) {
             console.info('Image upload failed:', error);

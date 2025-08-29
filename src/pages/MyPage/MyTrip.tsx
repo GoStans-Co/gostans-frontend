@@ -203,7 +203,7 @@ export default function TripsPage({ bookings, onTripClick }: TripsPageProps) {
                     <EmptyText>
                         You haven't booked any trips yet. Start exploring and book your first adventure!
                     </EmptyText>
-                    <Button variant="primary" onClick={() => (window.location.href = '/search')}>
+                    <Button variant="primary" onClick={() => (window.location.href = '/searchTrips')}>
                         Explore and book!
                     </Button>
                 </EmptyState>

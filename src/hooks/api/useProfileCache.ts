@@ -2,8 +2,7 @@ import { useRecoilState } from 'recoil';
 import { userProfileAtom, userCacheStatusAtom } from '@/atoms/auth';
 import { AuthResponse, SocialAuthResponse } from '@/services/api/auth/types';
 import { UserProfile } from '@/services/api/user/types';
-
-export const CACHE_DURATION = 5 * 60 * 1000;
+import { CACHE_DURATION } from '@/services/api/user/userService';
 
 export const useUserProfileCache = () => {
     const [userProfile, setUserProfile] = useRecoilState(userProfileAtom);
@@ -23,33 +22,31 @@ export const useUserProfileCache = () => {
             /* to handle social login response */
             const socialUser = userData as SocialAuthResponse;
             setUserProfile({
-                data: {
-                    id: socialUser.id,
-                    email: socialUser.email,
-                    name: socialUser.name,
-                    phone: socialUser.phone || '',
-                    image: socialUser.imageURL || undefined,
-                    dateJoined: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    isVerified: true,
-                    wishLists: [],
-                },
+                id: socialUser.id,
+                email: socialUser.email,
+                name: socialUser.name,
+                phone: socialUser.phone || '',
+                bookings: { all: [], upcoming: [], completed: [] },
+                image: socialUser.imageURL || undefined,
+                dateJoined: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                isVerified: true,
+                wishlists: [],
             });
         } else {
             /* for regular login response */
             const regularUser = userData as AuthResponse['user'];
             setUserProfile({
-                data: {
-                    id: regularUser.id,
-                    email: regularUser.email,
-                    name: regularUser.name,
-                    phone: regularUser.phone || '',
-                    image: regularUser.imageURL || undefined,
-                    dateJoined: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                    isVerified: false,
-                    wishLists: [],
-                },
+                id: regularUser.id,
+                email: regularUser.email,
+                name: regularUser.name,
+                bookings: { all: [], upcoming: [], completed: [] },
+                phone: regularUser.phone || '',
+                image: regularUser.imageURL || undefined,
+                dateJoined: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                isVerified: false,
+                wishlists: [],
             });
         }
 
@@ -57,6 +54,10 @@ export const useUserProfileCache = () => {
     };
 
     const isProfileCached = (): boolean => {
+        /* adding this check if token exists and is valid */
+        const authToken = document.cookie.match(/authToken=([^;]+)/)?.[1];
+        if (!authToken) return false;
+
         return cacheStatus.loaded && isCacheValid(cacheStatus.lastFetch) && !!userProfile;
     };
 

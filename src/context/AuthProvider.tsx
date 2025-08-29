@@ -3,6 +3,8 @@ import useCookieAuth from '@/services/cache/cookieAuthService';
 import { useCartService } from '@/services/api/cart/useCartService';
 import { useApiServices } from '@/services/api';
 import { UserProfile } from '@/services/api/user';
+import { useQueryClient } from '@tanstack/react-query';
+import { USER_PROFILE_KEY } from '@/hooks/queries/userProfileQuery';
 
 type AuthContextType = {
     isAuthenticated: boolean;
@@ -19,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
+    const queryClient = useQueryClient();
     const { user, auth } = useApiServices();
     const { isAuthenticated: cookieAuth, getUserData, getRefreshToken } = useCookieAuth();
     const { syncCartOnLogin } = useCartService();
@@ -35,6 +38,15 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             if (cookieAuth()) {
                 setIsAuthenticated(true);
 
+                /* prefetch user profile */
+                queryClient.prefetchQuery({
+                    queryKey: USER_PROFILE_KEY,
+                    queryFn: async () => {
+                        const response = await user.getUserProfile();
+                        return response;
+                    },
+                });
+
                 /* sync cart only once per session */
                 if (!hasInitializedCart) {
                     try {
@@ -45,12 +57,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                     }
                 }
 
-                /* then get user the profile */
                 try {
-                    const profile = await user.getUserProfile();
-                    if (profile.success) {
-                        setUserProfile(profile.data);
-                    }
+                    // const profile = await user.getUserProfile();
+                    // if (profile.success) {
+                    //     setUserProfile(profile.data);
+                    // }
                 } catch (error: unknown) {
                     /* if profile fetch fails with 401, then refresh token */
                     if (

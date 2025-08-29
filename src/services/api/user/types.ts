@@ -36,7 +36,6 @@ export type UserData = {
     bookings: UserBookings;
 };
 
-// This is a function (value), not a type - export it directly
 export const createDefaultUserData = (): UserData => ({
     name: '',
     dateJoined: '',
@@ -51,22 +50,20 @@ export const createDefaultUserData = (): UserData => ({
 });
 
 export type UserProfile = {
-    data: {
-        id: string;
-        email: string;
-        name: string;
-        phone?: string;
-        image?: string;
-        dateJoined: string;
-        updatedAt: string;
-        isVerified: boolean;
-        bookings: {
-            all: Booking[];
-            upcoming: Booking[];
-            completed: Booking[];
-        };
-        wishlists: Wishlist[];
+    id: string;
+    email: string;
+    name: string;
+    phone?: string;
+    image?: string;
+    dateJoined: string;
+    updatedAt: string;
+    isVerified: boolean;
+    bookings: {
+        all: Booking[];
+        upcoming: Booking[];
+        completed: Booking[];
     };
+    wishlists: Wishlist[];
 };
 
 export type UpdateUserData = {

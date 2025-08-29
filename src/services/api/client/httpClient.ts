@@ -1,4 +1,6 @@
+import { profileCacheManager } from '@/utils/profileCacheManager';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { queryClient } from '@/providers/QueryProviders';
 
 type CustomInternalAxiosRequestConfig = InternalAxiosRequestConfig & {
     _retry?: boolean;
@@ -60,6 +62,9 @@ apiClient.interceptors.response.use(
                     document.cookie = `authToken=${newToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
                     document.cookie = `refreshToken=${newRefreshToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
 
+                    profileCacheManager.clearCache();
+                    queryClient.invalidateQueries({ queryKey: ['user', 'profile'] });
+
                     originalRequest.headers.Authorization = `Bearer ${newToken}`;
                     return apiClient(originalRequest);
                 }
@@ -69,6 +74,8 @@ apiClient.interceptors.response.use(
                 ['authToken', 'userData', 'refreshToken'].forEach((name) => {
                     document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
                 });
+
+                profileCacheManager.clearCache();
 
                 if (window.location.pathname !== '/') {
                     window.location.href = '/';
