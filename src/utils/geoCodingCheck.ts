@@ -69,7 +69,6 @@ export class MapboxGeocodingService {
                         if (fallbackData.features && fallbackData.features.length > 0) {
                             const feature = fallbackData.features[0];
                             const [longitude, latitude] = feature.geometry.coordinates;
-                            console.log(`Fallback geocoding successful for: ${cleanedLocation}`);
                             return {
                                 latitude,
                                 longitude,
@@ -90,8 +89,6 @@ export class MapboxGeocodingService {
                 const feature = data.features[0];
                 const [longitude, latitude] = feature.geometry.coordinates;
 
-                console.info(`Geocoding successful: ${searchLocation} -> [${latitude}, ${longitude}]`);
-
                 return {
                     latitude,
                     longitude,
@@ -101,8 +98,6 @@ export class MapboxGeocodingService {
                         feature.properties.name,
                 };
             }
-
-            console.warn(`No results found for: ${searchLocation}`);
 
             const parts = cleanedLocation.split(',').map((p) => p.trim());
             if (parts.length > 1) {
@@ -115,7 +110,7 @@ export class MapboxGeocodingService {
                     if (lastResortData.features && lastResortData.features.length > 0) {
                         const feature = lastResortData.features[0];
                         const [longitude, latitude] = feature.geometry.coordinates;
-                        console.log(`Last resort geocoding for "${lastPart}" successful`);
+
                         return {
                             latitude,
                             longitude,
