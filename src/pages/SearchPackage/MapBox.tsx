@@ -2,12 +2,28 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { isValidCoordinate, ItineraryItem, useMapboxGeocoding } from '@/utils/geoCodingCheck';
+import { isValidCoordinate, useMapboxGeocoding } from '@/utils/geoCodingCheck';
 import { useApiServices } from '@/services/api';
 import { createRoot } from 'react-dom/client';
 import MapPopup from '@/components/Map/MapPopup';
 import MapMarker from '@/components/Map/MapMarker';
 import { theme } from '@/styles/theme';
+
+type ItineraryItem = {
+    dayNumber: number;
+    dayTitle: string;
+    description: string;
+    locationNames?: Array<{
+        name: string;
+        latitude: number | null;
+        longitude: number | null;
+    }>;
+    locationName?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    accommodation?: string;
+    includedMeals?: string;
+};
 
 type EnhancedMapComponentProps = {
     itineraries: ItineraryItem[];
@@ -197,12 +213,25 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
             return;
         }
 
-        const itinerariesNeedingGeocoding = itineraries.filter(
-            (item) => item.locationName && !isValidCoordinate(item.latitude, item.longitude),
-        );
+        /* here we check first which itineraries need geocoding */
+        const itinerariesNeedingGeocoding = itineraries.filter((item) => {
+            /* check if we have valid coordinates in locationNames */
+            const hasValidCoords = item.locationNames?.some((loc) => isValidCoordinate(loc.latitude, loc.longitude));
+            return !hasValidCoords && item.locationNames && item.locationNames.length > 0;
+        });
 
         if (itinerariesNeedingGeocoding.length === 0) {
-            setProcessedItineraries(itineraries);
+            /* here we use the existing coordinates from locationNames */
+            const processedItems = itineraries.map((item) => {
+                const validLocation = item.locationNames?.find((loc) => isValidCoordinate(loc.latitude, loc.longitude));
+                return {
+                    ...item,
+                    latitude: validLocation?.latitude || item.latitude,
+                    longitude: validLocation?.longitude || item.longitude,
+                    locationName: item.locationNames?.map((l) => l.name).join(', ') || item.locationName,
+                };
+            });
+            setProcessedItineraries(processedItems);
             hasProcessed.current = true;
             return;
         }
@@ -215,40 +244,79 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
         setLoadingMessage('Getting locations...');
 
         const updatedItineraries = [...itineraries];
-        const locationsToUpdate: Record<number, { latitude: number; longitude: number }> = {};
+        const locationsToUpdate: Record<
+            number,
+            {
+                latitude: number;
+                longitude: number;
+                locationNames: Array<{ name: string; latitude: number; longitude: number }>;
+            }
+        > = {};
 
         try {
             for (const item of itinerariesNeedingGeocoding) {
-                setLoadingMessage(`Getting location for ${item.locationName}...`);
+                setLoadingMessage(`Getting location for Day ${item.dayNumber}...`);
 
                 try {
-                    const geocodingResult = await geocodeLocation(item.locationName);
+                    /* try to geocode each location name in order */
+                    let geocodingResult = null;
+                    for (const location of item.locationNames || []) {
+                        if (location.name && location.name.trim()) {
+                            geocodingResult = await geocodeLocation(location.name);
+                            if (geocodingResult) break;
+                        }
+                    }
 
                     if (geocodingResult) {
                         const index = updatedItineraries.findIndex((it) => it.dayNumber === item.dayNumber);
                         if (index !== -1) {
+                            /* then we update the itinerary with geocoded coordinates */
                             updatedItineraries[index] = {
                                 ...updatedItineraries[index],
                                 latitude: geocodingResult.latitude,
                                 longitude: geocodingResult.longitude,
+                                locationNames: item.locationNames?.map((loc) => ({
+                                    ...loc,
+                                    latitude: geocodingResult.latitude,
+                                    longitude: geocodingResult.longitude,
+                                })),
                             };
 
+                            /* then we prepare update for backend */
                             locationsToUpdate[item.dayNumber] = {
                                 latitude: geocodingResult.latitude,
                                 longitude: geocodingResult.longitude,
+                                locationNames: (updatedItineraries[index].locationNames || []).filter(
+                                    (loc): loc is { name: string; latitude: number; longitude: number } =>
+                                        loc.latitude !== null && loc.longitude !== null,
+                                ),
                             };
                         }
                     }
                 } catch (error) {
-                    console.error(`Failed to geocode ${item.locationName}:`, error);
+                    console.error(`Failed to geocode Day ${item.dayNumber}:`, error);
                 }
 
                 await new Promise((resolve) => setTimeout(resolve, 90));
             }
 
+            /* here we update db with new coordinates */
             if (tourUuid && Object.keys(locationsToUpdate).length > 0) {
                 try {
-                    await toursService.updateTourLocationData(tourUuid, locationsToUpdate);
+                    const apiPayload = Object.entries(locationsToUpdate).reduce(
+                        (acc, [day, data]) => {
+                            acc[Number(day)] = {
+                                latitude: data.latitude,
+                                longitude: data.longitude,
+                            };
+                            return acc;
+                        },
+                        {} as Record<number, { latitude: number; longitude: number }>,
+                    );
+
+                    const response = await toursService.updateTourLocationData(tourUuid, apiPayload);
+                    console.info('Location update response:', response.statusCode === 200 ? 'Created' : 'Updated');
+
                     hasProcessed.current = true;
                     lastProcessedTourUuid.current = tourUuid;
                 } catch (error) {
@@ -263,7 +331,7 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
             setIsLoading(false);
             setLoadingMessage('');
         }
-    }, [itineraries, tourUuid, geocodeLocation, toursService]);
+    }, [itineraries, tourUuid, geocodeLocation]);
 
     const cleanupMarkers = useCallback(() => {
         markers.current.forEach((marker) => marker.remove());
@@ -419,7 +487,7 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
         let coords = { lat: 0, lng: 0 };
 
         validItineraries.forEach((item, index) => {
-            const cityName = extractCityName(item.locationName);
+            const cityName = extractCityName(item);
 
             if (cityName !== currentCity) {
                 if (currentCity && startDay > 0) {
@@ -490,22 +558,24 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
 
     const validItineraries = processedItineraries.filter((item) => isValidCoordinate(item.latitude, item.longitude));
 
-    const extractCityName = (locationName: string): string => {
-        if (!locationName) return '';
-
-        const parts = locationName.split(',');
-
-        if (parts.length >= 4) {
-            return parts[2].trim();
-        } else if (parts.length === 3) {
-            return parts[1].trim();
-        } else if (parts.length === 2) {
-            const firstPart = parts[0].trim();
-            const cityName = firstPart.replace(/^[A-Z0-9]+\+[A-Z0-9]+\s+/, '').trim();
-            return cityName || firstPart;
+    const extractCityName = (item: ItineraryItem): string => {
+        if (item.locationNames && item.locationNames.length > 0) {
+            const cityCandidate = item.locationNames[1]?.name || item.locationNames[0]?.name;
+            if (cityCandidate && !cityCandidate.includes('+')) {
+                return cityCandidate.trim();
+            }
         }
 
-        return locationName.trim();
+        if (!item.locationName) return '';
+
+        const parts = item.locationName.split(',');
+        if (parts.length >= 4) {
+            return parts[2].trim();
+        } else if (parts.length >= 2) {
+            return parts[1].trim();
+        }
+
+        return item.locationName.trim();
     };
 
     const TourFlow = ({ itineraries }: { itineraries: ItineraryItem[] }) => {
@@ -515,7 +585,7 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
 
         if (validItineraries.length === 0) return null;
 
-        const cityNames = validItineraries.map((item) => extractCityName(item.locationName));
+        const cityNames = validItineraries.map((item) => extractCityName(item));
         const uniqueCities = cityNames.filter((city, index, arr) => index === 0 || arr[index - 1] !== city);
 
         return (

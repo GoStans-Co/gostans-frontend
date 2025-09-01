@@ -41,6 +41,7 @@ import useTrendingTours from '@/hooks/api/useTrendingTours';
 import MapBox from '@/pages/SearchPackage/MapBox';
 import Lottie from 'lottie-react';
 import loadingAnimation from '@/assets/animation/loading.json';
+import { isValidCoordinate } from '@/utils/geoCodingCheck';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -1506,16 +1507,25 @@ export default function SearchPackageDetails() {
 
                             <Section id="map">
                                 <h2>Location</h2>
-                                {tour.itineraries && tour.itineraries.length > 0 ? (
+                                {Array.isArray(tour.itineraries) && tour.itineraries.length > 0 ? (
                                     <MapBox
-                                        key={tour.uuid + '-' + tour.itineraries?.length}
+                                        key={tour.uuid + '-' + tour.itineraries.length}
                                         itineraries={tour.itineraries.map((item) => ({
                                             dayNumber: item.dayNumber,
                                             dayTitle: item.dayTitle,
                                             description: item.description,
-                                            locationName: item.locationName || '',
-                                            latitude: item.latitude,
-                                            longitude: item.longitude,
+                                            locationNames: item.locationNames || [],
+                                            locationName: item.locationNames?.map((l) => l.name).join(', ') || '',
+                                            latitude:
+                                                item.locationNames?.find((l) =>
+                                                    isValidCoordinate(l.latitude, l.longitude),
+                                                )?.latitude ?? null,
+                                            longitude:
+                                                item.locationNames?.find((l) =>
+                                                    isValidCoordinate(l.latitude, l.longitude),
+                                                )?.longitude ?? null,
+                                            accommodation: item.accommodation,
+                                            includedMeals: item.includedMeals,
                                         }))}
                                         tourUuid={tour.uuid}
                                         height="500px"
