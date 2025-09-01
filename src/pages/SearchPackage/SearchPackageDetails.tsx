@@ -454,14 +454,6 @@ const DayContent = styled.div`
     }
 `;
 
-const DayHeader = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    width: 100%;
-`;
-
 const Arrow = styled.span<{ expanded: boolean }>`
     transform: ${({ expanded }) => (expanded ? 'rotate(180deg)' : 'rotate(0deg)')};
     transition: transform 0.3s ease;
