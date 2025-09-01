@@ -58,10 +58,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                 }
 
                 try {
-                    // const profile = await user.getUserProfile();
-                    // if (profile.success) {
-                    //     setUserProfile(profile.data);
-                    // }
                 } catch (error: unknown) {
                     /* if profile fetch fails with 401, then refresh token */
                     if (
