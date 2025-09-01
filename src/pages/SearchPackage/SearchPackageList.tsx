@@ -14,7 +14,6 @@ import {
 } from '@/hooks/utils/useSearchActions';
 import FilterBar from '@/components/FilterBar';
 import NoDataFound from '@/components/common/NoDataFound';
-import { motion } from 'framer-motion';
 import useFavorite from '@/hooks/ui/useFavorite';
 import useModal from '@/hooks/ui/useModal';
 import useCookieAuth from '@/services/cache/cookieAuthService';
@@ -24,6 +23,8 @@ import { useApiServices } from '@/services/api';
 import { TourListResponse } from '@/services/api/tours';
 import dayjs from 'dayjs';
 import bannerImage from '@/assets/banner1.png';
+import Lottie from 'lottie-react';
+import loadingAnimation from '@/assets/animation/loading.json';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -324,23 +325,6 @@ const BookedInfo = styled.span`
     font-size: ${({ theme }) => theme.fontSizes.xs};
 `;
 
-const LoadingSpinner = styled(motion.div)`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 50vh;
-    flex-direction: column;
-    gap: 1rem;
-`;
-
-const Spinner = styled(motion.div)`
-    width: 40px;
-    height: 40px;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid #3498db;
-    border-radius: 50%;
-`;
-
 const PaginationContainer = styled.div`
     display: flex;
     justify-content: center;
@@ -486,6 +470,15 @@ const FilterContainer = styled.div<{ showOnMobile: boolean }>`
         z-index: auto;
         margin-bottom: ${({ theme }) => theme.spacing.md};
     }
+`;
+
+const LoadingAnimationContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    flex-direction: column;
+    gap: 1rem;
 `;
 
 /**
@@ -946,19 +939,13 @@ export default function SearchPackageList() {
 
                         <ToursList>
                             {isLoading ? (
-                                <LoadingSpinner initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                    <Spinner
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                <LoadingAnimationContainer>
+                                    <Lottie
+                                        animationData={loadingAnimation}
+                                        loop={true}
+                                        style={{ width: 120, height: 120, marginBottom: 24 }}
                                     />
-                                    <motion.p
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.2 }}
-                                    >
-                                        Searching...
-                                    </motion.p>
-                                </LoadingSpinner>
+                                </LoadingAnimationContainer>
                             ) : !isLoading && filteredTours.length === 0 ? (
                                 <NoDataFound
                                     type="search"

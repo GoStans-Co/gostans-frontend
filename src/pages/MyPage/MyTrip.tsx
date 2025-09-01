@@ -1,12 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import Button from '@/components/common/Button';
-import { tours } from '@/data/mockData';
 import { Box } from 'lucide-react';
 import TripCard from '@/components/Card/TripCard';
 import TripStatusTabs from '@/components/tours/TourStatusTabs';
+import { Booking } from '@/services/api/user';
 
 type TripStatus = 'all' | 'booked' | 'waiting' | 'complete' | 'cancelled';
+type TripsPageProps = {
+    bookings?: {
+        all: Booking[];
+        upcoming: Booking[];
+        completed: Booking[];
+    };
+    onTripClick?: (bookingId: string) => void;
+};
 
 const TripsContainer = styled.div`
     width: 100%;
@@ -90,41 +98,73 @@ const EmptyText = styled.p`
         padding: 0 ${({ theme }) => theme.spacing.md};
     }
 `;
-export default function TripsPage() {
+
+export default function TripsPage({ bookings, onTripClick }: TripsPageProps) {
     const [activeTab, setActiveTab] = useState<TripStatus>('all');
-    const filteredTrips = tours.filter((trip) => (activeTab === 'all' ? true : trip.status === activeTab));
-    const [showEmptyState, setShowEmptyState] = useState(filteredTrips.length === 0);
 
-    useEffect(() => {
-        setShowEmptyState(filteredTrips.length === 0);
-    }, [filteredTrips]);
+    const mapBookingStatus = (status: string): TripStatus => {
+        const upperStatus = status.toUpperCase();
+        switch (upperStatus) {
+            case 'PENDING':
+                return 'waiting';
+            case 'BOOKED':
+            case 'CONFIRMED':
+                return 'booked';
+            case 'COMPLETED':
+                return 'complete';
+            case 'CANCELLED':
+                return 'cancelled';
+            default:
+                return 'waiting';
+        }
+    };
 
-    const getTripActions = (status: TripStatus) => {
+    const transformedTrips =
+        bookings?.all.map((booking) => ({
+            id: `booking-${booking.id}`,
+            bookingId: booking.id.toString(),
+            uuid: booking.uuid,
+            image: booking.mainImage.startsWith('http')
+                ? booking.mainImage
+                : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${booking.mainImage}`,
+            title: booking.tourTitle,
+            dayInfo: `${booking.tourType}`,
+            date: `${booking.tripStartDate} - ${booking.tripEndDate}`,
+            price: Number(booking.amount),
+            status: mapBookingStatus(booking.status) as TripStatus,
+        })) || [];
+
+    const filteredTrips =
+        activeTab === 'all' ? transformedTrips : transformedTrips.filter((trip) => trip.status === activeTab);
+
+    const showEmptyState = filteredTrips.length === 0;
+
+    const getTripActions = (status: TripStatus, tripId: string) => {
         switch (status) {
             case 'waiting':
                 return (
                     <>
-                        <Button variant="outline" size="mini">
+                        <Button variant="outline" size="mini" onClick={() => handleCancel(tripId)}>
                             Cancel
                         </Button>
-                        <Button variant="primary" size="mini">
+                        <Button variant="primary" size="mini" onClick={() => handlePayment(tripId)}>
                             Go to payment
                         </Button>
                     </>
                 );
             case 'complete':
                 return (
-                    <Button variant="outline" size="mini">
+                    <Button variant="outline" size="mini" onClick={() => handleDelete(tripId)}>
                         Delete
                     </Button>
                 );
             case 'cancelled':
                 return (
                     <>
-                        <Button variant="outline" size="mini">
+                        <Button variant="outline" size="mini" onClick={() => handleDelete(tripId)}>
                             Delete
                         </Button>
-                        <Button variant="primary" size="mini">
+                        <Button variant="primary" size="mini" onClick={() => handleBookAgain(tripId)}>
                             Book again
                         </Button>
                     </>
@@ -132,6 +172,22 @@ export default function TripsPage() {
             default:
                 return null;
         }
+    };
+
+    const handleCancel = (tripId: string) => {
+        console.info('Cancel trip:', tripId);
+    };
+
+    const handlePayment = (tripId: string) => {
+        console.info('Go to payment:', tripId);
+    };
+
+    const handleDelete = (tripId: string) => {
+        console.info('Delete trip:', tripId);
+    };
+
+    const handleBookAgain = (tripId: string) => {
+        console.info('Book again:', tripId);
     };
 
     return (
@@ -147,7 +203,9 @@ export default function TripsPage() {
                     <EmptyText>
                         You haven't booked any trips yet. Start exploring and book your first adventure!
                     </EmptyText>
-                    <Button variant="primary">Explore and book!</Button>
+                    <Button variant="primary" onClick={() => (window.location.href = '/searchTrips')}>
+                        Explore and book!
+                    </Button>
                 </EmptyState>
             ) : (
                 <>
@@ -159,11 +217,12 @@ export default function TripsPage() {
                                 id={trip.id}
                                 image={trip.image}
                                 title={trip.title}
-                                subtitle={trip.dayInfo || 'One Day Tour'}
+                                subtitle={trip.dayInfo}
                                 date={trip.date}
                                 price={trip.price}
                                 status={trip.status}
-                                actions={getTripActions(trip.status)}
+                                actions={getTripActions(trip.status, trip.id)}
+                                onClick={() => onTripClick?.(trip.bookingId)}
                             />
                         ))}
                     </TripsList>

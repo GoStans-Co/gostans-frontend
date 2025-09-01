@@ -16,8 +16,6 @@ import {
 import { useStatusHandler } from '@/hooks/api/useStatusHandler';
 import { message } from 'antd';
 
-export const CACHE_DURATION = 5 * 60 * 1000;
-
 /**
  * User Authentication Service - Authentication Operations
  * @module useUserAuthService
@@ -352,11 +350,11 @@ export const useAuthService = () => {
                 const currentUser = userProfile;
                 if (currentUser) {
                     const userForCookie = {
-                        id: currentUser.data.id,
-                        email: currentUser.data.email,
-                        name: currentUser.data.name,
-                        phone: currentUser.data.phone || '',
-                        avatar: currentUser.data.image || undefined,
+                        id: currentUser.id,
+                        email: currentUser.email,
+                        name: currentUser.name,
+                        phone: currentUser.phone || '',
+                        avatar: currentUser.image || undefined,
                     };
                     setAuthCookie(response.data.token, userForCookie, response.data.refresh);
                 }

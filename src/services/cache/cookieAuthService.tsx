@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 export const COOKIE_OPTIONS = {
     path: '/',
     maxAge: 7 * 24 * 60 * 60,
-    secure: false, // will set to true in production
+    secure: true,
     sameSite: 'lax' as const,
 };
 
@@ -38,25 +38,11 @@ export default function useCookieAuthService() {
             if (refreshToken) {
                 setCookie(REFRESH_COOKIE_NAME, refreshToken, COOKIE_OPTIONS);
             }
-
-            setTimeout(() => {
-                const savedToken = cookies[AUTH_COOKIE_NAME];
-                const savedUser = cookies[USER_COOKIE_NAME];
-                const savedRefresh = cookies[REFRESH_COOKIE_NAME];
-                console.log('Cookie verification:', {
-                    tokenSet: !!savedToken,
-                    userSet: !!savedUser,
-                    refreshSet: !!savedRefresh,
-                    tokenValue: savedToken?.substring(0, 20) + '...',
-                    userEmail: savedUser?.email,
-                });
-            }, 100);
         },
         [setCookie, cookies],
     );
 
     const removeAuthCookie = useCallback(() => {
-        console.log('Removing auth cookies');
         removeCookie(AUTH_COOKIE_NAME, { path: '/' });
         removeCookie(USER_COOKIE_NAME, { path: '/' });
         removeCookie(REFRESH_COOKIE_NAME, { path: '/' });
@@ -80,14 +66,6 @@ export default function useCookieAuthService() {
         const token = cookies[AUTH_COOKIE_NAME];
         const userData = cookies[USER_COOKIE_NAME];
         const authenticated = !!(token && userData);
-
-        console.log('isAuthenticated check:', {
-            hasToken: !!token,
-            hasUserData: !!userData,
-            authenticated,
-            tokenLength: token?.length,
-            userEmail: userData?.email,
-        });
 
         return authenticated;
     }, [cookies]);

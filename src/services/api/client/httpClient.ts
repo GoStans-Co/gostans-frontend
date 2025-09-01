@@ -1,4 +1,6 @@
+import { profileCacheManager } from '@/utils/profileCacheManager';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { queryClient } from '@/providers/QueryProviders';
 
 type CustomInternalAxiosRequestConfig = InternalAxiosRequestConfig & {
     _retry?: boolean;
@@ -14,21 +16,14 @@ const apiClient = axios.create({
     },
 });
 
-// Request interceptor to add token
+const getCookie = (name: string): string | null => {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? decodeURIComponent(match[2]) : null;
+};
+
 apiClient.interceptors.request.use(
     (config) => {
-        const cookies = document.cookie.split(';').reduce(
-            (acc, cookie) => {
-                const [key, value] = cookie.trim().split('=');
-                if (key && value) {
-                    acc[key] = decodeURIComponent(value);
-                }
-                return acc;
-            },
-            {} as Record<string, string>,
-        );
-
-        const token = cookies['authToken'];
+        const token = getCookie('authToken');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -37,69 +32,57 @@ apiClient.interceptors.request.use(
     (error) => Promise.reject(error),
 );
 
-// Response interceptor to handle token refresh
 apiClient.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
         const originalRequest = error.config as CustomInternalAxiosRequestConfig;
 
-        if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+        if (
+            error.response?.status === 401 &&
+            originalRequest &&
+            !originalRequest._retry &&
+            !originalRequest.url?.includes('/auth/') &&
+            getCookie('refreshToken')
+        ) {
             originalRequest._retry = true;
 
             try {
-                // Get refresh token from cookies
-                const cookies = document.cookie.split(';').reduce(
-                    (acc, cookie) => {
-                        const [key, value] = cookie.trim().split('=');
-                        if (key && value) {
-                            acc[key] = decodeURIComponent(value);
-                        }
-                        return acc;
-                    },
-                    {} as Record<string, string>,
+                const refreshToken = getCookie('refreshToken');
+
+                const refreshResponse = await axios.post(
+                    `${API_BASE_URL}/auth/refresh-token/`,
+                    { refresh: refreshToken },
+                    { headers: { 'Content-Type': 'application/json' } },
                 );
 
-                const refreshToken = cookies['refreshToken'];
+                if (refreshResponse.data?.data?.token) {
+                    const newToken = refreshResponse.data.data.token;
+                    const newRefreshToken = refreshResponse.data.data.refresh;
 
-                if (refreshToken) {
-                    // Attempt to refresh token
-                    const refreshResponse = await axios.post(`${API_BASE_URL}/auth/refresh-token/`, {
-                        refresh: refreshToken,
-                    });
+                    document.cookie = `authToken=${newToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
+                    document.cookie = `refreshToken=${newRefreshToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
 
-                    if (refreshResponse.data?.data?.token) {
-                        const newToken = refreshResponse.data.data.token;
-                        const newRefreshToken = refreshResponse.data.data.refresh;
+                    profileCacheManager.clearCache();
+                    queryClient.invalidateQueries({ queryKey: ['user', 'profile'] });
 
-                        // Update cookies with new tokens
-                        document.cookie = `authToken=${newToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
-                        document.cookie = `refreshToken=${newRefreshToken}; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax`;
-
-                        // Retry original request with new token
-                        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                        return apiClient(originalRequest);
-                    }
+                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                    return apiClient(originalRequest);
                 }
             } catch (refreshError) {
                 console.error('Token refresh failed:', refreshError);
-                // Clear all auth cookies if refresh fails
-                document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-                document.cookie = 'userData=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-                document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 
-                // Optionally redirect to login
-                if (window.location.pathname !== '/login') {
-                    window.location.href = '/login';
+                ['authToken', 'userData', 'refreshToken'].forEach((name) => {
+                    document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+                });
+
+                profileCacheManager.clearCache();
+
+                if (window.location.pathname !== '/') {
+                    window.location.href = '/';
                 }
-                return Promise.reject(refreshError);
-            }
-        }
 
-        // For any 401 that couldn't be handled, clear auth
-        if (error.response?.status === 401) {
-            document.cookie = 'authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            document.cookie = 'userData=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            document.cookie = 'refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+                return Promise.reject(error);
+            }
         }
 
         return Promise.reject(error);

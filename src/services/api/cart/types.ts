@@ -16,6 +16,8 @@ export type CartItem = {
     addedAt: number;
     price?: number;
     duration?: string;
+    trip_start_date?: string;
+    trip_end_date?: string;
 };
 
 export type Participant = {
@@ -38,14 +40,20 @@ export type CardDetails = {
 export type PaymentMethod = 'mastercard' | 'apple-pay' | 'visa-pay' | 'paypal' | 'google-pay' | 'bank-transfer';
 
 export type PaymentDetails = {
+    id: string;
     orderId: string;
     payerId: string;
-    payerEmail: string;
-    payerName: string;
+    payerEmail?: string;
+    payerName?: string;
     amount: string;
     currency: string;
     status: string;
     transactionId: string;
+    paymentMethod?: PaymentMethod;
+    createdAt?: string;
+    updatedAt?: string;
+    details?: any | null;
+    booking?: number;
 };
 
 export type BookingFormData = {

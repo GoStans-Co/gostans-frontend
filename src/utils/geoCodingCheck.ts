@@ -1,39 +1,33 @@
-type GeocodingResult = {
+export type GeocodingResult = {
     latitude: number;
     longitude: number;
     placeName: string;
 };
 
-type MapboxGeocodingResponse = {
-    features: Array<{
-        center: [number, number];
-        place_name: string;
-        geometry: {
-            coordinates: [number, number];
-        };
-    }>;
+export type LocationNames = {
+    name: string;
+    latitude: number | null | undefined;
+    longitude: number | null | undefined;
 };
 
 export type ItineraryItem = {
     dayNumber: number;
     dayTitle: string;
     description: string;
-    locationName: string;
-    latitude: number | null | undefined;
-    longitude: number | null | undefined;
+    locationNames?: LocationNames[];
     accommodation?: string;
     includedMeals?: string;
 };
 
 /**
- * Mapbox - Geocoding Service
- * @description Service for interacting with the Mapbox Geocoding API.
+ * Mapbox - Geocoding Util Service
+ * @description Service for interacting with the Map Box Geocoding API.
  * This service provides methods to geocode a location name to latitude and longitude,
  * as well as reverse geocoding to get location names from coordinates.
  */
 export class MapboxGeocodingService {
     private accessToken: string;
-    private baseUrl = 'https://api.mapbox.com/geocoding/v5/mapbox.places';
+    private baseUrl = 'https://api.mapbox.com/search/geocode/v6/forward';
 
     constructor(accessToken: string) {
         this.accessToken = accessToken;
@@ -48,26 +42,85 @@ export class MapboxGeocodingService {
         }
 
         try {
-            const encodedLocation = encodeURIComponent(locationName);
-            const url = `${this.baseUrl}/${encodedLocation}.json?access_token=${this.accessToken}&limit=1`;
+            let cleanedLocation = locationName
+                .replace(/^[A-Z0-9]{4,8}\+[A-Z0-9]{2,3}\s*,?\s*/, '') // Remove Plus Code from start
+                .trim();
 
+            const searchLocation = cleanedLocation || locationName;
+
+            let countryParam = '';
+            if (searchLocation.toLowerCase().includes('tajikistan')) {
+                countryParam = '&country=tj';
+            } else if (searchLocation.toLowerCase().includes('kyrgyzstan')) {
+                countryParam = '&country=kg';
+            }
+
+            const encodedLocation = encodeURIComponent(searchLocation);
+            const url = `${this.baseUrl}?q=${encodedLocation}&access_token=${this.accessToken}&limit=1&types=place,locality,address${countryParam}`;
             const response = await fetch(url);
 
             if (!response.ok) {
+                if (cleanedLocation && cleanedLocation !== searchLocation) {
+                    const fallbackUrl = `${this.baseUrl}?q=${encodeURIComponent(cleanedLocation)}&access_token=${this.accessToken}&limit=1&types=place${countryParam}`;
+                    const fallbackResponse = await fetch(fallbackUrl);
+
+                    if (fallbackResponse.ok) {
+                        const fallbackData = await fallbackResponse.json();
+                        if (fallbackData.features && fallbackData.features.length > 0) {
+                            const feature = fallbackData.features[0];
+                            const [longitude, latitude] = feature.geometry.coordinates;
+                            return {
+                                latitude,
+                                longitude,
+                                placeName:
+                                    feature.properties.full_address ||
+                                    feature.properties.place_formatted ||
+                                    feature.properties.name,
+                            };
+                        }
+                    }
+                }
                 return null;
             }
 
-            const data: MapboxGeocodingResponse = await response.json();
+            const data = await response.json();
 
             if (data.features && data.features.length > 0) {
                 const feature = data.features[0];
-                const [longitude, latitude] = feature.center;
+                const [longitude, latitude] = feature.geometry.coordinates;
 
                 return {
                     latitude,
                     longitude,
-                    placeName: feature.place_name,
+                    placeName:
+                        feature.properties.full_address ||
+                        feature.properties.place_formatted ||
+                        feature.properties.name,
                 };
+            }
+
+            const parts = cleanedLocation.split(',').map((p) => p.trim());
+            if (parts.length > 1) {
+                const lastPart = parts[parts.length - 1];
+                const lastResortUrl = `${this.baseUrl}?q=${encodeURIComponent(lastPart)}&access_token=${this.accessToken}&limit=1&types=place,country${countryParam}`;
+                const lastResortResponse = await fetch(lastResortUrl);
+
+                if (lastResortResponse.ok) {
+                    const lastResortData = await lastResortResponse.json();
+                    if (lastResortData.features && lastResortData.features.length > 0) {
+                        const feature = lastResortData.features[0];
+                        const [longitude, latitude] = feature.geometry.coordinates;
+
+                        return {
+                            latitude,
+                            longitude,
+                            placeName:
+                                feature.properties.full_address ||
+                                feature.properties.place_formatted ||
+                                feature.properties.name,
+                        };
+                    }
+                }
             }
 
             return null;
@@ -106,12 +159,17 @@ export const isValidCoordinate = (lat: number | null | undefined, lng: number | 
 
 export const needsGeocoding = (itinerary: ItineraryItem): boolean => {
     const hasLocationName = Boolean(
-        itinerary.locationName &&
-            typeof itinerary.locationName === 'string' &&
-            itinerary.locationName.trim().length > 0,
+        itinerary.locationNames &&
+            Array.isArray(itinerary.locationNames) &&
+            itinerary.locationNames.length > 0 &&
+            typeof itinerary.locationNames[0].name === 'string' &&
+            itinerary.locationNames[0].name.trim().length > 0,
     );
 
-    const hasValidCoordinates = isValidCoordinate(itinerary.latitude, itinerary.longitude);
+    const hasValidCoordinates = isValidCoordinate(
+        itinerary.locationNames?.[0]?.latitude,
+        itinerary.locationNames?.[0]?.longitude,
+    );
 
     return hasLocationName && !hasValidCoordinates;
 };

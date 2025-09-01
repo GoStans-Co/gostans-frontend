@@ -15,6 +15,8 @@ import {
     FaChevronRight,
     FaArrowLeft,
     FaArrowRight,
+    FaUtensils,
+    FaBed,
 } from 'react-icons/fa';
 import { DatePicker, message } from 'antd';
 import Button from '@/components/common/Button';
@@ -37,6 +39,9 @@ import { CartItem } from '@/services/api/cart';
 import { useApiServices } from '@/services/api';
 import useTrendingTours from '@/hooks/api/useTrendingTours';
 import MapBox from '@/pages/SearchPackage/MapBox';
+import Lottie from 'lottie-react';
+import loadingAnimation from '@/assets/animation/loading.json';
+import { isValidCoordinate } from '@/utils/geoCodingCheck';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -60,7 +65,7 @@ const MainContent = styled.div`
     padding: 2rem;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.2rem;
     overflow: visible;
 
     ${({ theme }) => theme.responsive.maxMobile} {
@@ -74,19 +79,6 @@ const LeftContent = styled.div`
     flex-direction: column;
     gap: 2rem;
     max-width: 800px;
-`;
-
-const InfoCards = styled.div`
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 1rem;
-    margin-top: 0;
-
-    ${({ theme }) => theme.responsive.maxMobile} {
-        grid-template-columns: repeat(3, 1fr);
-        gap: ${({ theme }) => theme.spacing.sm};
-        margin-bottom: ${({ theme }) => theme.spacing.sm};
-    }
 `;
 
 const MapContainer = styled.div`
@@ -384,28 +376,6 @@ const SeeAllButton = styled.button`
     cursor: pointer;
 `;
 
-const InfoCard = styled(Card)`
-    text-align: center;
-    padding: 1.5rem 1rem;
-    background-color: ${({ theme }) => theme.colors.lightBackground};
-
-    .icon {
-        color: ${({ theme }) => theme.colors.primary};
-        margin-bottom: 0.5rem;
-    }
-
-    .label {
-        font-size: 12px;
-        color: ${({ theme }) => theme.colors.lightText};
-        margin-bottom: 0.25rem;
-    }
-
-    .value {
-        font-weight: 600;
-        color: ${({ theme }) => theme.colors.text};
-    }
-`;
-
 const Section = styled.div`
     margin-bottom: 2rem;
 
@@ -424,77 +394,48 @@ const Section = styled.div`
     }
 `;
 
-const IncludedExcludedContainer = styled.div`
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-
-    ${({ theme }) => theme.responsive.maxMobile} {
-        grid-template-columns: 1fr;
-        gap: 1.5rem;
-    }
-`;
-
 const ListColumn = styled.div`
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${({ theme }) => theme.borderRadius.md};
-    background-color: #fff;
+    border: none;
+    background-color: transparent;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 `;
 
 const ListContent = styled.div`
-    padding: 0.5rem 1.5rem 1rem;
+    padding: 0;
 `;
 
 const ListItem = styled.div<{ included?: boolean }>`
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 0;
-    color: ${({ theme }) => theme.colors.lightText};
-    font-size: 0.95rem;
-
-    &:not(:last-child) {
-        border-bottom: 0.5px solid ${({ theme }) => theme.colors.border};
-    }
+    gap: 1rem;
+    padding: 0.5rem 0;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 1rem;
 
     .icon {
-        color: ${({ included }) => (included ? '#52c41a' : '#ff4d4f')};
+        color: ${({ included }) => (included ? '#228b22' : '#ff0000')};
         flex-shrink: 0;
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
 `;
 
 const Itinerary = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 2rem;
     text-align: left;
 `;
 
 const ItineraryDay = styled.div<{ active?: boolean }>`
-    display: flex;
+    display: block;
     align-items: flex-start;
     gap: 1rem;
-    padding: 1rem;
-    border-radius: ${({ theme }) => theme.borderRadius.md};
-    background: ${({ active, theme }) => (active ? theme.colors.lightBackground : 'white')};
-    border: 1px solid ${({ theme }) => theme.colors.border};
 `;
 
-const DayNumber = styled.div<{ active?: boolean }>`
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: ${({ active, theme }) => (active ? theme.colors.primary : theme.colors.lightBackground)};
-    color: ${({ active }) => (active ? 'white' : '#666')};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    flex-shrink: 0;
+const TimelineContainer = styled.div`
+    position: relative;
 `;
 
 const DayContent = styled.div`
@@ -506,6 +447,7 @@ const DayContent = styled.div`
     }
 
     p {
+        padding-left: 60px;
         margin: 0.5rem 0 0 0;
         color: ${({ theme }) => theme.colors.lightText};
         font-size: 14px;
@@ -622,22 +564,25 @@ const ImageModalOverlay = styled(motion.div)`
 
 const ImageModalContent = styled(motion.div)`
     position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
+    width: 80vw;
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: default;
 `;
 
 const ModalImage = styled.img`
-    width: 100%;
-    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
     object-fit: contain;
-    max-width: 90vw;
-    max-height: 90vh;
 `;
 
 const CloseButton = styled(Button)`
     position: absolute;
-    top: -40px;
+    top: -20px;
     right: 0;
     background: none;
     border: none;
@@ -661,13 +606,12 @@ const NavigationButton = styled(Button)`
 `;
 
 const PrevButton = styled(NavigationButton)`
-    left: -60px;
+    left: 10px;
 `;
 
 const NextButton = styled(NavigationButton)`
-    right: -60px;
+    right: 120px;
 `;
-
 const ImageCounter = styled.div`
     position: absolute;
     bottom: -40px;
@@ -741,6 +685,184 @@ const TourDetailsContent = styled.div`
     .value {
         color: ${({ theme }) => theme.colors.secondary};
         font-weight: 500;
+    }
+`;
+
+const DayContainer = styled.div<{ last: boolean }>`
+    position: relative;
+    margin-bottom: ${({ last }) => (last ? '0' : '20px')};
+`;
+
+const DayNumberStyled = styled.div<{ active: boolean }>`
+    position: absolute;
+    left: 10px;
+    z-index: 2;
+    background: ${({ active }) => (active ? '#000' : '#fff')};
+    color: ${({ active }) => (active ? '#fff' : '#000')};
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+
+const Description = styled.p`
+    white-space: pre-line;
+`;
+
+const InfoParagraph = styled.p`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: ${({ theme }) => theme.colors.error};
+`;
+
+const DayHeaderStyled = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding-left: 60px;
+    min-height: 40px;
+`;
+
+const StartContainer = styled.div`
+    position: relative;
+    margin-bottom: 20px;
+`;
+
+const StartBubble = styled.div`
+    position: absolute;
+    left: 10px;
+    z-index: 2;
+    background: #ffd700;
+    color: #000;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-weight: bold;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+`;
+
+const StartContent = styled.div`
+    padding-left: 60px;
+    h4 {
+        margin: 0;
+        color: ${({ theme }) => theme.colors.text};
+        font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        margin-left: 8px;
+        padding: 4px 0;
+    }
+    p {
+        margin: 4px 0 0;
+        color: ${({ theme }) => theme.colors.primary};
+        font-size: 14px;
+    }
+`;
+
+const EndContainer = styled.div`
+    position: relative;
+    margin-top: 20px;
+`;
+
+const EndBubble = styled.div`
+    position: absolute;
+    left: 10px;
+    z-index: 2;
+    background: #ffd700;
+    color: #000;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-weight: bold;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+`;
+
+const EndContent = styled.div`
+    padding-left: 60px;
+    h4 {
+        margin: 0;
+        padding: 4px 0;
+        color: ${({ theme }) => theme.colors.text};
+        font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        margin-left: 8px;
+    }
+`;
+
+const TimelineLine = styled.div`
+    position: absolute;
+    left: 29px;
+    top: 0;
+    bottom: 0;
+    border-left: 2px dotted #ccc;
+    z-index: 1;
+`;
+
+const InfoRow = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex-direction: column;
+        align-items: stretch;
+    }
+`;
+
+const InfoCards = styled.div`
+    display: flex;
+    gap: 1rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.sm};
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+    }
+`;
+
+const InfoCard = styled(Card)`
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.4rem 1.3rem;
+    background-color: ${({ theme }) => theme.colors.lightBackground};
+    min-width: 80px;
+
+    .icon {
+        color: ${({ theme }) => theme.colors.primary};
+        flex-shrink: 0;
+    }
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: right;
+        flex: 1;
+        margin-left: 0.5rem;
+    }
+
+    .label {
+        font-size: 0.75rem;
+        color: ${({ theme }) => theme.colors.lightText};
+        margin-bottom: 0.125rem;
+    }
+
+    .value {
+        font-weight: 600;
+        color: ${({ theme }) => theme.colors.text};
+        font-size: 0.875rem;
     }
 `;
 
@@ -852,10 +974,15 @@ export default function SearchPackageDetails() {
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    height: '50vh',
+                    height: '100vh',
                     fontSize: '18px',
                 }}
             >
+                <Lottie
+                    animationData={loadingAnimation}
+                    loop={true}
+                    style={{ width: 120, height: 120, marginBottom: 24 }}
+                />
                 Loading tour details...
             </div>
         );
@@ -881,6 +1008,32 @@ export default function SearchPackageDetails() {
     const totalPages = Math.ceil(filteredTours.length / toursPerPage);
     const visibleTours = filteredTours.slice(currentPage * toursPerPage, (currentPage + 1) * toursPerPage);
     const totalPrice = parseFloat(tour.price);
+
+    const startTitle = tour.itineraries?.[0]?.dayTitle.split(' (')[0] ?? 'Unknown';
+    const startLocation = startTitle.includes(' - ') ? startTitle.split(' - ')[0] : startTitle;
+    const endTitle = tour.itineraries?.[tour.itineraries.length - 1]?.dayTitle.split(' (')[0] ?? 'Unknown';
+    const endLocation = endTitle.includes(' - ') ? endTitle.split(' - ')[1] : endTitle;
+    const isLoop = startLocation === endLocation;
+    const endMessage = isLoop ? "You'll return to the starting point" : `You'll end at ${endLocation}`;
+
+    const languageMap: { [key: string]: string } = {
+        en: 'ENG',
+        ko: 'KOR',
+        rus: 'RUS',
+        uz: 'UZB',
+    };
+
+    const getDisplayLanguages = (lang: unknown) => {
+        if (!lang) return 'Not specified';
+        if (Array.isArray(lang)) {
+            return lang.map((code) => languageMap[String(code).toLowerCase()] || code).join(', ');
+        }
+        if (typeof lang === 'string') {
+            const codes = lang.match(/.{1,2}/g) || [];
+            return codes.map((code) => languageMap[code.toLowerCase()] || code).join(', ');
+        }
+        return 'Not specified';
+    };
 
     const images =
         tour.images?.length > 0 ? tour.images.map((img) => img.image || default_n1) : [tour.mainImage || default_n1];
@@ -1197,37 +1350,61 @@ export default function SearchPackageDetails() {
                     </ImageSection>
                     <ContentSection>
                         <LeftContent>
-                            <InfoCards>
-                                <InfoCard>
-                                    <FaClock className="icon" size={24} />
-                                    <div className="label">Duration</div>
-                                    <div className="value">{tour.duration}</div>
-                                </InfoCard>
-                                <InfoCard>
-                                    <FaMapMarkerAlt className="icon" size={24} />
-                                    <div className="label">Tour Type</div>
-                                    <div className="value">{tour.tourType}</div>
-                                </InfoCard>
-                                <InfoCard>
-                                    <FaUsers className="icon" size={24} />
-                                    <div className="label">Group Size</div>
-                                    <div className="value">{tour.groupSize}</div>
-                                </InfoCard>
-                                <InfoCard>
-                                    <FaUserFriends className="icon" size={24} />
-                                    <div className="label">Ages</div>
-                                    <div className="value">
-                                        {tour.ageMin}-{tour.ageMax}
-                                    </div>
-                                </InfoCard>
-                                <InfoCard>
-                                    <FaGlobe className="icon" size={24} />
-                                    <div className="label">Languages</div>
-                                    <div className="value" style={{ whiteSpace: 'pre-line' }}>
-                                        {tour.language || 'Not specified'}
-                                    </div>
-                                </InfoCard>
-                            </InfoCards>
+                            <InfoRow>
+                                <InfoCards>
+                                    <InfoCard>
+                                        <div className="icon">
+                                            <FaClock className="icon" size={28} />
+                                        </div>
+                                        <div className="content">
+                                            <div className="label">Duration</div>
+                                            <div className="value">{tour.duration}</div>
+                                        </div>
+                                    </InfoCard>
+
+                                    <InfoCard>
+                                        <div className="icon">
+                                            <FaMapMarkerAlt className="icon" size={28} />
+                                        </div>
+                                        <div className="content">
+                                            <div className="label">Tour Type</div>
+                                            <div className="value">{tour.tourType}</div>
+                                        </div>
+                                    </InfoCard>
+
+                                    <InfoCard>
+                                        <div className="icon">
+                                            <FaUsers className="icon" size={28} />
+                                        </div>
+                                        <div className="content">
+                                            <div className="label">Group Size</div>
+                                            <div className="value">{tour.groupSize}</div>
+                                        </div>
+                                    </InfoCard>
+
+                                    <InfoCard>
+                                        <div className="icon">
+                                            <FaUserFriends className="icon" size={28} />
+                                        </div>
+                                        <div className="content">
+                                            <div className="label">Ages</div>
+                                            <div className="value">
+                                                {tour.ageMin}-{tour.ageMax}
+                                            </div>
+                                        </div>
+                                    </InfoCard>
+
+                                    <InfoCard>
+                                        <div className="icon">
+                                            <FaGlobe className="icon" size={28} />
+                                        </div>
+                                        <div className="content">
+                                            <div className="label">Languages</div>
+                                            <div className="value">{getDisplayLanguages(tour.language || '')}</div>
+                                        </div>
+                                    </InfoCard>
+                                </InfoCards>
+                            </InfoRow>
 
                             <Section>
                                 <h2>Tour Overview</h2>
@@ -1235,80 +1412,120 @@ export default function SearchPackageDetails() {
                             </Section>
 
                             <Section>
-                                <h2>Included / Excluded</h2>
-                                <IncludedExcludedContainer>
-                                    <ListColumn>
-                                        <ListContent>
-                                            {tour.includedItem?.length > 0 ? (
-                                                tour.includedItem.map((item, index) => (
-                                                    <ListItem key={index} included>
-                                                        <FaCheck className="icon" />
-                                                        <span>{item.text}</span>
-                                                    </ListItem>
-                                                ))
-                                            ) : (
-                                                <ListItem included>
+                                <h2>What's included</h2>
+                                <ListColumn>
+                                    <ListContent>
+                                        {tour.includedItem?.length > 0 ? (
+                                            tour.includedItem.map((item, index) => (
+                                                <ListItem key={`included-${index}`} included>
                                                     <FaCheck className="icon" />
-                                                    <span>No included items specified.</span>
+                                                    <span>{item.text}</span>
                                                 </ListItem>
-                                            )}
-                                        </ListContent>
-                                    </ListColumn>
-
-                                    <ListColumn>
-                                        <ListContent>
-                                            {tour.excludedItem?.length > 0 ? (
-                                                tour.excludedItem.map((item, index) => (
-                                                    <ListItem key={index}>
-                                                        <FaTimes className="icon" />
-                                                        <span>{item.text}</span>
-                                                    </ListItem>
-                                                ))
-                                            ) : (
-                                                <ListItem>
+                                            ))
+                                        ) : (
+                                            <ListItem included>
+                                                <FaCheck className="icon" />
+                                                <span>No included items specified.</span>
+                                            </ListItem>
+                                        )}
+                                        {tour.excludedItem?.length > 0 ? (
+                                            tour.excludedItem.map((item, index) => (
+                                                <ListItem key={`excluded-${index}`}>
                                                     <FaTimes className="icon" />
-                                                    <span>No excluded items specified.</span>
+                                                    <span>{item.text}</span>
                                                 </ListItem>
-                                            )}
-                                        </ListContent>
-                                    </ListColumn>
-                                </IncludedExcludedContainer>
+                                            ))
+                                        ) : (
+                                            <ListItem>
+                                                <FaTimes className="icon" />
+                                                <span>No excluded items specified.</span>
+                                            </ListItem>
+                                        )}
+                                    </ListContent>
+                                </ListColumn>
                             </Section>
 
                             <Section>
                                 <h2>Itinerary</h2>
                                 <Itinerary>
-                                    {tour.itineraries?.map((day) => (
-                                        <ItineraryDay key={day.dayNumber} active={expandedDays.has(day.dayNumber)}>
-                                            <DayNumber active={expandedDays.has(day.dayNumber)}>
-                                                {day.dayNumber}
-                                            </DayNumber>
-                                            <DayContent>
-                                                <DayHeader onClick={() => toggleDay(day.dayNumber)}>
-                                                    <h4>
-                                                        Day {day.dayNumber}: {day.dayTitle}
-                                                    </h4>
-                                                    <Arrow expanded={expandedDays.has(day.dayNumber)}>▼</Arrow>
-                                                </DayHeader>
-                                                {expandedDays.has(day.dayNumber) && <p>{day.description}</p>}
-                                            </DayContent>
-                                        </ItineraryDay>
-                                    ))}
+                                    <TimelineContainer>
+                                        <StartContainer>
+                                            <StartBubble>Start</StartBubble>
+                                            <StartContent>
+                                                <h4>You'll start at {startLocation}</h4>
+                                            </StartContent>
+                                        </StartContainer>
+                                        <TimelineLine />
+                                        {tour.itineraries?.map((day, index) => (
+                                            <ItineraryDay key={day.dayNumber} active={expandedDays.has(day.dayNumber)}>
+                                                <DayContainer
+                                                    key={day.dayNumber}
+                                                    last={index === tour.itineraries.length - 1}
+                                                >
+                                                    <DayNumberStyled active={expandedDays.has(day.dayNumber)}>
+                                                        {day.dayNumber}
+                                                    </DayNumberStyled>
+                                                    <DayContent>
+                                                        <DayHeaderStyled onClick={() => toggleDay(day.dayNumber)}>
+                                                            <h4>
+                                                                Day {day.dayNumber}: {day.dayTitle}
+                                                            </h4>
+                                                            <Arrow expanded={expandedDays.has(day.dayNumber)}>▼</Arrow>
+                                                        </DayHeaderStyled>
+                                                        {expandedDays.has(day.dayNumber) && (
+                                                            <>
+                                                                <Description>{day.description}</Description>
+                                                                {day.includedMeals && (
+                                                                    <InfoParagraph>
+                                                                        <FaUtensils size={16} />
+                                                                        <strong>Included Meals:</strong>{' '}
+                                                                        {day.includedMeals}
+                                                                    </InfoParagraph>
+                                                                )}
+                                                                {day.accommodation && (
+                                                                    <InfoParagraph>
+                                                                        <FaBed size={16} />
+                                                                        <strong>Accommodation:</strong>{' '}
+                                                                        {day.accommodation}
+                                                                    </InfoParagraph>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </DayContent>
+                                                </DayContainer>
+                                            </ItineraryDay>
+                                        ))}
+                                        <EndContainer>
+                                            <EndBubble>End</EndBubble>
+                                            <EndContent>
+                                                <h4>{endMessage}</h4>
+                                            </EndContent>
+                                        </EndContainer>
+                                    </TimelineContainer>
                                 </Itinerary>
                             </Section>
 
                             <Section id="map">
                                 <h2>Location</h2>
-                                {tour.itineraries && tour.itineraries.length > 0 ? (
+                                {Array.isArray(tour.itineraries) && tour.itineraries.length > 0 ? (
                                     <MapBox
-                                        key={tour.uuid + '-' + tour.itineraries?.length}
+                                        key={tour.uuid + '-' + tour.itineraries.length}
                                         itineraries={tour.itineraries.map((item) => ({
                                             dayNumber: item.dayNumber,
                                             dayTitle: item.dayTitle,
                                             description: item.description,
-                                            locationName: item.locationName || '',
-                                            latitude: item.latitude,
-                                            longitude: item.longitude,
+                                            locationNames: item.locationNames || [],
+                                            locationName: item.locationNames?.map((l) => l.name).join(', ') || '',
+                                            latitude:
+                                                item.locationNames?.find((l) =>
+                                                    isValidCoordinate(l.latitude, l.longitude),
+                                                )?.latitude ?? null,
+                                            longitude:
+                                                item.locationNames?.find((l) =>
+                                                    isValidCoordinate(l.latitude, l.longitude),
+                                                )?.longitude ?? null,
+                                            accommodation: item.accommodation,
+                                            includedMeals: item.includedMeals,
                                         }))}
                                         tourUuid={tour.uuid}
                                         height="500px"

@@ -9,9 +9,9 @@ import { useFetch } from '@/hooks/api/useFetch';
 import { ApiResponse } from '@/types/common/fetch';
 import { useMemo } from 'react';
 import { useRecoilState } from 'recoil';
-import { CACHE_DURATION } from '@/services/api/auth/authService';
 import { tourDetailsAtom, toursCacheStatusAtom, toursDataAtom } from '@/atoms/tours';
 import { countriesWithCitiesAtom, CountriesWithCitiesState, CountryWithCities } from '@/atoms/countryWithCities';
+import { CACHE_DURATION } from '@/services/api/user/userService';
 
 export const isCacheValid = (lastFetch: number | null): boolean => {
     if (!lastFetch) return false;
