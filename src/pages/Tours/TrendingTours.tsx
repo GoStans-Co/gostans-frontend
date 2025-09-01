@@ -16,7 +16,7 @@ const PageContainer = styled.div`
         ${({ theme }) => theme.colors.lightBackground} 0%,
         ${({ theme }) => theme.colors.grayBackground} 100%
     );
-    padding: ${({ theme }) => theme.spacing['2xl']} 0;
+    padding: ${({ theme }) => theme.spacing['2xl']} 2rem;
     padding-bottom: ${({ theme }) => theme.spacing['5xl']};
 
     ${({ theme }) => theme.responsive.maxMobile} {
@@ -126,6 +126,36 @@ const RetryButton = styled(Button)`
     margin-top: 1rem;
 `;
 
+const EmptyStateContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: ${({ theme }) => theme.spacing['5xl']} ${({ theme }) => theme.spacing['2xl']};
+    min-height: 350px;
+`;
+
+const EmptyStateIcon = styled.div`
+    font-size: ${({ theme }) => theme.fontSizes['7xl']};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+    opacity: 0.7;
+`;
+
+const EmptyStateTitle = styled.h3`
+    font-size: ${({ theme }) => theme.fontSizes['2xl']};
+    font-weight: 700;
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const EmptyStateDescription = styled.p`
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    color: ${({ theme }) => theme.colors.lightText};
+    max-width: 500px;
+    line-height: 1.6;
+`;
+
 /**
  * TrendingTours - Page Component
  * @description This component displays trending tours with filtering options based on tour types.
@@ -184,7 +214,37 @@ export default function TrendingTours() {
         );
     }
 
-    if (filteredTours.length === 0 && !loading) {
+    if (error || filteredTours.length === 0) {
+        return (
+            <PageContainer>
+                <HeaderSection>
+                    <PageTitle>Trending Tours</PageTitle>
+                    <PageSubtitle>
+                        Discover our most popular tours and experiences. Find your perfect adventure from our curated
+                        collection.
+                    </PageSubtitle>
+                </HeaderSection>
+
+                <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="default" />
+
+                <EmptyStateContainer>
+                    <EmptyStateIcon>🏔️</EmptyStateIcon>
+                    <EmptyStateTitle>No destinations found</EmptyStateTitle>
+                    <EmptyStateDescription>
+                        {error
+                            ? "We couldn't load destinations due to an error. Please try again."
+                            : "We couldn't find any destinations matching your search criteria. Try adjusting your search or browse all destinations."}
+                    </EmptyStateDescription>
+                    <RetryButton variant="primary" onClick={() => setActiveTab('all')}>
+                        <Link to="/searchTrips">Search All Tours</Link>
+                    </RetryButton>
+                </EmptyStateContainer>
+            </PageContainer>
+        );
+    }
+
+    /* if there is data and no error, but filteredTours is empty for the selected tab */
+    if (filteredTours.length === 0 && !loading && !error && tours.length > 0) {
         return (
             <PageContainer>
                 <HeaderSection>
@@ -206,7 +266,6 @@ export default function TrendingTours() {
             </PageContainer>
         );
     }
-
     return (
         <PageContainer>
             <ContentContainer>

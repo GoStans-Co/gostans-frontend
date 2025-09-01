@@ -47,6 +47,21 @@ export type ToursListApiResponse = {
     totalPages: number;
 };
 
+export type ItineraryLocation = {
+    name: string;
+    latitude: number | null;
+    longitude: number | null;
+};
+
+export type Itinerary = {
+    dayNumber: number;
+    dayTitle: string;
+    description: string;
+    accommodation: string;
+    includedMeals: string;
+    locationNames: ItineraryLocation[];
+};
+
 export type TourDetailsResponse = {
     id: number;
     uuid: string;
@@ -74,16 +89,7 @@ export type TourDetailsResponse = {
         id: number;
         image: string;
     }>;
-    itineraries: Array<{
-        dayNumber: number;
-        dayTitle: string;
-        description: string;
-        accommodation: string;
-        includedMeals: string;
-        locationName: string;
-        latitude: number;
-        longitude: number;
-    }>;
+    itineraries: Itinerary[];
     agePricing: Array<{
         ageCategory: string;
         price: string;

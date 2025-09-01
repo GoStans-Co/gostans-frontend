@@ -4,10 +4,19 @@ import NotFoundPage from '@/components/NotFound';
 import ProtectedRoute from '@/routes/protectedRoute';
 import MainLayout from '@/components/layout/Layout';
 import OAuthRedirect from '@/pages/OAuthRedirect';
+import Lottie from 'lottie-react';
+import loadingAnimation from '@/assets/animation/loading.json';
 
 const ComponentLoading = () => (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <h2>Loading...</h2>
+        <h2>
+            <Lottie
+                animationData={loadingAnimation}
+                loop={true}
+                style={{ width: 120, height: 120, marginBottom: 24 }}
+            />
+            Loading...
+        </h2>
     </div>
 );
 

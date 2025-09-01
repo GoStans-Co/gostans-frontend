@@ -292,7 +292,7 @@ const EmptyStateContainer = styled.div`
 
 const EmptyStateIcon = styled.div`
     font-size: ${({ theme }) => theme.fontSizes['7xl']};
-    margin-bottom: ${({ theme }) => theme.spacing['2xl']};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
     opacity: 0.7;
 `;
 
