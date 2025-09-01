@@ -60,8 +60,6 @@ export class MapboxGeocodingService {
             const response = await fetch(url);
 
             if (!response.ok) {
-                console.warn(`Geocoding failed for: ${searchLocation} (HTTP ${response.status})`);
-
                 if (cleanedLocation && cleanedLocation !== searchLocation) {
                     const fallbackUrl = `${this.baseUrl}?q=${encodeURIComponent(cleanedLocation)}&access_token=${this.accessToken}&limit=1&types=place${countryParam}`;
                     const fallbackResponse = await fetch(fallbackUrl);
