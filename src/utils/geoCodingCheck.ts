@@ -90,7 +90,7 @@ export class MapboxGeocodingService {
                 const feature = data.features[0];
                 const [longitude, latitude] = feature.geometry.coordinates;
 
-                console.log(`Geocoding successful: ${searchLocation} -> [${latitude}, ${longitude}]`);
+                console.info(`Geocoding successful: ${searchLocation} -> [${latitude}, ${longitude}]`);
 
                 return {
                     latitude,
