@@ -12,6 +12,7 @@ import {
     PaymentExecuteRequest,
     PaymentExecuteResponse,
 } from '@/services/api/checkout/types';
+import { TokenStorage } from '@/utils/tokenStorage';
 
 export const BOOKING_CACHE_DURATION = 10 * 60 * 1000;
 
@@ -48,7 +49,7 @@ export const useCheckoutService = () => {
              * @returns Promise with payment creation response
              */
             createPayment: async (paymentData: CardPaymentRequest): Promise<ApiResponse<CardPaymentResponse>> => {
-                const accessToken = localStorage.getItem('access_token');
+                const accessToken = TokenStorage.getAccessToken();
 
                 const responseData = {
                     amount: paymentData.amount,
@@ -92,7 +93,7 @@ export const useCheckoutService = () => {
                 }
 
                 const requestPromise = (async () => {
-                    const accessToken = localStorage.getItem('access_token');
+                    const accessToken = TokenStorage.getAccessToken();
 
                     const response = await fetchData({
                         url: '/user/payments/execute/',
@@ -127,7 +128,7 @@ export const useCheckoutService = () => {
              * @returns Promise with card payment response
              */
             createVisaPayment: async (paymentData: CardPaymentRequest): Promise<ApiResponse<CardPaymentResponse>> => {
-                const accessToken = localStorage.getItem('access_token');
+                const accessToken = TokenStorage.getAccessToken();
 
                 const response = await fetchData({
                     url: '/user/payments/card/',
