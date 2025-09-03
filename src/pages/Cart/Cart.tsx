@@ -14,15 +14,8 @@ import PaymentStep from '@/components/Payment/PaymentStep';
 import { AlertCircle } from 'lucide-react';
 import { useValidation } from '@/hooks/utils/useValidation';
 import { useApiServices } from '@/services/api';
-import { BookingFormData, CartItem, PaymentDetails, PaymentMethod } from '@/services/api/cart';
-import {
-    BillingInfo,
-    CardInfo,
-    CardPaymentRequest,
-    CardPaymentResponse,
-    Participant,
-    PaymentStatus,
-} from '@/services/api/checkout';
+import { BookingFormData, CartItem, PaymentDetails } from '@/services/api/cart';
+import { CardPaymentResponse, Participant, PaymentStatus, StripePaymentRequest } from '@/services/api/checkout';
 
 type CheckoutStep = 'cart' | 'checkout' | 'payment' | 'confirmation';
 
@@ -175,7 +168,7 @@ const GuestSelectionTitle = styled.h3`
     font-size: ${({ theme }) => theme.fontSizes.lg};
     font-weight: 600;
     color: ${({ theme }) => theme.colors.text};
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.9rem;
     text-align: left;
 `;
 
@@ -333,6 +326,11 @@ const ValidationError = styled.div`
     background-color: rgb(246, 227, 229);
     padding: ${({ theme }) => theme.spacing.sm};
     border-radius: ${({ theme }) => theme.borderRadius.sm};
+
+    &:focus {
+        outline-offset: 2px;
+        animation: pulse 0.5s ease-in-out;
+    }
 `;
 
 /**
@@ -377,6 +375,8 @@ export default function CartPage() {
 
     const { cartValidationErrors, validateCart } = useValidation('cart');
     const hasInitialized = useRef(false);
+    const errorRefs = useRef<{ [itemId: string]: HTMLDivElement | null }>({});
+    const isValidating = useRef(false);
 
     useEffect(() => {
         const newStep = getCurrentStep();
@@ -408,7 +408,9 @@ export default function CartPage() {
     }, [currentStep]);
 
     useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (!isValidating.current) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     }, []);
 
     const initializePayment = async () => {
@@ -516,7 +518,7 @@ export default function CartPage() {
         window.location.href = paymentCreated.approvalUrl;
     };
 
-    const handleVisaCardPayment = async (cardInfo: CardInfo, billingInfo: BillingInfo, saveCard: boolean) => {
+    const handleStripeCardPayment = async () => {
         try {
             setError('');
             setIsProcessing(true);
@@ -524,8 +526,8 @@ export default function CartPage() {
             const mainTour = cartItems[0];
             const total = calculateTotal();
 
-            const cardPaymentRequest: CardPaymentRequest = {
-                amount: Number(total.toFixed(2)),
+            const paymentIntentRequest: StripePaymentRequest = {
+                amount: Math.round(total * 100),
                 currency: 'USD',
                 tour_uuid: mainTour.tourId,
                 participants: formData.participants.map((participant: Participant) => ({
@@ -535,49 +537,24 @@ export default function CartPage() {
                     idNumber: participant.idNumber,
                     dateOfBirth: participant.dateOfBirth,
                 })),
-                card_info: cardInfo,
-                billing_info: billingInfo,
-                save_card: saveCard,
-                trip_start_date: formatDateToYMD(mainTour.trip_start_date || new Date()),
+                trip_start_date: formatDateToYMD(selectedDates[mainTour.tourId] || new Date()),
                 trip_end_date: formatDateToYMD(mainTour.trip_end_date || new Date()),
             };
 
-            const response = await checkout.createVisaPayment(cardPaymentRequest);
+            const response = await checkout.createStripePayment(paymentIntentRequest);
 
             if (response.statusCode === 200) {
-                const paymentDetails: PaymentDetails = {
-                    id: response.data.payment_id,
-                    orderId: response.data.payment_id,
-                    payerId: billingInfo.email,
-                    payerEmail: billingInfo.email,
-                    payerName: `${billingInfo.firstName} ${billingInfo.lastName}`,
-                    amount: response.data.amount.toString(),
-                    currency: response.data.currency,
-                    status: response.data.status,
-                    transactionId: response.data.payment_id,
-                };
-
-                const cartItemsForConfirmation = [...cartItems];
-
-                setFormData((prev) => ({
-                    ...prev,
-                    paymentDetails: paymentDetails,
-                    paymentMethod: 'card' as PaymentMethod,
-                    cartItems: cartItemsForConfirmation,
-                    totalAmount: total,
-                }));
-
-                setCartItems([]);
-                setSuccess('Payment completed successfully!');
-                navigate('/cart/checkout/confirmation');
+                setSuccess('Payment initialized');
+                setIsProcessing(false);
+                return response;
             } else {
                 throw new Error(response.message);
             }
         } catch (err) {
             const error = err as Error;
-            setError(error.message || 'Payment execution failed');
-        } finally {
+            setError(error.message || 'Payment initialization failed');
             setIsProcessing(false);
+            return null;
         }
     };
 
@@ -661,9 +638,27 @@ export default function CartPage() {
 
     const handleCheckout = () => {
         const isValid = validateCartItems();
-        if (isValid) {
-            navigate('/cart/checkout');
+        if (!isValid) {
+            isValidating.current = true;
+
+            setTimeout(() => {
+                const firstErrorItemId = Object.keys(cartValidationErrors).find(
+                    (itemId) => cartValidationErrors[itemId],
+                );
+                if (firstErrorItemId && errorRefs.current[firstErrorItemId]) {
+                    errorRefs.current[firstErrorItemId]?.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'nearest',
+                    });
+                    errorRefs.current[firstErrorItemId]?.focus();
+                }
+
+                isValidating.current = false;
+            }, 200);
+            return;
         }
+        navigate('/cart/checkout');
     };
 
     const handleInfoNext = (data: Partial<BookingFormData>) => {
@@ -813,7 +808,7 @@ export default function CartPage() {
                             success={success}
                             paymentCreated={paymentCreated}
                             onPayPalClick={handlePayPalPayment}
-                            onCardClick={handleVisaCardPayment}
+                            onCardClick={handleStripeCardPayment}
                             onBack={handlePaymentBack}
                             total={calculateTotal()}
                         />
@@ -911,6 +906,16 @@ export default function CartPage() {
 
                                     <GuestSelectionCard>
                                         <GuestSelectionTitle>Guest Selecting</GuestSelectionTitle>
+                                        {cartValidationErrors[item.tourId] && (
+                                            <ValidationError
+                                                ref={(el) => {
+                                                    errorRefs.current[item.tourId] = el;
+                                                }}
+                                                tabIndex={-1}
+                                            >
+                                                Please select a date and number of adults{' '}
+                                            </ValidationError>
+                                        )}
                                         <GuestSelectionGrid>
                                             <LeftAlignedSection>
                                                 <GuestRow>
@@ -1056,11 +1061,6 @@ export default function CartPage() {
                                                 )}
                                             </CalendarContainer>
                                         </GuestSelectionGrid>
-                                        {cartValidationErrors[item.tourId] && (
-                                            <ValidationError>
-                                                Please select a date and number of adults{' '}
-                                            </ValidationError>
-                                        )}
                                     </GuestSelectionCard>
                                 </div>
                             ))}

@@ -11,6 +11,8 @@ import {
     CheckoutPromise,
     PaymentExecuteRequest,
     PaymentExecuteResponse,
+    StripePaymentRequest,
+    StripePaymentResponse,
 } from '@/services/api/checkout/types';
 import { TokenStorage } from '@/utils/tokenStorage';
 
@@ -127,13 +129,28 @@ export const useCheckoutService = () => {
              * @param paymentData - Card payment creation data
              * @returns Promise with card payment response
              */
-            createVisaPayment: async (paymentData: CardPaymentRequest): Promise<ApiResponse<CardPaymentResponse>> => {
+            createStripePayment: async (
+                paymentData: StripePaymentRequest,
+            ): Promise<ApiResponse<StripePaymentResponse>> => {
                 const accessToken = TokenStorage.getAccessToken();
 
                 const response = await fetchData({
-                    url: '/user/payments/card/',
+                    url: '/user/create-payment-intent/',
                     method: 'POST',
-                    data: paymentData,
+                    data: {
+                        amount: paymentData.amount,
+                        currency: paymentData.currency || 'USD',
+                        tourUuid: paymentData.tour_uuid,
+                        trip_start_date: paymentData.trip_start_date,
+                        trip_end_date: paymentData.trip_end_date,
+                        participants: paymentData.participants.map((p) => ({
+                            first_name: p.firstName,
+                            last_name: p.lastName,
+                            id_type: p.idType,
+                            id_number: p.idNumber,
+                            date_of_birth: p.dateOfBirth,
+                        })),
+                    },
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
                         'Content-Type': 'application/json',
@@ -143,7 +160,7 @@ export const useCheckoutService = () => {
                 return {
                     data: response.data,
                     statusCode: 200,
-                    message: response.message || 'Payment completed successfully',
+                    message: response.message || 'Payment intent created successfully',
                 };
             },
 

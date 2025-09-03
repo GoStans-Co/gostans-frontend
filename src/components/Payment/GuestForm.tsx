@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import Input from '@/components/common/Input';
 import { useValidation } from '@/hooks/utils/useValidation';
@@ -6,7 +6,7 @@ import { COUNTRY_CODES } from '@/constants/countryCodes';
 
 type LeadGuestFormProps = {
     onSubmit: (data: any) => void;
-    onValidationReady?: (validateFn: () => boolean) => void;
+    onValidationReady?: (validateFn: () => boolean, allFieldsFilled: boolean) => void;
 };
 
 const FormContainer = styled.div`
@@ -27,7 +27,7 @@ const FormTitle = styled.h2`
 
 const FormSubtitle = styled.p`
     font-family: ${({ theme }) => theme.typography.fontFamily.body};
-    font-size: ${({ theme }) => theme.fontSizes.md};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.lightText};
     margin-top: ${({ theme }) => theme.spacing.xs};
     text-align: left;
@@ -51,14 +51,14 @@ const PhoneInputContainer = styled.div`
 `;
 
 const CountrySelect = styled.select`
-    padding: 0 ${({ theme }) => theme.spacing.md};
+    padding: 0 ${({ theme }) => theme.spacing.sm};
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius.md};
     background-color: ${({ theme }) => theme.colors.background};
     color: ${({ theme }) => theme.colors.text};
     font-size: ${({ theme }) => theme.fontSizes.md};
     min-width: 100px;
-    height: 48px;
+    height: 40px;
     cursor: pointer;
 
     &:focus {
@@ -77,20 +77,64 @@ const FullWidthContainer = styled.div`
     grid-column: 1 / -1;
 `;
 
-// const HelpText = styled.p`
-//     font-size: 0.7rem;
-//     color: #666;
-//     margin: 0.3rem 0 0 0;
-//     text-align: left;
-// `;
-
 export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestFormProps) {
+    const submissionTimerRef = useRef<NodeJS.Timeout | null>(null);
     const { billingInfo, errors, handleBillingChange, validateAllFields } = useValidation('billing');
-    const [selectedCountryCode, setSelectedCountryCode] = useState('+39');
+    const [selectedCountryCode, setSelectedCountryCode] = useState('+82');
+    const [hasInteracted, setHasInteracted] = useState(false);
+    const [hasSubmitted, setHasSubmitted] = useState(false);
+
+    const checkAllFieldsFilled = () => {
+        return !!(
+            billingInfo.firstName &&
+            billingInfo.lastName &&
+            billingInfo.email &&
+            billingInfo.phone &&
+            billingInfo.address &&
+            billingInfo.city &&
+            billingInfo.state &&
+            billingInfo.postalCode &&
+            billingInfo.country.length >= 2
+        );
+    };
+
+    useEffect(() => {
+        if (submissionTimerRef.current) {
+            clearTimeout(submissionTimerRef.current);
+        }
+
+        const allFieldsFilled = checkAllFieldsFilled();
+
+        /* here we only submit after a delay to ensure user has finished typing */
+        if (allFieldsFilled && hasInteracted && !hasSubmitted) {
+            submissionTimerRef.current = setTimeout(() => {
+                const completeFormData = {
+                    billingInfo: {
+                        ...billingInfo,
+                        phone: `${selectedCountryCode}${billingInfo.phone}`,
+                    },
+                };
+                onSubmit(completeFormData);
+                setHasSubmitted(true);
+            }, 500);
+        }
+
+        if (!allFieldsFilled && hasSubmitted) {
+            setHasSubmitted(false);
+        }
+
+        return () => {
+            if (submissionTimerRef.current) {
+                clearTimeout(submissionTimerRef.current);
+            }
+        };
+    }, [billingInfo, hasInteracted, selectedCountryCode, onSubmit, hasSubmitted]);
 
     useEffect(() => {
         if (onValidationReady) {
-            onValidationReady(validateAllFields);
+            onValidationReady(() => {
+                return validateAllFields();
+            }, checkAllFieldsFilled());
         }
     }, [onValidationReady, validateAllFields]);
 
@@ -122,9 +166,12 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
                             label="First Name"
                             placeholder="John"
                             value={billingInfo.firstName}
-                            onChange={(e) => handleBillingChange('firstName', e.target.value)}
-                            error={errors.firstName}
-                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                            onChange={(e) => {
+                                if (!hasInteracted) setHasInteracted(true);
+                                handleBillingChange('firstName', e.target.value);
+                            }}
+                            error={hasInteracted ? errors.firstName : undefined}
+                            inputConfig={{ variant: 'outlined', size: 'sm' }}
                         />
                     </div>
 
@@ -133,9 +180,12 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
                             label="Last Name"
                             placeholder="Doe"
                             value={billingInfo.lastName}
-                            onChange={(e) => handleBillingChange('lastName', e.target.value)}
-                            error={errors.lastName}
-                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                            onChange={(e) => {
+                                if (!hasInteracted) setHasInteracted(true);
+                                handleBillingChange('lastName', e.target.value);
+                            }}
+                            error={hasInteracted ? errors.lastName : undefined}
+                            inputConfig={{ variant: 'outlined', size: 'sm' }}
                         />
                     </div>
 
@@ -145,11 +195,13 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
                             placeholder="john@example.com"
                             type="email"
                             value={billingInfo.email}
-                            onChange={(e) => handleBillingChange('email', e.target.value)}
-                            error={errors.email}
-                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                            onChange={(e) => {
+                                if (!hasInteracted) setHasInteracted(true);
+                                handleBillingChange('email', e.target.value);
+                            }}
+                            error={hasInteracted ? errors.email : undefined}
+                            inputConfig={{ variant: 'outlined', size: 'sm' }}
                         />
-                        {!errors.email}
                     </div>
 
                     <div>
@@ -180,13 +232,15 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
                                 <Input
                                     placeholder="Enter phone number"
                                     value={billingInfo.phone}
-                                    onChange={(e) => handleBillingChange('phone', e.target.value)}
-                                    error={errors.phone}
-                                    inputConfig={{ variant: 'outlined', size: 'md' }}
+                                    onChange={(e) => {
+                                        if (!hasInteracted) setHasInteracted(true);
+                                        handleBillingChange('phone', e.target.value);
+                                    }}
+                                    error={hasInteracted ? errors.phone : undefined}
+                                    inputConfig={{ variant: 'outlined', size: 'sm' }}
                                 />
                             </PhoneInputWrapper>
                         </PhoneInputContainer>
-                        {!errors.phone}
                     </div>
 
                     <FullWidthContainer>
@@ -194,9 +248,12 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
                             label="Address"
                             placeholder="123 Main St"
                             value={billingInfo.address}
-                            onChange={(e) => handleBillingChange('address', e.target.value)}
-                            error={errors.address}
-                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                            onChange={(e) => {
+                                if (!hasInteracted) setHasInteracted(true);
+                                handleBillingChange('address', e.target.value);
+                            }}
+                            error={hasInteracted ? errors.address : undefined}
+                            inputConfig={{ variant: 'outlined', size: 'sm' }}
                         />
                     </FullWidthContainer>
 
@@ -205,9 +262,12 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
                             label="City"
                             placeholder="New York"
                             value={billingInfo.city}
-                            onChange={(e) => handleBillingChange('city', e.target.value)}
-                            error={errors.city}
-                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                            onChange={(e) => {
+                                if (!hasInteracted) setHasInteracted(true);
+                                handleBillingChange('city', e.target.value);
+                            }}
+                            error={hasInteracted ? errors.city : undefined}
+                            inputConfig={{ variant: 'outlined', size: 'sm' }}
                         />
                     </div>
 
@@ -216,9 +276,12 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
                             label="State"
                             placeholder="NY"
                             value={billingInfo.state}
-                            onChange={(e) => handleBillingChange('state', e.target.value)}
-                            error={errors.state}
-                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                            onChange={(e) => {
+                                if (!hasInteracted) setHasInteracted(true);
+                                handleBillingChange('state', e.target.value);
+                            }}
+                            error={hasInteracted ? errors.state : undefined}
+                            inputConfig={{ variant: 'outlined', size: 'sm' }}
                         />
                     </div>
 
@@ -227,9 +290,12 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
                             label="Postal Code"
                             placeholder="10001"
                             value={billingInfo.postalCode}
-                            onChange={(e) => handleBillingChange('postalCode', e.target.value)}
-                            error={errors.postalCode}
-                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                            onChange={(e) => {
+                                if (!hasInteracted) setHasInteracted(true);
+                                handleBillingChange('postalCode', e.target.value);
+                            }}
+                            error={hasInteracted ? errors.postalCode : undefined}
+                            inputConfig={{ variant: 'outlined', size: 'sm' }}
                         />
                     </div>
 
@@ -238,9 +304,12 @@ export default function GuestForm({ onSubmit, onValidationReady }: LeadGuestForm
                             label="Country"
                             placeholder="US"
                             value={billingInfo.country}
-                            onChange={(e) => handleBillingChange('country', e.target.value)}
-                            error={errors.country}
-                            inputConfig={{ variant: 'outlined', size: 'md' }}
+                            onChange={(e) => {
+                                if (!hasInteracted) setHasInteracted(true);
+                                handleBillingChange('country', e.target.value);
+                            }}
+                            error={hasInteracted ? errors.country : undefined}
+                            inputConfig={{ variant: 'outlined', size: 'sm' }}
                         />
                     </div>
                 </FormGrid>

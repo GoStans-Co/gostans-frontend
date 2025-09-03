@@ -7,6 +7,7 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { wishlistAtom } from '@/atoms/wishlist';
 import { message } from 'antd';
 import { useApiServices } from '@/services/api';
+import { Link } from 'react-router-dom';
 
 const FavoritesContainer = styled.div`
     width: 100%;
@@ -36,7 +37,6 @@ const FavoritesGrid = styled.div`
     ${({ theme }) => theme.responsive.maxMobile} {
         grid-template-columns: 1fr;
         gap: ${({ theme }) => theme.spacing.md};
-        // padding: ${({ theme }) => theme.spacing.sm};
     }
 `;
 
@@ -152,6 +152,12 @@ const EmptyText = styled.p`
 const WrappedCard = styled(Card)`
     background-color: ${({ theme }) => theme.colors.grayBackground};
     padding-left: 0;
+    transition: all 0.3s ease-in-out;
+    transform: scale(1);
+
+    &:hover {
+        transform: scale(1.03);
+    }
 
     @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
         padding: ${({ theme }) => theme.spacing.md};
@@ -222,18 +228,24 @@ export default function FavoritesPage() {
                 ) : (
                     <FavoritesGrid>
                         {wishlist.map((favorite) => (
-                            <WrappedCard key={favorite.uuid}>
-                                <FavoriteImage imageUrl={favorite.mainImage}>
-                                    <HeartButton onClick={() => removeFavorite(favorite.uuid)}>
-                                        <Heart fill="currentColor" />
-                                    </HeartButton>
-                                </FavoriteImage>
-                                <FavoriteContent>
-                                    <FavoriteTitle>{favorite.title}</FavoriteTitle>
-                                    <FavoriteLocation>{favorite.city}</FavoriteLocation>
-                                    <ToursCount>{favorite.tourType}</ToursCount>
-                                </FavoriteContent>
-                            </WrappedCard>
+                            <Link
+                                to={`/searchTrips/${favorite.uuid}`}
+                                style={{ textDecoration: 'none', color: 'inherit' }}
+                                key={favorite.id}
+                            >
+                                <WrappedCard key={favorite.uuid}>
+                                    <FavoriteImage imageUrl={favorite.mainImage}>
+                                        <HeartButton onClick={() => removeFavorite(favorite.uuid)}>
+                                            <Heart fill="currentColor" />
+                                        </HeartButton>
+                                    </FavoriteImage>
+                                    <FavoriteContent>
+                                        <FavoriteTitle>{favorite.title}</FavoriteTitle>
+                                        <FavoriteLocation>{favorite.city}</FavoriteLocation>
+                                        <ToursCount>{favorite.tourType}</ToursCount>
+                                    </FavoriteContent>
+                                </WrappedCard>
+                            </Link>
                         ))}
                     </FavoritesGrid>
                 )}

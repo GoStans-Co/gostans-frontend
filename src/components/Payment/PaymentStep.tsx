@@ -1,14 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import styled from 'styled-components';
 import Button from '@/components/common/Button';
-import Input from '@/components/common/Input';
-import { useValidation } from '@/hooks/utils/useValidation';
-import securitySvg from '@/assets/cards/security.svg';
 import masterCard from '@/assets/cards/mastercard.svg';
 import visaCard from '@/assets/cards/visa.svg';
 import paypalIcon from '@/assets/cards/paypal.svg';
 import GuestForm from '@/components/Payment/GuestForm';
-import { BillingInfo, CardInfo } from '@/services/api/checkout/types';
+import { PaymentDetails } from '@/services/api/checkout/types';
+import stripePromise from '@/services/stripe';
+import { Elements } from '@stripe/react-stripe-js';
+import StripeCardForm, { BillingInfo, StripeCardFormRef } from '@/components/Payment/StripeCardForm';
 
 type PaymentStepUIProps = {
     isProcessing: boolean;
@@ -16,7 +16,7 @@ type PaymentStepUIProps = {
     success: string;
     paymentCreated: any;
     onPayPalClick: () => Promise<void>;
-    onCardClick: (cardInfo: CardInfo, billingInfo: BillingInfo, saveCard: boolean) => Promise<void>;
+    onCardClick: () => Promise<any>;
     onBack: () => void;
     total: number;
 };
@@ -24,7 +24,7 @@ type PaymentStepUIProps = {
 const PaymentContainer = styled.div`
     background-color: ${({ theme }) => theme.colors.background};
     border-radius: ${({ theme }) => theme.borderRadius.lg};
-    padding: ${({ theme }) => theme.spacing['2xl']};
+    padding: ${({ theme }) => theme.spacing.xl};
     box-shadow: ${({ theme }) => theme.shadows.md};
     border: 1px solid ${({ theme }) => theme.colors.border};
     position: relative;
@@ -132,6 +132,9 @@ const PaymentOption = styled.button<{ variant: 'paypal' | 'card' | 'visa'; selec
         cursor: not-allowed;
         transform: none;
     }
+
+    opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+    cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
 `;
 
 const PaymentOptionContent = styled.div`
@@ -223,25 +226,6 @@ const PayNowButtonWrapper = styled.div`
     margin-left: ${({ theme }) => theme.spacing.md};
 `;
 
-const CardNumberInput = styled.div`
-    position: relative;
-
-    .card-icon {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 2;
-        pointer-events: none;
-
-        img {
-            height: 24px;
-            width: auto;
-            border-radius: 2px;
-        }
-    }
-`;
-
 const SecuritySection = styled.div`
     margin-top: ${({ theme }) => theme.spacing.lg};
     text-align: center;
@@ -252,14 +236,6 @@ const SecurityText = styled.p`
     color: ${({ theme }) => theme.colors.lightText};
     margin-bottom: ${({ theme }) => theme.spacing.md};
     text-align: left;
-`;
-
-const SecurityBadge = styled.div`
-    img {
-        height: 24px;
-        width: auto;
-        opacity: 0.8;
-    }
 `;
 
 const CardIconsContainer = styled.div`
@@ -274,28 +250,15 @@ const CardIconsContainer = styled.div`
     }
 `;
 
-const SaveCardSection = styled.div`
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e5e5;
-`;
-
-const SaveCardCheckbox = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    input[type='checkbox'] {
-        width: 16px;
-        height: 16px;
-        accent-color: #007bff;
-    }
-
-    label {
-        font-size: 14px;
-        color: #666;
-        cursor: pointer;
-    }
+const InfoMessage = styled.div`
+    background-color: #eef;
+    border: 1px solid #ccf;
+    color: #33c;
+    padding: ${({ theme }) => theme.spacing.sm};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+    font-family: ${({ theme }) => theme.typography.fontFamily.body};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
 
 export default function PaymentStepUI({
@@ -306,15 +269,17 @@ export default function PaymentStepUI({
     onCardClick,
     onBack,
 }: PaymentStepUIProps) {
-    const { cardDetails, errors, handleCardDetailsChange, detectCardType, validateAllFields } = useValidation('card');
-    const [selectedMethod, setSelectedMethod] = useState<'paypal' | 'card' | 'visa' | null>(null);
+    const [selectedMethod, setSelectedMethod] = useState<'paypal' | 'card' | null>(null);
     const [timeLeft, setTimeLeft] = useState(30 * 60);
     const [showSuccessTimer, setShowSuccessTimer] = useState(0);
     const [isPaymentInitializing, setIsPaymentInitializing] = useState(false);
     const [guestFormValidation, setGuestFormValidation] = useState<(() => boolean) | null>(null);
     const [validationError, setValidationError] = useState<string>('');
-    const [saveCard, setSaveCard] = useState(false);
-    const [guestFormData, setGuestFormData] = useState<any>(null);
+    const [guestFormData, setGuestFormData] = useState<{ billingInfo: BillingInfo }>();
+    const [isBillingValid, setIsBillingValid] = useState(false);
+    const [clientSecret, setClientSecret] = useState<string>('');
+    const [isCardReady, setIsCardReady] = useState(false);
+    const stripeCardFormRef = useRef<StripeCardFormRef>(null);
 
     useEffect(() => {
         if (timeLeft <= 0) return;
@@ -348,59 +313,92 @@ export default function PaymentStepUI({
     };
 
     const handlePaymentSelect = async (method: 'paypal' | 'card') => {
-        setSelectedMethod(method);
+        try {
+            setValidationError('');
 
-        if (method === 'paypal' && !paymentCreated) {
-            setIsPaymentInitializing(true);
-            await onPayPalClick();
+            if (!isBillingValid || !guestFormData?.billingInfo) {
+                setValidationError('Please complete all billing information first');
+                return;
+            }
+
+            if (guestFormValidation && !guestFormValidation()) {
+                setValidationError('Please correct all billing information errors');
+                return;
+            }
+
+            setSelectedMethod(method);
+
+            if (method === 'paypal' && !paymentCreated) {
+                setIsPaymentInitializing(true);
+                await onPayPalClick();
+                setIsPaymentInitializing(false);
+                setShowSuccessTimer(10);
+            } else if (method === 'card' && !clientSecret) {
+                if (!guestFormData?.billingInfo) {
+                    setValidationError('Please complete billing information first');
+                    return;
+                }
+
+                setIsPaymentInitializing(true);
+                const response = await onCardClick();
+
+                if (response?.data?.clientSecret) {
+                    setClientSecret(response.data.clientSecret);
+                } else {
+                    setValidationError('Failed to initialize payment. Please try again.');
+                }
+                setIsPaymentInitializing(false);
+            }
+        } catch (error) {
             setIsPaymentInitializing(false);
-            setShowSuccessTimer(10);
+            setValidationError('An error occurred. Please try again.');
+            console.info('Payment selection error:', error);
         }
     };
 
-    const handlePayNow = () => {
-        if (!selectedMethod) return;
+    const handleStripeSuccess = (paymentIntent: any) => {
+        const paymentDetails: PaymentDetails = {
+            id: paymentIntent.id,
+            orderId: paymentIntent.id,
+            amount: (paymentIntent.amount / 100).toFixed(2),
+            currency: paymentIntent.currency.toUpperCase(),
+            status: 'COMPLETED',
+            paymentMethod: 'card',
+            transactionId: paymentIntent.id,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            paymentId: '',
+            payerId: null,
+            details: undefined,
+            booking: 0,
+        };
 
-        if (guestFormValidation && !guestFormValidation()) {
-            setValidationError('Please fill in all required billing details');
-            return;
-        }
+        console.info('Payment successful:', paymentDetails);
 
-        setValidationError('');
-
-        if (selectedMethod === 'card') {
-            const isValid = validateAllFields();
-            if (!isValid) {
-                return;
-            }
-        }
-
-        setValidationError('');
-
-        switch (selectedMethod) {
-            case 'paypal':
-                onPayPalClick();
-                break;
-            case 'card':
-                const cardInfo: CardInfo = {
-                    number: cardDetails.cardNumber.replace(/\s/g, ''),
-                    exp_month: cardDetails.expiry.split('/')[0],
-                    exp_year: `20${cardDetails.expiry.split('/')[1]}`,
-                    cvv: cardDetails.cvv,
-                    type: detectCardType(cardDetails.cardNumber),
-                };
-                onCardClick(cardInfo, guestFormData?.billingInfo, saveCard);
-                break;
-        }
+        window.location.href = `/cart/checkout/confirmation?payment_intent=${paymentIntent.id}`;
     };
 
     const handleLeadGuestSubmit = (guestData: any) => {
         setGuestFormData(guestData);
-        console.log('Billing data submitted:', guestData);
-    };
 
-    const handleGuestFormValidationReady = useCallback((validateFn: () => boolean) => {
+        const { billingInfo } = guestData;
+        const isComplete = !!(
+            billingInfo.firstName &&
+            billingInfo.lastName &&
+            billingInfo.email &&
+            billingInfo.phone &&
+            billingInfo.address &&
+            billingInfo.city &&
+            billingInfo.state &&
+            billingInfo.postalCode &&
+            billingInfo.country
+        );
+
+        setIsBillingValid(isComplete);
+    };
+    const handleGuestFormValidationReady = useCallback((validateFn: () => boolean, fieldsComplete: boolean) => {
         setGuestFormValidation(() => validateFn);
+        setIsBillingValid(fieldsComplete);
     }, []);
 
     const isUrgent = timeLeft < 5 * 60;
@@ -415,6 +413,11 @@ export default function PaymentStepUI({
                     <TimerValue $isUrgent={isUrgent}>{formatTime(timeLeft)}</TimerValue>
                 </TimerContainer>
             </HeaderContainer>
+            {!isBillingValid && (
+                <InfoMessage style={{ marginBottom: '1rem', color: '#666' }}>
+                    Please complete all billing information fields before selecting a payment method
+                </InfoMessage>
+            )}
 
             {(error || validationError) && <ErrorMessage>{error || validationError}</ErrorMessage>}
             {showSuccessTimer > 0 && <SuccessMessage>Payment initialized successfully</SuccessMessage>}
@@ -428,7 +431,7 @@ export default function PaymentStepUI({
                     <PaymentOption
                         variant="paypal"
                         onClick={() => handlePaymentSelect('paypal')}
-                        disabled={isProcessing || isPaymentInitializing}
+                        disabled={isProcessing || isPaymentInitializing || !isBillingValid}
                     >
                         <PaymentOptionContent>
                             <PaymentRadio selected={selectedMethod === 'paypal'} />
@@ -443,7 +446,7 @@ export default function PaymentStepUI({
                         variant="card"
                         selected={selectedMethod === 'card'}
                         onClick={() => handlePaymentSelect('card')}
-                        disabled={isProcessing || isPaymentInitializing}
+                        disabled={isProcessing || isPaymentInitializing || !isBillingValid}
                         style={{
                             flexDirection: 'column',
                             alignItems: 'stretch',
@@ -469,85 +472,34 @@ export default function PaymentStepUI({
                                 </CardIconsContainer>
                             </PaymentIcon>
                         </div>
-
                         {selectedMethod === 'card' && (
-                            <div
-                                style={{
-                                    padding: '2rem',
-                                    borderTop: '1px solid #e5e5e5',
-                                }}
-                            >
-                                <CardNumberInput>
-                                    <Input
-                                        label="Card number"
-                                        placeholder="0000-0000-0000-0000"
-                                        value={cardDetails.cardNumber}
-                                        onChange={(e) => handleCardDetailsChange('cardNumber', e.target.value)}
-                                        error={errors.cardNumber}
-                                        inputConfig={{ variant: 'outlined', size: 'md' }}
-                                    />
-                                    {detectCardType(cardDetails.cardNumber) !== 'unknown' && (
-                                        <div className="card-icon">
-                                            {detectCardType(cardDetails.cardNumber) === 'visa' && (
-                                                <img src={visaCard} alt="Visa" />
-                                            )}
-                                            {detectCardType(cardDetails.cardNumber) === 'mastercard' && (
-                                                <img src={masterCard} alt="Mastercard" />
-                                            )}
-                                        </div>
-                                    )}
-                                </CardNumberInput>
-
-                                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                                    <Input
-                                        label="Expiry"
-                                        placeholder="MM/YY"
-                                        value={cardDetails.expiry}
-                                        onChange={(e) => handleCardDetailsChange('expiry', e.target.value)}
-                                        error={errors.expiry}
-                                        inputConfig={{ variant: 'outlined', size: 'md' }}
-                                    />
-                                    <Input
-                                        label="CVV"
-                                        placeholder="123"
-                                        value={cardDetails.cvv}
-                                        onChange={(e) => handleCardDetailsChange('cvv', e.target.value)}
-                                        error={errors.cvv}
-                                        inputConfig={{ variant: 'outlined', size: 'md' }}
-                                    />
-                                </div>
-
-                                <div style={{ marginTop: '1rem' }}>
-                                    <Input
-                                        label="Name on card"
-                                        placeholder="Full name"
-                                        value={cardDetails.nameOnCard}
-                                        onChange={(e) => handleCardDetailsChange('nameOnCard', e.target.value)}
-                                        error={errors.nameOnCard}
-                                        inputConfig={{ variant: 'outlined', size: 'md' }}
-                                    />
-                                </div>
+                            <div style={{ padding: '2rem', borderTop: '1px solid #e5e5e5' }}>
+                                {!clientSecret ? (
+                                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                        <p>Initializing secure payment...</p>
+                                    </div>
+                                ) : guestFormData?.billingInfo ? (
+                                    <Elements stripe={stripePromise}>
+                                        <StripeCardForm
+                                            ref={stripeCardFormRef}
+                                            clientSecret={clientSecret}
+                                            billingInfo={guestFormData.billingInfo}
+                                            onSuccess={handleStripeSuccess}
+                                            onError={(error) => setValidationError(error)}
+                                            onCardReady={setIsCardReady}
+                                        />
+                                    </Elements>
+                                ) : (
+                                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                        <p>Please complete billing information first</p>
+                                    </div>
+                                )}
 
                                 <SecuritySection>
                                     <SecurityText>
-                                        Your card details are secured using 2048-bit SSL encryption.
+                                        Your payment is secured by Stripe with PCI-compliant encryption.
                                     </SecurityText>
-                                    <SecurityBadge>
-                                        <img src={securitySvg} alt="SafeKey" />
-                                    </SecurityBadge>
                                 </SecuritySection>
-
-                                <SaveCardSection>
-                                    <SaveCardCheckbox>
-                                        <input
-                                            type="checkbox"
-                                            id="saveCard"
-                                            checked={saveCard}
-                                            onChange={(e) => setSaveCard(e.target.checked)}
-                                        />
-                                        <label htmlFor="saveCard">Save card details for future payments</label>
-                                    </SaveCardCheckbox>
-                                </SaveCardSection>
                             </div>
                         )}
                     </PaymentOption>
@@ -558,26 +510,58 @@ export default function PaymentStepUI({
                 <Button variant="outline" onClick={onBack} disabled={isProcessing} size="lg">
                     Back
                 </Button>
-
-                <PayNowButtonWrapper>
-                    <Button
-                        variant="primary"
-                        onClick={handlePayNow}
-                        disabled={isProcessing || !selectedMethod || isPaymentInitializing}
-                        fullWidth
-                        size="lg"
-                        style={{
-                            background: isPaymentInitializing ? '#ccc' : 'linear-gradient(90deg, #007bff, #0056b3)',
-                            border: 'none',
-                            fontWeight: '600',
-                            fontSize: '16px',
-                            padding: '16px 32px',
-                            borderRadius: '12px',
-                        }}
-                    >
-                        {isPaymentInitializing ? 'Initializing...' : '🔒 Confirm & Pay'}
-                    </Button>
-                </PayNowButtonWrapper>
+                {selectedMethod === 'paypal' && (
+                    <PayNowButtonWrapper>
+                        <Button
+                            variant="primary"
+                            onClick={() => {
+                                if (paymentCreated?.approvalUrl) {
+                                    window.location.href = paymentCreated.approvalUrl;
+                                }
+                            }}
+                            disabled={isProcessing || !selectedMethod || isPaymentInitializing || !paymentCreated}
+                            fullWidth
+                            size="lg"
+                            style={{
+                                background: isPaymentInitializing ? '#ccc' : 'linear-gradient(90deg, #007bff, #0056b3)',
+                                border: 'none',
+                                fontWeight: '600',
+                                fontSize: '16px',
+                                padding: '16px 32px',
+                                borderRadius: '12px',
+                            }}
+                        >
+                            {isPaymentInitializing ? 'Initializing...' : '🔒 Confirm & Pay'}
+                        </Button>
+                    </PayNowButtonWrapper>
+                )}
+                {selectedMethod === 'card' && clientSecret && isCardReady && (
+                    <PayNowButtonWrapper>
+                        <Button
+                            variant="primary"
+                            onClick={async () => {
+                                if (stripeCardFormRef.current) {
+                                    await stripeCardFormRef.current.handleSubmit();
+                                }
+                            }}
+                            disabled={
+                                isProcessing || stripeCardFormRef.current?.isProcessing || !isCardReady || !clientSecret
+                            }
+                            fullWidth
+                            size="lg"
+                            style={{
+                                background: 'linear-gradient(90deg, #007bff, #0056b3)',
+                                border: 'none',
+                                fontWeight: '600',
+                                fontSize: '16px',
+                                padding: '16px 32px',
+                                borderRadius: '12px',
+                            }}
+                        >
+                            {stripeCardFormRef.current?.isProcessing ? 'Processing...' : '🔒 Pay Now'}
+                        </Button>
+                    </PayNowButtonWrapper>
+                )}
             </ButtonsContainer>
         </PaymentContainer>
     );
