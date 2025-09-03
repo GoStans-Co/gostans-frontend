@@ -192,8 +192,8 @@ export type StripePaymentRequest = {
 };
 
 export type StripePaymentResponse = {
-    client_secret: string;
-    payment_intent_id: string;
+    clientSecret: string;
+    paymentIntentId: string;
     amount: number;
     currency: string;
     status: string;

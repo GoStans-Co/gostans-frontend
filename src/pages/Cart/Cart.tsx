@@ -545,7 +545,10 @@ export default function CartPage() {
             if (response.statusCode === 200) {
                 setSuccess('Payment initialized');
                 setIsProcessing(false);
-                return response;
+                return {
+                    ...response,
+                    success: true,
+                };
             } else {
                 throw new Error(response.message);
             }
