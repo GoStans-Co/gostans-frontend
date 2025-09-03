@@ -526,6 +526,7 @@ export default function CartPage() {
             const mainTour = cartItems[0];
             const total = calculateTotal();
 
+            const paymentIntentRequest = {
                 amount: Math.floor(total * 100),
                 currency: 'USD',
                 tour_uuid: mainTour.tourId,
