@@ -526,8 +526,7 @@ export default function CartPage() {
             const mainTour = cartItems[0];
             const total = calculateTotal();
 
-            const paymentIntentRequest: StripePaymentRequest = {
-                amount: Math.round(total * 100),
+                amount: Math.floor(total * 100),
                 currency: 'USD',
                 tour_uuid: mainTour.tourId,
                 participants: formData.participants.map((participant: Participant) => ({
