@@ -10,6 +10,9 @@ import OrderSummary from '@/components/Payment/OrderSummary';
 import { EnterInfoStepProps, Participant } from '@/services/api/cart';
 import { useValidation } from '@/hooks/utils/useValidation';
 
+const NAME_VALIDATION_REGEX = /^[a-zA-Z\s-]+$/;
+const MIN_ID_LENGTH = 5;
+
 const StepContainer = styled.div`
     display: grid;
     grid-template-columns: 1fr 400px;
@@ -192,6 +195,16 @@ export default function EnterInfoStep({
         }
     }, [guestCounts]);
 
+    const validateName = (name: string, fieldName: string): string => {
+        if (!name.trim()) {
+            return `${fieldName} is required`;
+        }
+        if (!NAME_VALIDATION_REGEX.test(name.trim())) {
+            return `Please enter a valid ${fieldName.toLowerCase()} (letters, spaces, and hyphens only)`;
+        }
+        return '';
+    };
+
     const clearError = (participantId: string, field: string) => {
         setParticipantErrors((prev) => ({
             ...prev,
@@ -248,15 +261,16 @@ export default function EnterInfoStep({
     const validateParticipant = (participant: Participant) => {
         const errors: { [field: string]: string } = {};
 
-        if (!participant.firstName.trim() || !/^[a-zA-Z\s-]+$/.test(participant.firstName.trim())) {
-            errors.firstName = 'Please enter a valid first name (letters, spaces, and hyphens only)';
+        const firstNameError = validateName(participant.firstName, 'First name');
+        if (firstNameError) errors.firstName = firstNameError;
+
+        const lastNameError = validateName(participant.lastName, 'Last name');
+        if (lastNameError) errors.lastName = lastNameError;
+
+        if (!participant.idNumber.trim() || participant.idNumber.trim().length < MIN_ID_LENGTH) {
+            errors.idNumber = `ID number must be at least ${MIN_ID_LENGTH} characters`;
         }
-        if (!participant.lastName.trim() || !/^[a-zA-Z\s-]+$/.test(participant.lastName.trim())) {
-            errors.lastName = 'Please enter a valid last name (letters, spaces, and hyphens only)';
-        }
-        if (!participant.idNumber.trim() || participant.idNumber.trim().length < 5) {
-            errors.idNumber = 'ID number must be at least 5 characters';
-        }
+
         if (!participant.dateOfBirth) {
             errors.dateOfBirth = 'Date of birth is required';
         } else {
