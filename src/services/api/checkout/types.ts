@@ -51,6 +51,7 @@ export type BookingDetailResponse = {
 };
 
 export type PaymentDetails = {
+    orderId?: number;
     id: number;
     paymentId: string;
     amount: string;
@@ -62,6 +63,7 @@ export type PaymentDetails = {
     updatedAt: string;
     details: any | null;
     booking: number;
+    transactionId?: string;
 };
 
 export type BookingFormData = {
@@ -173,3 +175,26 @@ export type PaymentExecuteResponse = {
 };
 
 export type CheckoutPromise = ApiResponse<PaymentExecuteResponse> | ApiResponse<void>;
+
+export type StripePaymentRequest = {
+    amount: number;
+    currency: string;
+    tour_uuid: string;
+    trip_start_date: string;
+    trip_end_date: string;
+    participants: Array<{
+        firstName: string;
+        lastName: string;
+        idType: string;
+        idNumber: string;
+        dateOfBirth: string;
+    }>;
+};
+
+export type StripePaymentResponse = {
+    clientSecret: string;
+    paymentIntentId: string;
+    amount: number;
+    currency: string;
+    status: string;
+};

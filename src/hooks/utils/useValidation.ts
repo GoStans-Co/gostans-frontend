@@ -54,6 +54,7 @@ export const useValidation = (formType: FormType = 'card') => {
 
     const [errors, setErrors] = useState<ValidationErrors>({});
     const [cartValidationErrors, setCartValidationErrors] = useState<{ [itemId: string]: string }>({});
+    const [touchedFields, setTouchedFields] = useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         if (cardDetails.cardNumber && cardDetails.cvv && cardDetails.expiry && cardDetails.nameOnCard) {
@@ -315,65 +316,72 @@ export const useValidation = (formType: FormType = 'card') => {
     /**
      * Handle changes for billing information
      */
-    const handleBillingChange = useCallback((field: keyof BillingInfo, value: string) => {
-        let formattedValue = value;
-        let error = '';
+    const handleBillingChange = useCallback(
+        (field: keyof BillingInfo, value: string) => {
+            setTouchedFields((prev) => ({ ...prev, [field]: true }));
 
-        switch (field) {
-            case 'firstName':
-            case 'lastName':
-                if (value && !validateName(value)) {
-                    error = 'Please enter a valid name (letters, spaces, and hyphens only)';
-                }
-                break;
+            let formattedValue = value;
+            let error = '';
 
-            case 'email':
-                if (value && !validateEmail(value)) {
-                    error = 'Please enter a valid email address';
-                }
-                break;
+            const shouldValidate = touchedFields[field] && value !== '';
 
-            case 'phone':
-                formattedValue = formatPhoneNumber(value);
-                if (formattedValue && !validatePhoneNumber(formattedValue)) {
-                    error = 'Please enter a valid phone number';
-                }
-                break;
+            switch (field) {
+                case 'firstName':
+                case 'lastName':
+                    if (shouldValidate && !validateName(value)) {
+                        error = 'Please enter a valid name (letters, spaces, and hyphens only)';
+                    }
+                    break;
 
-            case 'address':
-                if (value && !validateAddress(value)) {
-                    error = 'Please enter a valid address';
-                }
-                break;
+                case 'email':
+                    if (value && !validateEmail(value)) {
+                        error = 'Please enter a valid email address';
+                    }
+                    break;
 
-            case 'city':
-                if (value && !validateCity(value)) {
-                    error = 'Please enter a valid city name';
-                }
-                break;
+                case 'phone':
+                    formattedValue = formatPhoneNumber(value);
+                    if (formattedValue && !validatePhoneNumber(formattedValue)) {
+                        error = 'Please enter a valid phone number';
+                    }
+                    break;
 
-            case 'state':
-                if (value && !validateState(value)) {
-                    error = 'Please enter a valid state';
-                }
-                break;
+                case 'address':
+                    if (value && !validateAddress(value)) {
+                        error = 'Please enter a valid address';
+                    }
+                    break;
 
-            case 'postalCode':
-                if (value && !validatePostalCode(value)) {
-                    error = 'Please enter a valid postal code';
-                }
-                break;
+                case 'city':
+                    if (value && !validateCity(value)) {
+                        error = 'Please enter a valid city name';
+                    }
+                    break;
 
-            case 'country':
-                if (value && !validateCountry(value)) {
-                    error = 'Please enter a valid country';
-                }
-                break;
-        }
+                case 'state':
+                    if (value && !validateState(value)) {
+                        error = 'Please enter a valid state';
+                    }
+                    break;
 
-        setBillingInfo((prev) => ({ ...prev, [field]: formattedValue }));
-        setErrors((prev) => ({ ...prev, [field]: error }));
-    }, []);
+                case 'postalCode':
+                    if (value && !validatePostalCode(value)) {
+                        error = 'Please enter a valid postal code';
+                    }
+                    break;
+
+                case 'country':
+                    if (value && !validateCountry(value)) {
+                        error = 'Please enter a valid country';
+                    }
+                    break;
+            }
+
+            setBillingInfo((prev) => ({ ...prev, [field]: formattedValue }));
+            setErrors((prev) => ({ ...prev, [field]: error }));
+        },
+        [touchedFields],
+    );
 
     /**
      * Validates all fields in the current form type.

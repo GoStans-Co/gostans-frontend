@@ -213,6 +213,27 @@ const BannerCardWrapper = styled.div`
     height: 100%;
 `;
 
+const EmptyStateIcon = styled.div`
+    font-size: ${({ theme }) => theme.fontSizes['7xl']};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+    opacity: 0.7;
+`;
+
+const EmptyStateTitle = styled.h3`
+    font-size: ${({ theme }) => theme.fontSizes['2xl']};
+    font-weight: 700;
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const EmptyStateDescription = styled.p`
+    font-size: ${({ theme }) => theme.fontSizes.lg};
+    color: ${({ theme }) => theme.colors.lightText};
+    max-width: 500px;
+    line-height: 1.6;
+    margin-bottom: ${({ theme }) => theme.spacing.xl};
+`;
+
 export default function TrendingTours({ tours, loading = false }: TrendingToursProps) {
     if (loading) {
         return (
@@ -240,8 +261,12 @@ export default function TrendingTours({ tours, loading = false }: TrendingToursP
                     </ViewAllLink>
                 </SectionHeader>
                 <EmptyContainer>
-                    <h3>No tours available</h3>
-                    <p>Check back later for exciting tour packages!</p>
+                    <EmptyStateIcon>🏔️</EmptyStateIcon>
+                    <EmptyStateTitle>No destinations found</EmptyStateTitle>
+                    <EmptyStateDescription>
+                        We couldn't find any destinations matching your search criteria. Try adjusting your search or
+                        browse all destinations.
+                    </EmptyStateDescription>
                 </EmptyContainer>
             </SectionContainer>
         );

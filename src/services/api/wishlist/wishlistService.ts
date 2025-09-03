@@ -4,6 +4,7 @@ import { ApiResponse } from '@/types/common/fetch';
 import { useMemo } from 'react';
 import { useRecoilState } from 'recoil';
 import { WishlistAddResponse, WishlistResponse } from '@/services/api/wishlist/types';
+import { TokenStorage } from '@/utils/tokenStorage';
 
 /**
  * Wishlist Fetch Service - Wishlist Operations
@@ -78,7 +79,7 @@ export const useWishlistService = () => {
     const removeFromWishlist = async (tourUuid: string): Promise<void> => {
         try {
             setWishlist((prev) => prev.filter((tour) => tour.uuid !== tourUuid));
-            const accessToken = localStorage.getItem('access_token');
+            const accessToken = TokenStorage.getAccessToken();
 
             await fetchData({
                 url: `/user/wishlist/delete/${tourUuid}/`,

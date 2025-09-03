@@ -137,7 +137,7 @@ export default function TripsPage({ bookings, onTripClick }: TripsPageProps) {
     const filteredTrips =
         activeTab === 'all' ? transformedTrips : transformedTrips.filter((trip) => trip.status === activeTab);
 
-    const showEmptyState = filteredTrips.length === 0;
+    const showEmptyState = transformedTrips.length === 0;
 
     const getTripActions = (status: TripStatus, tripId: string) => {
         switch (status) {
@@ -210,22 +210,35 @@ export default function TripsPage({ bookings, onTripClick }: TripsPageProps) {
             ) : (
                 <>
                     <TripStatusTabs activeStatus={activeTab} onStatusChange={setActiveTab} />
-                    <TripsList>
-                        {filteredTrips.map((trip) => (
-                            <TripCard
-                                key={trip.id}
-                                id={trip.id}
-                                image={trip.image}
-                                title={trip.title}
-                                subtitle={trip.dayInfo}
-                                date={trip.date}
-                                price={trip.price}
-                                status={trip.status}
-                                actions={getTripActions(trip.status, trip.id)}
-                                onClick={() => onTripClick?.(trip.bookingId)}
-                            />
-                        ))}
-                    </TripsList>
+                    {filteredTrips.length === 0 ? (
+                        <EmptyState>
+                            <EmptyIcon>
+                                <Box size={64} />
+                            </EmptyIcon>
+                            <EmptyTitle>No {activeTab} trips found</EmptyTitle>
+                            <EmptyText>
+                                You don't have any {activeTab} trips yet. Try selecting a different tab or book new
+                                trips.
+                            </EmptyText>
+                        </EmptyState>
+                    ) : (
+                        <TripsList>
+                            {filteredTrips.map((trip) => (
+                                <TripCard
+                                    key={trip.id}
+                                    id={trip.id}
+                                    image={trip.image}
+                                    title={trip.title}
+                                    subtitle={trip.dayInfo}
+                                    date={trip.date}
+                                    price={trip.price}
+                                    status={trip.status}
+                                    actions={getTripActions(trip.status, trip.id)}
+                                    onClick={() => onTripClick?.(trip.bookingId)}
+                                />
+                            ))}
+                        </TripsList>
+                    )}
                 </>
             )}
         </TripsContainer>
