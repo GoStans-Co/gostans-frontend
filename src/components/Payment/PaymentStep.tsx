@@ -9,6 +9,7 @@ import { PaymentDetails, StripePaymentResponse } from '@/services/api/checkout/t
 import stripePromise from '@/services/stripe';
 import { Elements } from '@stripe/react-stripe-js';
 import StripeCardForm, { BillingInfo, StripeCardFormRef } from '@/components/Payment/StripeCardForm';
+import { useNavigate } from 'react-router-dom';
 
 type ApiResponse<T> = {
     data: T;
@@ -276,6 +277,7 @@ export default function PaymentStepUI({
     onCardClick,
     onBack,
 }: PaymentStepUIProps) {
+    const navigate = useNavigate();
     const [selectedMethod, setSelectedMethod] = useState<'paypal' | 'card' | null>(null);
     const [timeLeft, setTimeLeft] = useState(30 * 60);
     const [showSuccessTimer, setShowSuccessTimer] = useState(0);
@@ -364,25 +366,7 @@ export default function PaymentStepUI({
     };
 
     const handleStripeSuccess = (paymentIntent: any) => {
-        const paymentDetails: PaymentDetails = {
-            id: paymentIntent.id,
-            orderId: paymentIntent.id,
-            amount: (paymentIntent.amount / 100).toFixed(2),
-            currency: paymentIntent.currency.toUpperCase(),
-            status: 'COMPLETED',
-            paymentMethod: 'card',
-            transactionId: paymentIntent.id,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            paymentId: '',
-            payerId: null,
-            details: undefined,
-            booking: 0,
-        };
-
-        console.info('Payment successful:', paymentDetails);
-
-        window.location.href = `/cart/checkout/confirmation?payment_intent=${paymentIntent.id}`;
+        navigate(`/cart/checkout/confirmation?payment_intent=${paymentIntent.id}`);
     };
 
     const handleLeadGuestSubmit = (guestData: any) => {
