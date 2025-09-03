@@ -51,7 +51,7 @@ export type BookingDetailResponse = {
 };
 
 export type PaymentDetails = {
-    orderId: number;
+    orderId?: number;
     id: number;
     paymentId: string;
     amount: string;
