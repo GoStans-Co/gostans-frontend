@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import TripCard from '@/components/Card/TripCard';
 import OrderSummary from '@/components/Payment/OrderSummary';
 import { EnterInfoStepProps, Participant } from '@/services/api/cart';
+import { useValidation } from '@/hooks/utils/useValidation';
 
 const StepContainer = styled.div`
     display: grid;
@@ -136,13 +137,18 @@ const WarningBox = styled.div`
     background-color: #fef3c7;
     border: 1px solid #f59e0b;
     border-radius: ${({ theme }) => theme.borderRadius.md};
-    padding: 1rem;
+    padding: 0.6rem;
     align-items: left;
     display: flex;
     color: #92400e;
     font-size: ${({ theme }) => theme.fontSizes.sm};
 `;
-
+/**
+ * Enter Information Step  - Organism Component
+ * @description Collects participant information for the cart items.
+ * @param props - Props for the component
+ * @returns JSX.Element
+ */
 export default function EnterInfoStep({
     cartItems,
     formData,
@@ -157,9 +163,10 @@ export default function EnterInfoStep({
             : [{ id: '1', firstName: '', lastName: '', idType: 'passport', idNumber: '', dateOfBirth: '' }],
     );
 
-    const [validationErrors, setValidationErrors] = useState<{ [participantId: string]: { [field: string]: string } }>(
-        {},
-    );
+    const { resetErrors } = useValidation('billing');
+    const [participantErrors, setParticipantErrors] = useState<{
+        [participantId: string]: { [field: string]: string };
+    }>({});
 
     useEffect(() => {
         if (guestCounts && formData.participants.length === 0) {
@@ -186,7 +193,7 @@ export default function EnterInfoStep({
     }, [guestCounts]);
 
     const clearError = (participantId: string, field: string) => {
-        setValidationErrors((prev) => ({
+        setParticipantErrors((prev) => ({
             ...prev,
             [participantId]: {
                 ...prev[participantId],
@@ -199,6 +206,16 @@ export default function EnterInfoStep({
         setParticipants((prev) =>
             prev.map((participant) => (participant.id === id ? { ...participant, [field]: value } : participant)),
         );
+
+        if (participantErrors[id]?.[field]) {
+            setParticipantErrors((prev) => ({
+                ...prev,
+                [id]: {
+                    ...prev[id],
+                    [field]: '',
+                },
+            }));
+        }
     };
 
     const removeParticipant = (id: string) => {
@@ -206,7 +223,6 @@ export default function EnterInfoStep({
             setParticipants((prev) => prev.filter((p) => p.id !== id));
         }
     };
-
     const handleNext = () => {
         const allErrors: { [participantId: string]: { [field: string]: string } } = {};
         let hasErrors = false;
@@ -219,9 +235,10 @@ export default function EnterInfoStep({
             }
         });
 
-        setValidationErrors(allErrors);
+        setParticipantErrors(allErrors);
 
         if (!hasErrors) {
+            resetErrors();
             onNext({ participants });
         }
     };
@@ -231,17 +248,23 @@ export default function EnterInfoStep({
     const validateParticipant = (participant: Participant) => {
         const errors: { [field: string]: string } = {};
 
-        if (!participant.firstName.trim()) {
-            errors.firstName = 'First name is required';
+        if (!participant.firstName.trim() || !/^[a-zA-Z\s-]+$/.test(participant.firstName.trim())) {
+            errors.firstName = 'Please enter a valid first name (letters, spaces, and hyphens only)';
         }
-        if (!participant.lastName.trim()) {
-            errors.lastName = 'Last name is required';
+        if (!participant.lastName.trim() || !/^[a-zA-Z\s-]+$/.test(participant.lastName.trim())) {
+            errors.lastName = 'Please enter a valid last name (letters, spaces, and hyphens only)';
         }
-        if (!participant.idNumber.trim()) {
-            errors.idNumber = 'ID number is required';
+        if (!participant.idNumber.trim() || participant.idNumber.trim().length < 5) {
+            errors.idNumber = 'ID number must be at least 5 characters';
         }
         if (!participant.dateOfBirth) {
             errors.dateOfBirth = 'Date of birth is required';
+        } else {
+            const dob = new Date(participant.dateOfBirth);
+            const today = new Date();
+            if (dob >= today) {
+                errors.dateOfBirth = 'Date of birth must be in the past';
+            }
         }
 
         return errors;
@@ -281,24 +304,24 @@ export default function EnterInfoStep({
                                 value={participant.firstName}
                                 onChange={(e) => {
                                     updateParticipant(participant.id, 'firstName', e.target.value);
-                                    if (validationErrors[participant.id]?.firstName) {
+                                    if (participantErrors[participant.id]?.firstName) {
                                         clearError(participant.id, 'firstName');
                                     }
                                 }}
                                 placeholder="Enter first name"
-                                error={validationErrors[participant.id]?.firstName}
+                                error={participantErrors[participant.id]?.firstName}
                             />
                             <Input
                                 label="Last Name *"
                                 value={participant.lastName}
                                 onChange={(e) => {
                                     updateParticipant(participant.id, 'lastName', e.target.value);
-                                    if (validationErrors[participant.id]?.lastName) {
+                                    if (participantErrors[participant.id]?.lastName) {
                                         clearError(participant.id, 'lastName');
                                     }
                                 }}
                                 placeholder="Enter last name"
-                                error={validationErrors[participant.id]?.lastName}
+                                error={participantErrors[participant.id]?.lastName}
                             />
                         </FormGrid>
 
@@ -323,17 +346,17 @@ export default function EnterInfoStep({
                                     value={participant.idNumber}
                                     onChange={(e) => {
                                         updateParticipant(participant.id, 'idNumber', e.target.value);
-                                        if (validationErrors[participant.id]?.idNumber) {
+                                        if (participantErrors[participant.id]?.idNumber) {
                                             clearError(participant.id, 'idNumber');
                                         }
                                     }}
                                     placeholder="Enter ID number"
-                                    error={validationErrors[participant.id]?.idNumber}
+                                    error={participantErrors[participant.id]?.idNumber}
                                 />
                             </div>
                         </FormRow>
 
-                        <DatePickerWrapper hasError={!!validationErrors[participant.id]?.dateOfBirth}>
+                        <DatePickerWrapper hasError={!!participantErrors[participant.id]?.dateOfBirth}>
                             <label>Date of Birth *</label>
                             <DatePicker
                                 value={participant.dateOfBirth ? dayjs(participant.dateOfBirth) : null}
@@ -343,7 +366,7 @@ export default function EnterInfoStep({
                                         'dateOfBirth',
                                         date ? date.format('YYYY-MM-DD') : '',
                                     );
-                                    if (validationErrors[participant.id]?.dateOfBirth) {
+                                    if (participantErrors[participant.id]?.dateOfBirth) {
                                         clearError(participant.id, 'dateOfBirth');
                                     }
                                 }}
@@ -351,17 +374,12 @@ export default function EnterInfoStep({
                                 placeholder="mm/dd/yyyy"
                                 style={{ width: '100%' }}
                             />
-                            {validationErrors[participant.id]?.dateOfBirth && (
-                                <ErrorMessage>{validationErrors[participant.id].dateOfBirth}</ErrorMessage>
+                            {participantErrors[participant.id]?.dateOfBirth && (
+                                <ErrorMessage>{participantErrors[participant.id].dateOfBirth}</ErrorMessage>
                             )}
                         </DatePickerWrapper>
                     </ParticipantCard>
                 ))}
-
-                {/* <AddParticipantButton variant="outline" onClick={addParticipant}>
-                    + Add another participant
-                </AddParticipantButton> */}
-
                 <WarningBox>
                     Once your info is submitted, it cannot be changed. Please double-check before proceeding.
                 </WarningBox>

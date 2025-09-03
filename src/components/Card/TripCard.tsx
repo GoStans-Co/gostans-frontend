@@ -272,7 +272,12 @@ export default function TripCard({
                         <CardHeader>
                             <LeftContent>
                                 <CardTitle size={titleSize}>{title}</CardTitle>
-                                {subtitle && <CardSubtitle>{subtitle}</CardSubtitle>}
+                                {subtitle && (
+                                    <CardSubtitle>
+                                        {subtitle.length > 150 ? `${subtitle.slice(0, 150)}...` : subtitle}
+                                    </CardSubtitle>
+                                )}
+
                                 {date && <CardSubtitle>{date}</CardSubtitle>}
                             </LeftContent>
 
