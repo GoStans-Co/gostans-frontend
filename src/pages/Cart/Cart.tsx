@@ -15,7 +15,7 @@ import { AlertCircle } from 'lucide-react';
 import { useValidation } from '@/hooks/utils/useValidation';
 import { useApiServices } from '@/services/api';
 import { BookingFormData, CartItem, PaymentDetails } from '@/services/api/cart';
-import { CardPaymentResponse, Participant, PaymentStatus, StripePaymentRequest } from '@/services/api/checkout';
+import { CardPaymentResponse, Participant, PaymentStatus } from '@/services/api/checkout';
 
 type CheckoutStep = 'cart' | 'checkout' | 'payment' | 'confirmation';
 

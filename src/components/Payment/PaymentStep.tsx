@@ -5,7 +5,7 @@ import masterCard from '@/assets/cards/mastercard.svg';
 import visaCard from '@/assets/cards/visa.svg';
 import paypalIcon from '@/assets/cards/paypal.svg';
 import GuestForm from '@/components/Payment/GuestForm';
-import { PaymentDetails, StripePaymentResponse } from '@/services/api/checkout/types';
+import { StripePaymentResponse } from '@/services/api/checkout/types';
 import stripePromise from '@/services/stripe';
 import { Elements } from '@stripe/react-stripe-js';
 import StripeCardForm, { BillingInfo, StripeCardFormRef } from '@/components/Payment/StripeCardForm';
