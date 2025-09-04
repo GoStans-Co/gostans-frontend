@@ -4,7 +4,7 @@ import { ApiResponse } from '@/types/common/fetch';
 import { useMemo } from 'react';
 import { useRecoilState } from 'recoil';
 import { WishlistAddResponse, WishlistResponse } from '@/services/api/wishlist/types';
-import { TokenStorage } from '@/utils/tokenStorage';
+import { TokenStorage } from '@/utils/tokenManagement/tokenStorage';
 
 /**
  * Wishlist Fetch Service - Wishlist Operations

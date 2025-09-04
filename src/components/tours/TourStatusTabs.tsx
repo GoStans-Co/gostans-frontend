@@ -2,49 +2,72 @@ import styled from 'styled-components';
 
 export type TripStatus = 'all' | 'booked' | 'waiting' | 'complete' | 'cancelled';
 
+type ThemeColors = {
+    background: string;
+    primary: string;
+    success: string;
+    warning: string;
+    info: string;
+    error: string;
+    text: string;
+};
+
+type Theme = {
+    colors: ThemeColors;
+};
+
 type TripStatusTabsProps = {
     activeStatus: TripStatus;
     onStatusChange: (status: TripStatus) => void;
 };
 
-const getTabColor = (tabType: TripStatus, isActive = false) => {
-    const colors = {
-        all: isActive ? '#0F2846' : '#E5F4FF',
-        booked: isActive ? '#10B981' : '#D1FAE5',
-        waiting: isActive ? '#F59E0B' : '#FEF3C7',
-        complete: isActive ? '#3B82F6' : '#DBEAFE',
-        cancelled: isActive ? '#EF4444' : '#FECACA',
+const getTabColor = (tabType: TripStatus, isActive: boolean = false, theme: Theme): string => {
+    if (!isActive) {
+        return theme.colors.background;
+    }
+
+    const activeColors: Record<TripStatus, string> = {
+        all: theme.colors.primary,
+        booked: theme.colors.success,
+        waiting: theme.colors.warning,
+        complete: theme.colors.info,
+        cancelled: theme.colors.error,
     };
-    return colors[tabType];
+    return activeColors[tabType];
 };
 
-const getTextColor = (tabType: TripStatus, isActive = false) => {
-    const colors = {
-        all: isActive ? '#FFFFFF' : '#0F2846',
-        booked: isActive ? '#FFFFFF' : '#047857',
-        waiting: isActive ? '#FFFFFF' : '#92400E',
-        complete: isActive ? '#FFFFFF' : '#1D4ED8',
-        cancelled: isActive ? '#FFFFFF' : '#991B1B',
-    };
-    return colors[tabType];
+const getTextColor = (isActive: boolean = false, theme: Theme): string => {
+    if (!isActive) {
+        return theme.colors.text;
+    }
+
+    return theme.colors.background;
 };
 
 const TabsContainer = styled.div`
     display: flex;
     gap: ${({ theme }) => theme.spacing.sm};
-    margin-bottom: ${({ theme }) => theme.spacing.xl};
+    margin-bottom: ${({ theme }) => theme.spacing.sm};
     overflow-x: auto;
-    padding-bottom: ${({ theme }) => theme.spacing.sm};
-    scrollbar-width: none;
-    padding-top: ${({ theme }) => theme.spacing.sm};
+    padding: ${({ theme }) => `${theme.spacing.sm} 0 ${theme.spacing.md} 0`};
+    scrollbar-width: thin;
+    scrollbar-color: ${({ theme }) => theme.colors.border} transparent;
 
     &::-webkit-scrollbar {
         height: 4px;
     }
 
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
     &::-webkit-scrollbar-thumb {
         background: ${({ theme }) => theme.colors.border};
         border-radius: ${({ theme }) => theme.borderRadius.sm};
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: ${({ theme }) => theme.colors.muted};
     }
 
     ${({ theme }) => theme.responsive.maxMobile} {
@@ -54,29 +77,47 @@ const TabsContainer = styled.div`
 `;
 
 const Tab = styled.button<{ isActive: boolean; tabType: TripStatus }>`
-    background-color: ${({ tabType, isActive }) => getTabColor(tabType, isActive)};
-    color: ${({ tabType, isActive }) => getTextColor(tabType, isActive)};
-    border: none;
-    border-radius: 20px;
-    padding: 6px 16px;
-    font-size: 13px;
-    font-weight: 500;
+    background-color: ${({ tabType, isActive, theme }) => getTabColor(tabType, isActive, theme)};
+    color: ${({ isActive, theme }) => getTextColor(isActive, theme)};
+    border: 1px solid ${({ theme, isActive }) => (isActive ? 'transparent' : theme.colors.border)};
+    border-radius: ${({ theme }) => theme.borderRadius.full};
+    padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.md}`};
+    font-size: ${({ theme }) => theme.fontSizes.xs};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
+    font-family: ${({ theme }) => theme.typography.fontFamily.body};
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.2s ease-in-out;
+    transition: ${({ theme }) => theme.transitions.fast};
 
-    box-shadow: ${({ isActive }) => (isActive ? '0 2px 6px rgba(0, 0, 0, 0.1)' : 'none')};
+    box-shadow: ${({ isActive, theme }) => (isActive ? theme.shadows.sm : 'none')};
 
     &:hover {
         transform: translateY(-1px);
-        filter: brightness(1.05);
+        box-shadow: ${({ theme }) => theme.shadows.md};
+        ${({ isActive, theme }) =>
+            !isActive &&
+            `
+            background-color: ${theme.colors.lightBackground};
+            border-color: ${theme.colors.muted};
+        `}
     }
 
     &:active {
         transform: translateY(0);
     }
+
+    &:focus {
+        outline: none;
+        box-shadow: ${({ isActive, theme }) => (isActive ? theme.shadows.md : `0 0 0 2px ${theme.colors.primary}25`)};
+    }
 `;
 
+/**
+ * TripStatusTabs - Atom Component
+ * @description A tab component to filter trips by their status.
+ * @param {TripStatus} props.activeStatus - The currently active tab status.
+ * @param {function} props.onStatusChange - Callback function to handle status changes.
+ */
 export default function TripStatusTabs({ activeStatus, onStatusChange }: TripStatusTabsProps) {
     const tabs: TripStatus[] = ['all', 'booked', 'waiting', 'complete', 'cancelled'];
 

@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 import MapPopup from '@/components/Map/MapPopup';
 import MapMarker from '@/components/Map/MapMarker';
 import { theme } from '@/styles/theme';
+import { MapPinCheckIcon } from 'lucide-react';
 
 type ItineraryItem = {
     dayNumber: number;
@@ -135,12 +136,34 @@ const ErrorContainer = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: ${theme.colors.lightBackground};
-    color: ${theme.colors.error};
-    font-family: ${theme.typography.fontFamily.body};
+    background: linear-gradient(135deg, ${theme.colors.lightBackground} 0%, ${theme.colors.background} 100%);
     border-radius: ${theme.borderRadius.lg};
     padding: ${theme.spacing.xl};
     text-align: center;
+    min-height: 300px;
+`;
+
+const ErrorTitle = styled.div`
+    font-size: 18px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: ${theme.spacing.sm};
+    font-family: ${theme.typography.fontFamily.body};
+`;
+
+const ErrorMessage = styled.div`
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: ${theme.spacing.md};
+    font-family: ${theme.typography.fontFamily.body};
+`;
+
+const ErrorHint = styled.div`
+    font-size: 12px;
+    color: #868e96;
+    line-height: 1.4;
+    max-width: 280px;
+    font-family: ${theme.typography.fontFamily.body};
 `;
 
 const TourFlowContainer = styled.div`
@@ -606,9 +629,17 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
         return (
             <MapContainer height={height}>
                 <ErrorContainer>
-                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>🗺️</div>
-                    <div style={{ fontWeight: 600, marginBottom: '4px' }}>Map Unavailable</div>
-                    <div style={{ fontSize: '14px' }}>{error}</div>
+                    <MapPinCheckIcon
+                        style={{ color: theme.colors.accent, marginBottom: '1rem' }}
+                        height={32}
+                        width={32}
+                    />
+                    <ErrorTitle>Map Unavailable</ErrorTitle>
+                    <ErrorMessage>No valid location coordinates available</ErrorMessage>
+                    <ErrorHint>
+                        The location data for this tour is currently unavailable. Please check the tour details or
+                        contact support if this persists.
+                    </ErrorHint>
                 </ErrorContainer>
             </MapContainer>
         );

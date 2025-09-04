@@ -8,7 +8,7 @@ import {
     trendingToursState,
 } from '@/atoms/trendingTours';
 import { useApiServices } from '@/services/api';
-import { transformToursArray } from '@/utils/tourChangeTypes';
+import { transformToursArray } from '@/utils/general/tourChangeTypes';
 
 /**
  * useTrendingTours - Custom Hook
