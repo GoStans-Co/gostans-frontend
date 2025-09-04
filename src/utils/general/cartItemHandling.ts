@@ -21,6 +21,5 @@ export const createCartItemFromBooking = (booking: Booking): CartItem => {
         adults: 1,
         addedAt: Date.now(),
         price: parseFloat(booking.amount),
-        duration: booking.tourType,
     };
 };
