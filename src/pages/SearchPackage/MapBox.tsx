@@ -662,9 +662,8 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
                     ))}
                     {uniqueCities.length > 1 && (
                         <>
-                            {' '}
                             <FlowArrow>→</FlowArrow>
-                            <FlowBadge type="end"> End</FlowBadge>{' '}
+                            <FlowBadge type="end">End</FlowBadge>
                         </>
                     )}
                 </CityFlow>
