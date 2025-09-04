@@ -1,4 +1,4 @@
-import { profileCacheManager } from '@/utils/profileCacheManager';
+import { profileCacheManager } from '@/utils/tokenManagement/profileCacheManager';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { queryClient } from '@/providers/QueryProviders';
 

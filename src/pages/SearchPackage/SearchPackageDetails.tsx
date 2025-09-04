@@ -9,8 +9,6 @@ import {
     FaUsers,
     FaGlobe,
     FaUserFriends,
-    FaCheck,
-    FaTimes,
     FaChevronLeft,
     FaChevronRight,
     FaArrowLeft,
@@ -42,6 +40,8 @@ import MapBox from '@/pages/SearchPackage/MapBox';
 import Lottie from 'lottie-react';
 import loadingAnimation from '@/assets/animation/loading.json';
 import { isValidCoordinate } from '@/utils/geoCodingCheck';
+import { FaInfoCircle, FaCheck, FaTimes } from 'react-icons/fa';
+import { theme } from '@/styles/theme';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -70,7 +70,8 @@ const MainContent = styled.div`
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: ${({ theme }) => theme.spacing.md};
-        gap: ${({ theme }) => theme.spacing.lg};
+        gap: ${({ theme }) => theme.spacing.md};
+        max-width: 100%;
     }
 `;
 
@@ -79,6 +80,12 @@ const LeftContent = styled.div`
     flex-direction: column;
     gap: 2rem;
     max-width: 800px;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.lg};
+        max-width: 100%;
+        order: 0; /* Ensures it comes after RightSidebar on mobile */
+    }
 `;
 
 const MapContainer = styled.div`
@@ -335,8 +342,10 @@ const ContentSection = styled.div`
     overflow: visible;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        grid-template-columns: 1fr;
-        gap: ${({ theme }) => theme.spacing.md};
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        align-items: stretch;
     }
 `;
 
@@ -354,7 +363,7 @@ const RightSidebar = styled.div`
         top: auto;
         max-height: none;
         overflow-y: visible;
-        order: -1;
+        order: -1; /* This moves it before LeftContent on mobile */
         margin-bottom: ${({ theme }) => theme.spacing.lg};
     }
 `;
@@ -362,6 +371,11 @@ const RightSidebar = styled.div`
 const PriceCard = styled(Card)`
     padding: 1.5rem;
     border: 2px solid ${({ theme }) => theme.colors.border};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        margin-bottom: ${({ theme }) => theme.spacing.lg};
+    }
 `;
 
 const SeeAllButton = styled.button`
@@ -377,7 +391,7 @@ const SeeAllButton = styled.button`
 `;
 
 const Section = styled.div`
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 
     h2 {
         font-size: 1.5rem;
@@ -385,39 +399,25 @@ const Section = styled.div`
         margin-bottom: 1rem;
         text-align: left;
         color: ${({ theme }) => theme.colors.text};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            font-size: ${({ theme }) => theme.fontSizes.xl};
+        }
     }
 
     p {
         line-height: 1.6;
         text-align: left;
         color: ${({ theme }) => theme.colors.lightText};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            font-size: ${({ theme }) => theme.fontSizes.sm};
+            line-height: 1.5;
+        }
     }
-`;
 
-const ListColumn = styled.div`
-    border: none;
-    background-color: transparent;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-`;
-
-const ListContent = styled.div`
-    padding: 0;
-`;
-
-const ListItem = styled.div<{ included?: boolean }>`
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.5rem 0;
-    color: ${({ theme }) => theme.colors.text};
-    font-size: 1rem;
-
-    .icon {
-        color: ${({ included }) => (included ? '#228b22' : '#ff0000')};
-        flex-shrink: 0;
-        font-size: 1rem;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-bottom: 0;
     }
 `;
 
@@ -483,6 +483,10 @@ const BookingForm = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const FormGroup = styled.div`
@@ -515,6 +519,15 @@ const Total = styled.div`
         font-size: 1.25rem;
         font-weight: bold;
         color: ${({ theme }) => theme.colors.text};
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.sm} 0;
+        margin-top: ${({ theme }) => theme.spacing.sm};
+
+        .amount {
+            font-size: ${({ theme }) => theme.fontSizes.lg};
+        }
     }
 `;
 
@@ -550,38 +563,66 @@ const ImageModalOverlay = styled(motion.div)`
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 9999;
     cursor: pointer;
 `;
 
 const ImageModalContent = styled(motion.div)`
     position: relative;
-    width: 80vw;
-    height: 80vh;
+    width: 90vw;
+    height: 90vh;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: default;
+    padding: 60px;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        width: 100vw;
+        height: 100vh;
+        padding: 0;
+    }
 `;
 
 const ModalImage = styled.img`
-    max-width: 100%;
-    max-height: 100%;
+    max-width: calc(90vw - 100px);
+    max-height: calc(90vh - 60px);
     width: auto;
     height: auto;
     object-fit: contain;
+    display: block;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        max-width: 100vw;
+        max-height: calc(100vh - 100px);
+    }
 `;
 
 const CloseButton = styled(Button)`
     position: absolute;
-    top: -20px;
-    right: 0;
-    background: none;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.5);
     border: none;
     color: white;
     font-size: 2rem;
     cursor: pointer;
-    z-index: 1001;
+    z-index: 10001;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        font-size: 1.5rem;
+    }
 `;
 
 const NavigationButton = styled(Button)`
@@ -590,27 +631,62 @@ const NavigationButton = styled(Button)`
     transform: translateY(-50%);
     border: none;
     color: white;
-    background: ${({ theme }) => theme.colors.primary};
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
 
     &:hover {
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(0, 0, 0, 0.7);
     }
 `;
 
 const PrevButton = styled(NavigationButton)`
-    left: 10px;
+    left: 20px;
+    z-index: 10001;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 1.5rem;
+    border-radius: 50%;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        left: 10px;
+        width: 36px;
+        height: 36px;
+    }
 `;
 
 const NextButton = styled(NavigationButton)`
-    right: 120px;
+    right: 20px;
+    z-index: 10001;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 1.5rem;
+    border-radius: 50%;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        right: 10px;
+        width: 36px;
+        height: 36px;
+    }
 `;
+
 const ImageCounter = styled.div`
     position: absolute;
-    bottom: -40px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
     color: white;
     font-size: 1rem;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 5px 10px;
+    border-radius: 4px;
+    z-index: 10001;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        bottom: 60px;
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
 `;
 
 const NavigationButtons = styled.div`
@@ -677,6 +753,16 @@ const TourDetailsContent = styled.div`
     .value {
         color: ${({ theme }) => theme.colors.secondary};
         font-weight: 500;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.lg};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+
+        div {
+            flex: 1;
+            min-width: 45%;
+        }
     }
 `;
 
@@ -815,46 +901,138 @@ const InfoRow = styled.div`
 
 const InfoCards = styled.div`
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 
     ${({ theme }) => theme.responsive.maxMobile} {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
         gap: ${({ theme }) => theme.spacing.sm};
-        margin-bottom: ${({ theme }) => theme.spacing.sm};
     }
 `;
 
-const InfoCard = styled(Card)`
+const InfoCardItemValue = styled.div`
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 110px;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        max-width: 100%;
+    }
+`;
+
+const InfoCardItemIcon = styled.div`
+    color: ${({ theme }) => theme.colors.primary};
+
+    svg {
+        vertical-align: center;
+        line-height: 1;
+        font-size: 1.2rem;
+        height: 1.4rem;
+        width: 1.4rem;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        svg {
+            vertical-align: center;
+            line-height: 1;
+            font-size: 0.9rem;
+            height: 1.2rem;
+            width: 1.2rem;
+        }
+    }
+`;
+
+const StyledInfoCard = styled(Card)`
+    background: ${({ theme }) => theme.colors.lightBackground};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    padding: ${({ theme }) => theme.spacing.md};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.sm};
+    flex: 0 1 auto;
+    min-width: 140px;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+        flex-direction: row; /* Keep horizontal on mobile */
+        align-items: center; /* Keep center alignment */
+        text-align: left; /* Keep left alignment */
+        min-width: unset;
+        gap: ${({ theme }) => theme.spacing.sm};
+    }
+`;
+
+const IncludedExcludedCard = styled(Card)`
+    background: white;
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    padding: ${({ theme }) => theme.spacing.lg};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+    }
+`;
+
+const StyledCallout = styled.div`
+    background: ${({ theme }) => `${theme.colors.warning}15`};
+    border: 1px solid ${({ theme }) => `${theme.colors.warning}30`};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    padding: ${({ theme }) => theme.spacing.md};
+    margin-bottom: 0;
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
-    padding: 1.4rem 1.3rem;
-    background-color: ${({ theme }) => theme.colors.lightBackground};
-    min-width: 80px;
+    gap: ${({ theme }) => theme.spacing.sm};
 
-    .icon {
-        color: ${({ theme }) => theme.colors.primary};
+    .callout-icon {
+        color: ${({ theme }) => theme.colors.warning};
         flex-shrink: 0;
+        margin-top: 2px;
     }
 
-    .content {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        text-align: right;
+    .callout-text {
         flex: 1;
-        margin-left: 0.5rem;
-    }
-
-    .label {
-        font-size: 0.75rem;
-        color: ${({ theme }) => theme.colors.lightText};
-        margin-bottom: 0.125rem;
-    }
-
-    .value {
-        font-weight: 600;
         color: ${({ theme }) => theme.colors.text};
-        font-size: 0.875rem;
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        line-height: 1.5;
+        text-align: left;
+    }
+`;
+
+const IncludedExcludedItem = styled.div<{ included?: boolean }>`
+    display: flex;
+    align-items: flex-start;
+    gap: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacing.sm} 0;
+
+    .item-icon {
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .item-text {
+        flex: 1;
+        color: ${({ theme }) => theme.colors.text};
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        line-height: 1.5;
+        text-align: left;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.sm};
+
+        .item-text {
+            font-size: ${({ theme }) => theme.fontSizes.sm};
+        }
     }
 `;
 
@@ -1344,60 +1522,106 @@ export default function SearchPackageDetails() {
                         <LeftContent>
                             <InfoRow>
                                 <InfoCards>
-                                    <InfoCard>
-                                        <div className="icon">
-                                            <FaClock className="icon" size={28} />
-                                        </div>
-                                        <div className="content">
-                                            <div className="label">Duration</div>
-                                            <div className="value">{tour.duration}</div>
-                                        </div>
-                                    </InfoCard>
-
-                                    <InfoCard>
-                                        <div className="icon">
-                                            <FaMapMarkerAlt className="icon" size={28} />
-                                        </div>
-                                        <div className="content">
-                                            <div className="label">Tour Type</div>
-                                            <div className="value">{tour.tourType}</div>
-                                        </div>
-                                    </InfoCard>
-
-                                    <InfoCard>
-                                        <div className="icon">
-                                            <FaUsers className="icon" size={28} />
-                                        </div>
-                                        <div className="content">
-                                            <div className="label">Group Size</div>
-                                            <div className="value">{tour.groupSize}</div>
-                                        </div>
-                                    </InfoCard>
-
-                                    <InfoCard>
-                                        <div className="icon">
-                                            <FaUserFriends className="icon" size={28} />
-                                        </div>
-                                        <div className="content">
-                                            <div className="label">Ages</div>
-                                            <div className="value">
-                                                {tour.ageMin}-{tour.ageMax}
+                                    <StyledInfoCard>
+                                        <InfoCardItemIcon>
+                                            <FaClock />
+                                        </InfoCardItemIcon>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: theme.fontSizes.xs,
+                                                    color: theme.colors.lightText,
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'left',
+                                                }}
+                                            >
+                                                Duration
                                             </div>
+                                            <InfoCardItemValue>{tour.duration}</InfoCardItemValue>
                                         </div>
-                                    </InfoCard>
+                                    </StyledInfoCard>
 
-                                    <InfoCard>
-                                        <div className="icon">
-                                            <FaGlobe className="icon" size={28} />
+                                    <StyledInfoCard>
+                                        <InfoCardItemIcon>
+                                            <FaMapMarkerAlt />
+                                        </InfoCardItemIcon>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: theme.fontSizes.xs,
+                                                    color: theme.colors.lightText,
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'left',
+                                                }}
+                                            >
+                                                Tour Type
+                                            </div>
+                                            <InfoCardItemValue>{tour.tourType}</InfoCardItemValue>
                                         </div>
-                                        <div className="content">
-                                            <div className="label">Languages</div>
-                                            <div className="value">{getDisplayLanguages(tour.language || '')}</div>
+                                    </StyledInfoCard>
+
+                                    <StyledInfoCard>
+                                        <InfoCardItemIcon>
+                                            <FaUsers />
+                                        </InfoCardItemIcon>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: theme.fontSizes.xs,
+                                                    color: theme.colors.lightText,
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'left',
+                                                }}
+                                            >
+                                                Group Size
+                                            </div>
+                                            <InfoCardItemValue>{tour.groupSize}</InfoCardItemValue>
                                         </div>
-                                    </InfoCard>
+                                    </StyledInfoCard>
+
+                                    <StyledInfoCard>
+                                        <InfoCardItemIcon>
+                                            <FaUserFriends />
+                                        </InfoCardItemIcon>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: theme.fontSizes.xs,
+                                                    color: theme.colors.lightText,
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'left',
+                                                }}
+                                            >
+                                                Ages
+                                            </div>
+                                            <InfoCardItemValue>
+                                                {tour.ageMin}-{tour.ageMax}
+                                            </InfoCardItemValue>
+                                        </div>
+                                    </StyledInfoCard>
+
+                                    <StyledInfoCard>
+                                        <InfoCardItemIcon>
+                                            <FaGlobe />
+                                        </InfoCardItemIcon>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: theme.fontSizes.xs,
+                                                    color: theme.colors.lightText,
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'left',
+                                                }}
+                                            >
+                                                Languages
+                                            </div>
+                                            <InfoCardItemValue>
+                                                {getDisplayLanguages(tour.language || '')}
+                                            </InfoCardItemValue>
+                                        </div>
+                                    </StyledInfoCard>
                                 </InfoCards>
                             </InfoRow>
-
                             <Section>
                                 <h2>Tour Overview</h2>
                                 <p>{tour.about}</p>
@@ -1405,38 +1629,76 @@ export default function SearchPackageDetails() {
 
                             <Section>
                                 <h2>What's included</h2>
-                                <ListColumn>
-                                    <ListContent>
+                                <IncludedExcludedCard>
+                                    <div>
                                         {tour.includedItem?.length > 0 ? (
                                             tour.includedItem.map((item, index) => (
-                                                <ListItem key={`included-${index}`} included>
-                                                    <FaCheck className="icon" />
-                                                    <span>{item.text}</span>
-                                                </ListItem>
+                                                <IncludedExcludedItem key={`included-${index}`} included>
+                                                    <FaCheck
+                                                        style={{
+                                                            color: '#228b22',
+                                                            fontSize: '1.25rem',
+                                                            flexShrink: 0,
+                                                            marginTop: '2px',
+                                                        }}
+                                                    />
+                                                    <span className="item-text">{item.text}</span>
+                                                </IncludedExcludedItem>
                                             ))
                                         ) : (
-                                            <ListItem included>
-                                                <FaCheck className="icon" />
-                                                <span>No included items specified.</span>
-                                            </ListItem>
+                                            <IncludedExcludedItem included>
+                                                <FaCheck
+                                                    style={{
+                                                        color: '#228b22',
+                                                        fontSize: '1.25rem',
+                                                        flexShrink: 0,
+                                                        marginTop: '2px',
+                                                    }}
+                                                />
+                                                <span className="item-text">No included items specified.</span>
+                                            </IncludedExcludedItem>
                                         )}
+                                    </div>
+
+                                    <div>
                                         {tour.excludedItem?.length > 0 ? (
                                             tour.excludedItem.map((item, index) => (
-                                                <ListItem key={`excluded-${index}`}>
-                                                    <FaTimes className="icon" />
-                                                    <span>{item.text}</span>
-                                                </ListItem>
+                                                <IncludedExcludedItem key={`excluded-${index}`}>
+                                                    <FaTimes
+                                                        style={{
+                                                            color: '#ff0000',
+                                                            fontSize: '1.25rem',
+                                                            flexShrink: 0,
+                                                            marginTop: '2px',
+                                                        }}
+                                                    />
+                                                    <span className="item-text">{item.text}</span>
+                                                </IncludedExcludedItem>
                                             ))
                                         ) : (
-                                            <ListItem>
-                                                <FaTimes className="icon" />
-                                                <span>No excluded items specified.</span>
-                                            </ListItem>
+                                            <IncludedExcludedItem>
+                                                <FaTimes
+                                                    style={{
+                                                        color: '#ff0000',
+                                                        fontSize: '1.25rem',
+                                                        flexShrink: 0,
+                                                        marginTop: '2px',
+                                                    }}
+                                                />
+                                                <span className="item-text">No excluded items specified.</span>
+                                            </IncludedExcludedItem>
                                         )}
-                                    </ListContent>
-                                </ListColumn>
+                                    </div>
+                                </IncludedExcludedCard>
+                                <StyledCallout>
+                                    <FaInfoCircle className="callout-icon" size={20} />
+                                    <div className="callout-text">
+                                        <strong>Important:</strong> Please review what's included and excluded in your
+                                        tour package carefully. Additional expenses not listed below will be your
+                                        responsibility.
+                                    </div>
+                                </StyledCallout>
                             </Section>
-
                             <Section>
                                 <h2>Itinerary</h2>
                                 <Itinerary>

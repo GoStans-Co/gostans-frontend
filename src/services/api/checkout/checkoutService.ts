@@ -14,7 +14,7 @@ import {
     StripePaymentRequest,
     StripePaymentResponse,
 } from '@/services/api/checkout/types';
-import { TokenStorage } from '@/utils/tokenStorage';
+import { TokenStorage } from '@/utils/tokenManagement/tokenStorage';
 
 export const BOOKING_CACHE_DURATION = 10 * 60 * 1000;
 

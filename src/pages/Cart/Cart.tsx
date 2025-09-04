@@ -760,7 +760,7 @@ export default function CartPage() {
                             Your payment session has been interrupted. For your convenience and security, please start
                             the booking process from the beginning.
                         </p>
-                        <Button variant="primary" onClick={() => navigate('/tours')}>
+                        <Button variant="primary" onClick={() => navigate('/searchTrips')}>
                             Go to Tour Packages
                         </Button>
                     </EmptyCart>
