@@ -928,13 +928,25 @@ const InfoCardItemValue = styled.div`
     }
 `;
 
-const InfoCardItemLabel = styled.div`
-    font-size: 12px;
-    color: ${({ theme }) => theme.colors.lightText};
-    text-align: left;
+const InfoCardItemIcon = styled.div`
+    color: ${({ theme }) => theme.colors.primary};
+
+    svg {
+        vertical-align: center;
+        line-height: 1;
+        font-size: 1.2rem;
+        height: 1.4rem;
+        width: 1.4rem;
+    }
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: ${({ theme }) => theme.fontSizes.xs};
+        svg {
+            vertical-align: center;
+            line-height: 1;
+            font-size: 0.9rem;
+            height: 1.2rem;
+            width: 1.2rem;
+        }
     }
 `;
 
@@ -1511,9 +1523,9 @@ export default function SearchPackageDetails() {
                             <InfoRow>
                                 <InfoCards>
                                     <StyledInfoCard>
-                                        <FaClock
-                                            style={{ color: theme.colors.primary, fontSize: '1.4rem', flexShrink: 0 }}
-                                        />
+                                        <InfoCardItemIcon>
+                                            <FaClock />
+                                        </InfoCardItemIcon>
                                         <div>
                                             <div
                                                 style={{
@@ -1530,9 +1542,9 @@ export default function SearchPackageDetails() {
                                     </StyledInfoCard>
 
                                     <StyledInfoCard>
-                                        <FaMapMarkerAlt
-                                            style={{ color: theme.colors.primary, fontSize: '1.4rem', flexShrink: 0 }}
-                                        />
+                                        <InfoCardItemIcon>
+                                            <FaMapMarkerAlt />
+                                        </InfoCardItemIcon>
                                         <div>
                                             <div
                                                 style={{
@@ -1549,9 +1561,9 @@ export default function SearchPackageDetails() {
                                     </StyledInfoCard>
 
                                     <StyledInfoCard>
-                                        <FaUsers
-                                            style={{ color: theme.colors.primary, fontSize: '1.4rem', flexShrink: 0 }}
-                                        />
+                                        <InfoCardItemIcon>
+                                            <FaUsers />
+                                        </InfoCardItemIcon>
                                         <div>
                                             <div
                                                 style={{
@@ -1568,9 +1580,9 @@ export default function SearchPackageDetails() {
                                     </StyledInfoCard>
 
                                     <StyledInfoCard>
-                                        <FaUserFriends
-                                            style={{ color: theme.colors.primary, fontSize: '1.4rem', flexShrink: 0 }}
-                                        />
+                                        <InfoCardItemIcon>
+                                            <FaUserFriends />
+                                        </InfoCardItemIcon>
                                         <div>
                                             <div
                                                 style={{
@@ -1589,9 +1601,9 @@ export default function SearchPackageDetails() {
                                     </StyledInfoCard>
 
                                     <StyledInfoCard>
-                                        <FaGlobe
-                                            style={{ color: theme.colors.primary, fontSize: '1.4rem', flexShrink: 0 }}
-                                        />
+                                        <InfoCardItemIcon>
+                                            <FaGlobe />
+                                        </InfoCardItemIcon>
                                         <div>
                                             <div
                                                 style={{
