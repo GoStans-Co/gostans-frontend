@@ -38,8 +38,8 @@ export const useTripActions = (bookings: { all: Booking[] }) => {
     };
 
     const handleDelete = async (tripId: string) => {
-        // TODO: later i should implement actual delete logic
-        // when i get the endpoint for this
+        // TODO: Later I should implement actual delete logic
+        // when I get the endpoint for this
         console.info('Delete trip:', tripId);
         message.info('This feature will be added soon!');
     };
