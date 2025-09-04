@@ -174,6 +174,11 @@ const TourFlowContainer = styled.div`
     border-radius: ${theme.borderRadius.md};
     margin-bottom: ${theme.spacing.md};
     box-shadow: ${theme.shadows.sm};
+
+    ${theme.responsive.maxMobile} {
+        padding: ${theme.spacing.sm};
+        margin-bottom: ${theme.spacing.sm};
+    }
 `;
 
 const CityFlow = styled.div`
@@ -183,25 +188,54 @@ const CityFlow = styled.div`
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: ${theme.spacing.md};
+    gap: ${theme.spacing.sm};
     font-family: ${theme.typography.fontFamily.body};
+
+    ${theme.responsive.maxMobile} {
+        gap: ${theme.spacing.xs};
+    }
 `;
 
 const CityName = styled.span`
-    font-size: ${theme.fontSizes.sm};
-    font-weight: ${theme.typography.fontWeight.regular};
+    font-size: 0.7625rem;
+    font-weight: ${theme.typography.fontWeight.medium};
     color: ${theme.colors.primary};
     background: ${theme.colors.lightBackground};
-    padding: ${theme.spacing.xs} ${theme.spacing.md};
-    border-radius: ${theme.borderRadius.sm};
+    padding: ${theme.spacing.xs} ${theme.spacing.sm};
+    border-radius: ${theme.borderRadius.lg};
     border: 1px solid ${theme.colors.border};
+
+    ${theme.responsive.maxMobile} {
+        font-size: 0.6875rem;
+        padding: 4px 8px;
+    }
+`;
+
+const FlowBadge = styled.span<{ type: 'start' | 'end' }>`
+    background: ${theme.colors.warning};
+    color: white;
+    font-size: ${theme.fontSizes.xs};
+    font-weight: ${theme.typography.fontWeight.bold};
+    padding: 4px 10px;
+    border-radius: ${theme.borderRadius.full};
+    text-transform: uppercase;
+
+    ${theme.responsive.maxMobile} {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
 `;
 
 const FlowArrow = styled.span`
     color: ${theme.colors.muted};
-    font-weight: ${theme.typography.fontWeight.bold};
-    font-size: ${theme.fontSizes.lg};
+    font-weight: ${theme.typography.fontWeight.regular};
+    font-size: ${theme.fontSizes.md};
+
+    ${theme.responsive.maxMobile} {
+        font-size: ${theme.fontSizes.sm};
+    }
 `;
+
 /**
  * MapBox - Page Component
  * @description Displays a map with markers for each itinerary location.
@@ -614,12 +648,25 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
         return (
             <TourFlowContainer>
                 <CityFlow>
+                    {uniqueCities.length > 1 && (
+                        <>
+                            <FlowBadge type="start">Start</FlowBadge>
+                            <FlowArrow>→</FlowArrow>
+                        </>
+                    )}
                     {uniqueCities.map((city, index) => (
                         <React.Fragment key={index}>
                             <CityName>{city}</CityName>
                             {index < uniqueCities.length - 1 && <FlowArrow>→</FlowArrow>}
                         </React.Fragment>
                     ))}
+                    {uniqueCities.length > 1 && (
+                        <>
+                            {' '}
+                            <FlowArrow>→</FlowArrow>
+                            <FlowBadge type="end"> End</FlowBadge>{' '}
+                        </>
+                    )}
                 </CityFlow>
             </TourFlowContainer>
         );
