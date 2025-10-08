@@ -15,6 +15,7 @@ export type CountryWithCities = {
 export type CountriesWithCitiesState = {
     data: CountryWithCities[] | null;
     lastFetch: number | null;
+    countryData?: string;
 };
 
 export const countriesWithCitiesAtom = atom<CountriesWithCitiesState>({

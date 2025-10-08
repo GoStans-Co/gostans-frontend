@@ -53,13 +53,23 @@ export type ItineraryLocation = {
     longitude: number | null;
 };
 
+export type ItinerarySlot = {
+    title: string;
+    description: string;
+    startTime: string;
+    endTime: string;
+    locationNames?: ItineraryLocation[];
+};
+
 export type Itinerary = {
+    id?: number;
     dayNumber: number;
     dayTitle: string;
     description: string;
     accommodation: string;
     includedMeals: string;
     locationNames: ItineraryLocation[];
+    slots: ItinerarySlot[];
 };
 
 export type TourDetailsResponse = {
@@ -94,12 +104,8 @@ export type TourDetailsResponse = {
         ageCategory: string;
         price: string;
     }>;
-    includedItem: Array<{
-        text: string;
-    }>;
-    excludedItem: Array<{
-        text: string;
-    }>;
+    includedItem: Array<{ text: string }> | Array<Array<{ text: string }>>;
+    excludedItem: Array<{ text: string }> | Array<Array<{ text: string }>>;
 };
 
 export type CacheStatus = {
@@ -135,6 +141,25 @@ export type TopDestinationsResponse = {
     statusCode: number;
     message: string;
     data: TopDestination[];
+};
+
+/* location data for a tour slot */
+export type TourLocationSlot = {
+    id: number;
+    latitude: string;
+    longitude: string;
+};
+
+export type TourLocationDay = {
+    id: number;
+    latitude: string;
+    longitude: string;
+    slots: TourLocationSlot[];
+};
+
+export type TourLocationUpdateRequest = {
+    tourUuid: string;
+    days: TourLocationDay[];
 };
 
 export type TourLocationUpdateResponseData = {
