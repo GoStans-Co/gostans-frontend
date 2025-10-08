@@ -1,7 +1,7 @@
 import { useRecoilState } from 'recoil';
 import { ApiResponse } from '@/types/common/fetch';
 import { useMemo, useRef } from 'react';
-import { useFetch } from '@/hooks/api/useFetch';
+import { useTypedFetch, extractApiData, extractStatusCode, extractMessage } from '@/hooks/api/useTypedFetch';
 import { activeBookingsAtom, bookingCacheAtom } from '@/atoms/booking';
 import {
     BookingDetails,
@@ -24,7 +24,7 @@ export const BOOKING_CACHE_DURATION = 10 * 60 * 1000;
  * @description This module provides functions for booking and payment operations
  */
 export const useCheckoutService = () => {
-    const { execute: fetchData } = useFetch();
+    const { execute: fetchData } = useTypedFetch();
     const [bookingCache, setBookingCache] = useRecoilState(bookingCacheAtom);
     const [activeBookings, setActiveBookings] = useRecoilState(activeBookingsAtom);
 
@@ -73,9 +73,9 @@ export const useCheckoutService = () => {
                 });
 
                 return {
-                    data: response.data,
-                    statusCode: 200,
-                    message: response.message || 'Payment created successfully',
+                    data: extractApiData<CardPaymentResponse>(response),
+                    statusCode: extractStatusCode(response),
+                    message: extractMessage(response, 'Payment created successfully'),
                 };
             },
 
@@ -114,9 +114,9 @@ export const useCheckoutService = () => {
                     setBookingCache({ loaded: false, lastFetch: null });
 
                     return {
-                        data: response.data,
-                        statusCode: 200,
-                        message: response.message || 'Payment completed successfully',
+                        data: extractApiData<PaymentExecuteResponse>(response),
+                        statusCode: extractStatusCode(response),
+                        message: extractMessage(response, 'Payment completed successfully'),
                     };
                 })();
 
@@ -158,9 +158,9 @@ export const useCheckoutService = () => {
                 });
 
                 return {
-                    data: response.data,
-                    statusCode: 200,
-                    message: response.message || 'Payment intent created successfully',
+                    data: extractApiData<StripePaymentResponse>(response),
+                    statusCode: extractStatusCode(response),
+                    message: extractMessage(response, 'Payment intent created successfully'),
                 };
             },
 
@@ -196,14 +196,16 @@ export const useCheckoutService = () => {
                     method: 'GET',
                 });
 
+                const responseData = extractApiData<BookingListResponse>(response);
+
                 if (page === 1) {
-                    updateBookingsCache(response.data.results);
+                    updateBookingsCache(responseData.results);
                 }
 
                 return {
-                    data: response.data,
-                    statusCode: 200,
-                    message: 'success',
+                    data: responseData,
+                    statusCode: extractStatusCode(response),
+                    message: extractMessage(response, 'success'),
                 };
             },
 
@@ -219,9 +221,9 @@ export const useCheckoutService = () => {
                 });
 
                 return {
-                    data: response.data,
-                    statusCode: 200,
-                    message: 'success',
+                    data: extractApiData<BookingDetails>(response),
+                    statusCode: extractStatusCode(response),
+                    message: extractMessage(response, 'success'),
                 };
             },
 
@@ -279,23 +281,17 @@ export const useCheckoutService = () => {
                 });
 
                 return {
-                    data: response.data,
-                    statusCode: 200,
-                    message: 'Confirmation email sent successfully',
+                    data: extractApiData<void>(response),
+                    statusCode: extractStatusCode(response),
+                    message: extractMessage(response, 'Confirmation email sent successfully'),
                 };
             },
 
-            /**
-             * Clear bookings cache
-             */
             clearCache: () => {
                 setActiveBookings([]);
                 setBookingCache({ loaded: false, lastFetch: null });
             },
 
-            /**
-             * Force refresh bookings
-             */
             forceRefresh: async () => {
                 setBookingCache({ loaded: false, lastFetch: null });
             },

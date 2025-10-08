@@ -2,6 +2,7 @@ import {
     TopDestinationsResponse,
     TourDetailsResponse,
     TourListResponse,
+    TourLocationUpdateRequest,
     TourLocationUpdateResponseData,
     ToursListApiResponse,
 } from '@/services/api/tours/types';
@@ -13,6 +14,11 @@ import { tourDetailsAtom, toursCacheStatusAtom, toursDataAtom } from '@/atoms/to
 import { countriesWithCitiesAtom, CountriesWithCitiesState, CountryWithCities } from '@/atoms/countryWithCities';
 import { CACHE_DURATION } from '@/services/api/user/userService';
 
+/**
+ * Checks if cached data is still valid based on timestamp.
+ * @param {number | null} lastFetch - Timestamp of last cache update
+ * @returns {boolean} True if cache is still valid, false otherwise
+ */
 export const isCacheValid = (lastFetch: number | null): boolean => {
     if (!lastFetch) return false;
     return Date.now() - lastFetch < CACHE_DURATION;
@@ -24,7 +30,7 @@ export const isCacheValid = (lastFetch: number | null): boolean => {
  * @description This module provides functions for fetching tours and tour details
  */
 export const useToursService = () => {
-    const { execute: fetchData } = useFetch();
+    const { execute: fetchData } = useFetch<ApiResponse<unknown>>();
     const [toursData, setToursData] = useRecoilState(toursDataAtom);
     const [cacheStatus, setCacheStatus] = useRecoilState(toursCacheStatusAtom);
     const [tourDetailsCache, setTourDetailsCache] = useRecoilState(tourDetailsAtom);
@@ -33,6 +39,16 @@ export const useToursService = () => {
 
     return useMemo(
         () => ({
+            /**
+             * Fetches tours list with optional filtering and pagination.
+             * Uses cache when possible to avoid unnecessary API calls.
+             * @param {Object} params - Query parameters
+             * @param {string} [params.search] - Search term for filtering tours
+             * @param {number} [params.page=1] - Page number for pagination
+             * @param {number} [params.pageSize=10] - Number of items per page
+             * @param {boolean} [params.all=false] - Whether to fetch all tours
+             * @returns {Promise<ApiResponse<ToursListApiResponse>>} Promise resolving to tours list
+             */
             getTours: async ({
                 search,
                 page = 1,
@@ -58,31 +74,34 @@ export const useToursService = () => {
                 if (all) params.append('all', 'true');
                 if (search) params.append('search', search);
 
-                try {
-                    const response = await fetchData({
-                        url: `/tours/list/?${params.toString()}`,
-                        method: 'GET',
-                    });
+                const response = await fetchData({
+                    url: `/tours/list/?${params.toString()}`,
+                    method: 'GET',
+                });
 
-                    const apiResponse: ApiResponse<ToursListApiResponse> = {
-                        data: response.data || response,
-                        statusCode: response.statusCode || 200,
-                        message: response.message || 'success',
-                    };
+                const typedResponse = response as ApiResponse<ToursListApiResponse>;
 
-                    /* then we cache data for page 1 without search */
-                    if (apiResponse.data?.results && !search && page === 1) {
-                        setToursData(apiResponse.data);
-                        setCacheStatus({ loaded: true, lastFetch: Date.now() });
-                    }
+                const apiResponse: ApiResponse<ToursListApiResponse> = {
+                    data: typedResponse.data,
+                    statusCode: typedResponse.statusCode || 200,
+                    message: typedResponse.message || 'success',
+                };
 
-                    return apiResponse;
-                } catch (error) {
-                    console.error('Tours fetch error:', error);
-                    throw error;
+                /* then we cache data for page 1 without search */
+                if (apiResponse.data?.results && !search && page === 1) {
+                    setToursData(apiResponse.data);
+                    setCacheStatus({ loaded: true, lastFetch: Date.now() });
                 }
+
+                return apiResponse;
             },
 
+            /**
+             * Fetches a single tour by ID with caching support.
+             * @param {string | number} id - Tour ID to fetch
+             * @returns {Promise<ApiResponse<TourListResponse>>}
+             * Promise resolving to tour data
+             */
             getTourById: async (id: string | number): Promise<ApiResponse<TourListResponse>> => {
                 const tourId = id.toString();
                 const cachedTour = toursData?.results?.find((tour) => tour.id.toString() === tourId);
@@ -95,12 +114,19 @@ export const useToursService = () => {
                     };
                 }
 
-                return fetchData({
+                const response = await fetchData({
                     url: `/tours/${id}/`,
                     method: 'GET',
                 });
+
+                return response as ApiResponse<TourListResponse>;
             },
 
+            /**
+             * Fetches detailed tour information with comprehensive caching.
+             * @param {string | number} tourId - Tour ID to get details for
+             * @returns {Promise<ApiResponse<TourDetailsResponse>>} Promise resolving to detailed tour data
+             */
             getTourDetails: async (tourId: string | number): Promise<ApiResponse<TourDetailsResponse>> => {
                 const id = tourId.toString();
                 const cachedDetail = tourDetailsCache[id];
@@ -118,89 +144,89 @@ export const useToursService = () => {
                     method: 'GET',
                 });
 
+                const typedResponse = response as ApiResponse<TourDetailsResponse>;
+
                 /* here we cache the response */
-                if (response.statusCode === 200) {
+                if (typedResponse.statusCode === 200) {
                     setTourDetailsCache((prev) => ({
                         ...prev,
                         [id]: {
-                            data: response.data,
+                            data: typedResponse.data,
                             lastFetch: Date.now(),
                         },
                     }));
                 }
 
-                return response;
+                return typedResponse;
             },
 
+            /**
+             * Fetches currently trending tours from the API.
+             * @returns {Promise<ApiResponse<ToursListApiResponse>>}
+             * Promise resolving to trending tours
+             */
             getTrendingTours: async (): Promise<ApiResponse<ToursListApiResponse>> => {
-                try {
-                    const response = await fetchData({
-                        url: '/tours/trending-tours/',
-                        method: 'GET',
-                    });
+                const response = await fetchData({
+                    url: '/tours/trending-tours/',
+                    method: 'GET',
+                });
 
-                    const apiResponse: ApiResponse<ToursListApiResponse> = {
-                        data: response.data || response,
-                        statusCode: response.statusCode || 200,
-                        message: response.message || 'Trending tours retrieved successfully',
-                    };
+                const typedResponse = response as ApiResponse<ToursListApiResponse>;
 
-                    return apiResponse;
-                } catch (error) {
-                    console.error('Trending tours fetch error:', error);
-                    throw error;
-                }
+                const apiResponse: ApiResponse<ToursListApiResponse> = {
+                    data: typedResponse.data,
+                    statusCode: typedResponse.statusCode || 200,
+                    message: typedResponse.message || 'Trending tours retrieved successfully',
+                };
+
+                return apiResponse;
             },
 
+            /**
+             * Updates tour location data with new coordinates.
+             * @param {TourLocationUpdateRequest} updateRequest
+             * Request containing tour UUID and day location data
+             * @returns {Promise<ApiResponse<TourLocationUpdateResponseData>>}
+             * Promise resolving to update response
+             */
             updateTourLocationData: async (
-                tourUuid: string,
-                locations: Record<number, { latitude: number; longitude: number }>,
+                updateRequest: TourLocationUpdateRequest,
             ): Promise<ApiResponse<TourLocationUpdateResponseData>> => {
-                try {
-                    const response = await fetchData({
-                        url: `/tours/update-tour-location/`,
-                        method: 'POST',
-                        data: {
-                            tour_uuid: tourUuid,
-                            days: locations,
-                        },
-                    });
+                const response = await fetchData({
+                    url: `/tours/update-tour-location/`,
+                    method: 'POST',
+                    data: updateRequest,
+                });
 
-                    return {
-                        data: response.data || response,
-                        statusCode: response.statusCode || 200,
-                        message: response.message || 'Location updated successfully',
-                    };
-                } catch (error) {
-                    console.error('Error updating tour location:', error);
-                    throw error;
-                }
+                return response as ApiResponse<TourLocationUpdateResponseData>;
             },
 
+            /**
+             * Fetches top destinations, optionally filtered by country.
+             * @param {number} [countryId] - Optional country ID to filter destinations
+             * @returns {Promise<ApiResponse<TopDestinationsResponse[]>>}
+             * Promise resolving to top destinations
+             */
             getTopDestinations: async (countryId?: number): Promise<ApiResponse<TopDestinationsResponse[]>> => {
-                try {
-                    const url = countryId
-                        ? `/tours/top-destinations/?country_id=${countryId}`
-                        : '/tours/top-destinations/';
+                const url = countryId ? `/tours/top-destinations/?country_id=${countryId}` : '/tours/top-destinations/';
 
-                    const response = await fetchData({
-                        url,
-                        method: 'GET',
-                    });
+                const response = await fetchData({
+                    url,
+                    method: 'GET',
+                });
 
-                    const apiResponse: ApiResponse<TopDestinationsResponse[]> = {
-                        data: response.data || response,
-                        statusCode: response.statusCode || 200,
-                        message: response.message || 'Top destinations retrieved successfully',
-                    };
-
-                    return apiResponse;
-                } catch (error) {
-                    console.error('Top destinations fetch error:', error);
-                    throw error;
-                }
+                return response as ApiResponse<TopDestinationsResponse[]>;
             },
 
+            /**
+             * Fetches tours filtered by specific destination (country and city).
+             * @param {Object} params - Destination filter parameters
+             * @param {number} params.countryId - Country ID to filter by
+             * @param {number} params.cityId - City ID to filter by
+             * @param {number} [params.page=1] - Page number for pagination
+             * @param {number} [params.pageSize=20] - Number of items per page
+             * @returns {Promise<ApiResponse<ToursListApiResponse>>} Promise resolving to filtered tours
+             */
             getToursByDestination: async ({
                 countryId,
                 cityId,
@@ -212,31 +238,25 @@ export const useToursService = () => {
                 page?: number;
                 pageSize?: number;
             }): Promise<ApiResponse<ToursListApiResponse>> => {
-                try {
-                    const params = new URLSearchParams();
-                    params.append('country_id', countryId.toString());
-                    params.append('city_id', cityId.toString());
-                    params.append('page', page.toString());
-                    params.append('pageSize', pageSize.toString());
+                const params = new URLSearchParams();
+                params.append('country_id', countryId.toString());
+                params.append('city_id', cityId.toString());
+                params.append('page', page.toString());
+                params.append('pageSize', pageSize.toString());
 
-                    const response = await fetchData({
-                        url: `/tours/tours-by-destination/?${params.toString()}`,
-                        method: 'GET',
-                    });
+                const response = await fetchData({
+                    url: `/tours/tours-by-destination/?${params.toString()}`,
+                    method: 'GET',
+                });
 
-                    const apiResponse: ApiResponse<ToursListApiResponse> = {
-                        data: response.data || response,
-                        statusCode: response.statusCode || 200,
-                        message: response.message || 'Tours by destination retrieved successfully',
-                    };
-
-                    return apiResponse;
-                } catch (error) {
-                    console.error('Tours by destination fetch error:', error);
-                    throw error;
-                }
+                return response as ApiResponse<ToursListApiResponse>;
             },
 
+            /**
+             * Fetches countries with their associated cities, with 5-hour caching.
+             * @returns {Promise<ApiResponse<CountryWithCities[]>>}
+             * Promise resolving to countries and cities data
+             */
             getCountriesWithCities: async (): Promise<ApiResponse<CountryWithCities[]>> => {
                 const now = Date.now();
                 const FIVE_HOURS = 5 * 60 * 60 * 1000;
@@ -253,28 +273,24 @@ export const useToursService = () => {
                     };
                 }
 
-                try {
-                    const response = await fetchData({
-                        url: '/location/countries-with-cities/',
-                        method: 'GET',
-                    });
+                const response = await fetchData({
+                    url: '/location/countries-with-cities/',
+                    method: 'GET',
+                });
 
-                    const freshData: CountryWithCities[] = response.data?.countryData || [];
+                const responseData = response as ApiResponse<{ countryData: CountryWithCities[] }>;
+                const freshData: CountryWithCities[] = responseData.data?.countryData || [];
 
-                    setCountriesWithCities({
-                        data: freshData,
-                        lastFetch: now,
-                    });
+                setCountriesWithCities({
+                    data: freshData,
+                    lastFetch: now,
+                });
 
-                    return {
-                        data: freshData,
-                        statusCode: response.statusCode || 200,
-                        message: response.message || 'Countries with cities retrieved successfully',
-                    };
-                } catch (error) {
-                    console.error('Countries with cities fetch error:', error);
-                    throw error;
-                }
+                return {
+                    data: freshData,
+                    statusCode: response.statusCode || 200,
+                    message: response.message || 'Countries with cities retrieved successfully',
+                };
             },
 
             clearCache: () => {
@@ -288,7 +304,16 @@ export const useToursService = () => {
                 setTourDetailsCache({});
             },
 
+            /**
+             * Gets cached tours without making API call.
+             * @returns {TourListResponse[]} Array of cached tour results
+             */
             getCachedTours: () => toursData?.results || [],
+
+            /**
+             * Gets cached tour count without making API call.
+             * @returns {number} Total count of cached tours
+             */
             getCachedCount: () => toursData?.count || 0,
         }),
         [fetchData, toursData, cacheStatus, tourDetailsCache, setToursData, setCacheStatus, setTourDetailsCache],

@@ -1,4 +1,4 @@
-import { useFetch } from '@/hooks/api/useFetch';
+import { useTypedFetch, extractApiData, extractStatusCode, extractMessage } from '@/hooks/api/useTypedFetch';
 import { ApiResponse } from '@/types/common/fetch';
 import {
     AddToCartRequest,
@@ -19,7 +19,7 @@ import useCookieAuth from '@/services/cache/cookieAuthService';
  * @description This module provides functions for cart operations
  */
 export const useCartService = () => {
-    const { execute: fetchData } = useFetch();
+    const { execute: fetchData } = useTypedFetch();
     const [cart, setCart] = useRecoilState(cartAtom);
     const { isAuthenticated } = useCookieAuth();
 
@@ -29,6 +29,11 @@ export const useCartService = () => {
         SYNC_COOLDOWN: 3000,
     });
 
+    /**
+     * Maps API cart item response to internal CartItem format
+     * @param {ApiCartItem} apiItem - Cart item data from API response
+     * @returns {CartItem} Mapped cart item in internal format
+     */
     const mapApiToCartItem = (apiItem: ApiCartItem): CartItem => {
         return {
             tourId: apiItem.tour.uuid,
@@ -50,6 +55,11 @@ export const useCartService = () => {
         };
     };
 
+    /**
+     * Synchronizes local cart with server cart when user logs in
+     * Merges local cart items with server cart, handling conflicts smoothly
+     * @returns {Promise<void>} Promise that resolves when synchronization is complete
+     */
     const syncCartOnLogin = async (): Promise<void> => {
         const now = Date.now();
 
@@ -61,131 +71,134 @@ export const useCartService = () => {
             return;
         }
 
-        try {
-            syncStatus.current.isInProgress = true;
-            syncStatus.current.lastSyncTime = now;
+        syncStatus.current.isInProgress = true;
+        syncStatus.current.lastSyncTime = now;
 
-            const serverCartResponse = await getCartList();
-            const serverCart = serverCartResponse.data?.data || [];
+        const serverCartResponse = await getCartList();
+        const serverCart = serverCartResponse.data?.data || [];
 
-            const localCart = cart;
+        const localCart = cart;
 
-            for (const localItem of localCart) {
-                const existsOnServer = serverCart.some((serverItem) => serverItem.tour.uuid === localItem.tourId);
+        /**
+         *  We sync local items to server as we handle individual failures smoothly
+         */
+        for (const localItem of localCart) {
+            const existsOnServer = serverCart.some((serverItem) => serverItem.tour.uuid === localItem.tourId);
 
-                if (!existsOnServer) {
-                    try {
-                        await addToCart({
-                            tourUuid: localItem.tourId,
-                            quantity: localItem.quantity,
-                        });
-                    } catch (error) {
-                        console.error('Item already exists on server or failed to add');
-                    }
+            if (!existsOnServer) {
+                try {
+                    await addToCart({
+                        tourUuid: localItem.tourId,
+                        quantity: localItem.quantity,
+                    });
+                } catch (error) {
+                    console.error('Item sync failed (likely already exists):', error);
                 }
             }
-
-            /* we first fetch updated server cart and set it to local state */
-            const updatedServerCart = await getCartList();
-            const mappedCart = updatedServerCart.data?.data.map(mapApiToCartItem) || [];
-            setCart(mappedCart);
-        } catch (error) {
-            console.error('Error syncing cart on login:', error);
-        } finally {
-            syncStatus.current.isInProgress = false;
         }
+
+        /* Fetch updated server cart and set it to local state */
+        const updatedServerCart = await getCartList();
+        const mappedCart = updatedServerCart.data?.data.map(mapApiToCartItem) || [];
+        setCart(mappedCart);
+
+        syncStatus.current.isInProgress = false;
     };
 
+    /**
+     * Fetches the user's cart items from the server and updates local state
+     * @returns {Promise<ApiResponse<ApiCartResponse>>}
+     * Promise resolving to cart data from server
+     */
     const getCartList = async (): Promise<ApiResponse<ApiCartResponse>> => {
-        try {
-            const response = await fetchData({
-                url: '/user/cartList/',
-                method: 'GET',
-            });
+        const response = await fetchData({
+            url: '/user/cartList/',
+            method: 'GET',
+        });
 
-            if (response.data) {
-                /* then we map API response to CartItem format */
-                const mappedCart = response.data.map(mapApiToCartItem);
-                setCart(mappedCart);
-            }
+        const cartData = extractApiData<ApiCartResponse>(response);
 
-            return {
-                data: response,
-                statusCode: response.status,
-                message: response.message,
-            };
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
-            return {
-                data: { statusCode: 500, message: 'Failed to fetch cart', data: [] },
-                statusCode: errorResponse.response?.status || 500,
-                message: errorResponse.message || 'Failed to fetch cart',
-            };
+        if (cartData?.data) {
+            /* then we map API response to CartItem format */
+            const mappedCart = cartData.data.map(mapApiToCartItem);
+            setCart(mappedCart);
         }
+
+        return {
+            data: cartData,
+            statusCode: extractStatusCode(response),
+            message: extractMessage(response, 'Cart fetched successfully'),
+        };
     };
 
+    /**
+     * Adds a tour item to the user's cart
+     * @param {AddToCartRequest} data
+     * Cart item data including tour UUID and quantity
+     * @returns {Promise<ApiResponse<CartItemResponse>>}
+     * Promise resolving to added cart item response
+     */
     const addToCart = async (data: AddToCartRequest): Promise<ApiResponse<CartItemResponse>> => {
-        try {
-            const response = await fetchData({
-                url: '/user/addTocart/',
-                method: 'POST',
-                data,
+        const response = await fetchData({
+            url: '/user/addTocart/',
+            method: 'POST',
+            data,
+        });
+
+        const cartItemData = extractApiData<CartItemResponse>(response);
+        const statusCode = extractStatusCode(response);
+
+        /* if authenticated and successful, then update local cart */
+        if (isAuthenticated() && (statusCode === 201 || statusCode === 200)) {
+            const mappedItem = mapApiToCartItem(cartItemData);
+
+            setCart((prev) => {
+                const existingIndex = prev.findIndex((item) => item.tourId === mappedItem.tourId);
+                if (existingIndex >= 0) {
+                    const updated = [...prev];
+                    updated[existingIndex] = mappedItem;
+                    return updated;
+                }
+                return [...prev, mappedItem];
             });
-
-            /* if authenticated and successful, then update local cart */
-            if (isAuthenticated() && (response.statusCode === 201 || response.statusCode === 200)) {
-                const mappedItem = mapApiToCartItem(response.data);
-
-                setCart((prev) => {
-                    const existingIndex = prev.findIndex((item) => item.tourId === mappedItem.tourId);
-                    if (existingIndex >= 0) {
-                        const updated = [...prev];
-                        updated[existingIndex] = mappedItem;
-                        return updated;
-                    }
-                    return [...prev, mappedItem];
-                });
-            }
-
-            return {
-                data: response.data,
-                statusCode: response.statusCode,
-                message: response.message,
-            };
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
-            throw {
-                statusCode: errorResponse.response?.status || 500,
-                message: errorResponse.message || 'Failed to add to cart',
-            };
         }
+
+        return {
+            data: cartItemData,
+            statusCode: statusCode,
+            message: extractMessage(response, 'Added to cart successfully'),
+        };
     };
 
+    /**
+     * Removes a tour item from the user's cart
+     * @param {string} tourUuid - UUID of the tour to remove from cart
+     * @returns {Promise<ApiResponse<RemoveFromCartResponse>>}
+     * Promise resolving to removal confirmation
+     */
     const removeFromCart = async (tourUuid: string): Promise<ApiResponse<RemoveFromCartResponse>> => {
-        try {
-            const response = await fetchData({
-                url: `/user/removeCart/${tourUuid}/`,
-                method: 'DELETE',
-            });
+        const response = await fetchData({
+            url: `/user/removeCart/${tourUuid}/`,
+            method: 'DELETE',
+        });
 
-            if (isAuthenticated() && response.statusCode === 200) {
-                setCart((prev) => prev.filter((item) => item.tourId !== tourUuid));
-            }
+        const statusCode = extractStatusCode(response);
 
-            return {
-                data: response.data,
-                statusCode: response.statusCode,
-                message: response.message,
-            };
-        } catch (error: unknown) {
-            const errorResponse = error as { response?: { status?: number }; message?: string };
-            throw {
-                statusCode: errorResponse.response?.status || 500,
-                message: errorResponse.message || 'Failed to remove from cart',
-            };
+        if (isAuthenticated() && statusCode === 200) {
+            setCart((prev) => prev.filter((item) => item.tourId !== tourUuid));
         }
+
+        return {
+            data: extractApiData<RemoveFromCartResponse>(response),
+            statusCode: statusCode,
+            message: extractMessage(response, 'Removed from cart successfully'),
+        };
     };
 
+    /**
+     * Clears all cart data when user logs out
+     * Removes cart items from local state and localStorage, resets sync status
+     */
     const clearCartOnLogout = () => {
         setCart([]);
         localStorage.removeItem('cart-storage');
