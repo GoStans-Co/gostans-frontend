@@ -1,7 +1,9 @@
 import styled, { css } from 'styled-components';
 import { CardProps } from '@/types/index';
 
-const StyledCard = styled.div<Omit<CardProps, 'children'>>`
+const StyledCard = styled.div.withConfig({
+    shouldForwardProp: (prop) => !['variant', 'padding', 'included'].includes(prop)
+})<Omit<CardProps, 'children'>>`
     border-radius: ${({ theme }) => theme.borderRadius.md};
     overflow: hidden;
 

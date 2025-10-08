@@ -69,7 +69,9 @@ const Logo = styled(Link)`
     }
 `;
 
-const Nav = styled.nav<{ isOpen: boolean }>`
+const Nav = styled.nav.withConfig({
+    shouldForwardProp: (prop) => !['isOpen'].includes(prop)
+})<{ isOpen: boolean }>`
     ${({ theme }) => theme.responsive.maxMobile} {
         position: fixed;
         top: 0;
@@ -98,7 +100,9 @@ const RightSection = styled.div`
     }
 `;
 
-const LanguageSelector = styled.div<{ isActive?: boolean }>`
+const LanguageSelector = styled.div.withConfig({
+    shouldForwardProp: (prop) => !['isActive'].includes(prop)
+})<{ isActive?: boolean }>`
     display: flex;
     align-items: center;
     gap: 0.5rem;
