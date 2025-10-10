@@ -21,11 +21,14 @@ export function useTypedFetch<T = unknown>(
  * @returns {Promise<ApiResponse<T>>} Properly typed API response
  */
 export async function executeTypedRequest<T>(
-    fetchFn: (config: any) => Promise<unknown>,
-    config: any,
+    fetchFn: (config?: any) => Promise<ApiResponse<T>>,
+    config?: any,
 ): Promise<ApiResponse<T>> {
     const response = await fetchFn(config);
-    return response as ApiResponse<T>;
+    if (!response || typeof response !== 'object' || !('data' in response)) {
+        throw new Error('Unexpected API response shape');
+    }
+    return response;
 }
 
 /**
