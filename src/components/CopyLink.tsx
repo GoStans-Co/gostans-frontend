@@ -10,19 +10,26 @@ type CopyLinkProps = {
     className?: string;
 };
 
-const LinkButton = styled.button`
-    background: transparent;
-    border: none;
+const LinkButton = styled.button.withConfig({
+    shouldForwardProp: (prop) => !['showText'].includes(prop)
+})<{ showText: boolean }>`
+    background: ${({ showText }) => showText ? 'transparent' : 'white'};
+    border: ${({ showText, theme }) => showText ? 'none' : `1px solid ${theme.colors.border}`};
     cursor: pointer;
     font-size: ${({ theme }) => theme.fontSizes.sm};
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: ${({ theme }) => theme.spacing.xs};
-    padding: 0;
+    padding: ${({ showText }) => showText ? '0' : '8px'};
+    width: ${({ showText }) => showText ? 'auto' : '40px'};
+    height: ${({ showText }) => showText ? 'auto' : '40px'};
+    border-radius: ${({ showText, theme }) => showText ? '0' : theme.borderRadius.md};
     transition: color ${({ theme }) => theme.transitions.fast};
 
     &:hover {
         color: ${({ theme }) => theme.colors.secondary};
+        background: ${({ showText, theme }) => showText ? 'transparent' : theme.colors.lightBackground};
     }
 `;
 
@@ -96,7 +103,7 @@ export default function CopyLink({ url, iconSize = 16, showText = true, classNam
 
     return (
         <>
-            <LinkButton onClick={handleCopy} className={className}>
+            <LinkButton onClick={handleCopy} className={className} showText={showText}>
                 <FaShare size={iconSize} />
                 {showText && 'Copy Link'}
             </LinkButton>

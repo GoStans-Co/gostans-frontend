@@ -6,19 +6,35 @@ type MapMarkerProps = {
     dayRange: string;
     isFirst?: boolean;
     isLast?: boolean;
+    isOffset?: boolean;
 };
 
 const MarkerContainer = styled.div<{
     $backgroundColor: string;
     $isHovered: boolean;
+    $isOffset: boolean;
 }>`
     position: relative;
     background: ${(props) => props.$backgroundColor};
     min-width: 40px;
     height: 36px;
     border-radius: ${theme.borderRadius.lg};
-    border: 3px solid ${theme.colors.border};
+    border: 3px solid ${(props) => props.$isOffset ? theme.colors.primary : theme.colors.border};
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    ${(props) => props.$isOffset && `
+        &::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: ${theme.colors.primary};
+            border: 2px solid ${theme.colors.background};
+            z-index: 10;
+        }
+    `}
     display: flex;
     align-items: center;
     justify-content: center;
@@ -52,7 +68,7 @@ const MarkerContainer = styled.div<{
  * MapMarker - UI Component
  * Displays a marker on the map for a specific day range.
  */
-export default function MapMarker({ dayRange, isFirst = false, isLast = false }: MapMarkerProps) {
+export default function MapMarker({ dayRange, isFirst = false, isLast = false, isOffset = false }: MapMarkerProps) {
     const [isHovered, setIsHovered] = useState(false);
 
     const backgroundColor = isFirst ? theme.colors.secondary : isLast ? theme.colors.error : theme.colors.warning;
@@ -61,10 +77,11 @@ export default function MapMarker({ dayRange, isFirst = false, isLast = false }:
         <MarkerContainer
             $backgroundColor={backgroundColor}
             $isHovered={isHovered}
+            $isOffset={isOffset}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            aria-label={`Days ${dayRange}`}
-            title={`Days ${dayRange}`}
+            aria-label={`Days ${dayRange}${isOffset ? ' (overlapping location)' : ''}`}
+            title={`Days ${dayRange}${isOffset ? ' (overlapping location)' : ''}`}
         >
             {dayRange}
         </MarkerContainer>

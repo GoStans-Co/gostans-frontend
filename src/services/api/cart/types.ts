@@ -81,9 +81,10 @@ export type CartItemResponse = {
         uuid: string;
         title: string;
         price: string;
-        mainImage?: string;
-        tourType?: number;
-        about: string;
+        mainImage: string;
+        tourType: number;
+        duration: string;
+        shortDescription: string;
     };
     quantity: number;
     addedAt: string;

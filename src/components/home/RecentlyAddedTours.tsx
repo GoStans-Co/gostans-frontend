@@ -261,25 +261,20 @@ export default function RecentlyAddedTours({ tours, loading }: RecentlyAddedTour
                         <ToursGrid ref={scrollRef}>
                             {tours.map((tour) => (
                                 <TourCardWrapper key={tour.id}>
-                                    <Link
-                                        to={`/searchTrips/${tour.uuid}`}
-                                        style={{ textDecoration: 'none', color: 'inherit' }}
-                                    >
-                                        <TourCard
-                                            buttonText="See Details"
-                                            id={tour.id}
-                                            uuid={tour.uuid}
-                                            title={tour.title}
-                                            shortDescription={tour.shortDescription}
-                                            price={Number(tour.price)}
-                                            mainImage={tour.mainImage}
-                                            country={tour.countryName ? tour.countryName : ''}
-                                            isLiked={tour.isLiked}
-                                            variant="button"
-                                            tourType={tour.tourType}
+                                    <TourCard
+                                        buttonText="See Details"
+                                        id={tour.id}
+                                        uuid={tour.uuid}
+                                        title={tour.title}
+                                        shortDescription={tour.shortDescription}
+                                        price={Number(tour.price)}
+                                        mainImage={tour.mainImage}
+                                        country={tour.countryName ? tour.countryName : ''}
+                                        isLiked={tour.isLiked}
+                                        variant="link"
+                                        tourType={tour.tourType}
                                             currency={tour.currency}
                                         />
-                                    </Link>
                                 </TourCardWrapper>
                             ))}
                         </ToursGrid>
