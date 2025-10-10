@@ -25,7 +25,8 @@ const PageContainer = styled.div`
 
 /**
  * BecomePartner - Page Component
- * @description This component allows users to become partners by filling out a registration form and submitting their details.
+ * @description This component allows users to become partners
+ * by filling out a registration form and submitting their details.
  * @param {Object} props - The component props
  */
 export default function BecomePartner() {
