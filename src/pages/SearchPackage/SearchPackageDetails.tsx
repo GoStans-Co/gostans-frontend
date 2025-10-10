@@ -719,8 +719,13 @@ export default function SearchPackageDetails() {
                             >
                                 <FaHeart />
                             </IconButton>
-                            <CopyLink url={window.location.href} iconSize={16} showText={false} />
-                        </ActionButtons>
+<ActionButtons>
+  <CopyLink
+    url={typeof window !== 'undefined' ? window.location.href : ''}
+    iconSize={16}
+    showText={false}
+  />
+</ActionButtons>
                     </TitleSection>
 
                     <MetaInfo>
