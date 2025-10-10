@@ -207,7 +207,7 @@ export const useToursService = () => {
              * @returns {Promise<ApiResponse<TopDestinationsResponse[]>>}
              * Promise resolving to top destinations
              */
-            getTopDestinations: async (countryId?: number): Promise<ApiResponse<TopDestinationsResponse[]>> => {
+            getTopDestinations: async (countryId?: number): Promise<ApiResponse<TopDestinationsResponse['data']>> => {
                 const url = countryId ? `/tours/top-destinations/?country_id=${countryId}` : '/tours/top-destinations/';
 
                 const response = await fetchData({
@@ -215,7 +215,7 @@ export const useToursService = () => {
                     method: 'GET',
                 });
 
-                return response as ApiResponse<TopDestinationsResponse[]>;
+                return response as ApiResponse<TopDestinationsResponse['data']>;
             },
 
             /**

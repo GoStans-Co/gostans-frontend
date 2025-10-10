@@ -711,21 +711,20 @@ export default function SearchPackageDetails() {
 
                     <TitleSection>
                         <Title>{tour.title}</Title>
+                        <IconButton
+                            onClick={handleWishlistToggle}
+                            disabled={isProcessing(tour?.uuid)}
+                            style={{ color: getHeartColor(tour?.uuid, tour) }}
+                        >
+                            <FaHeart />
+                        </IconButton>
                         <ActionButtons>
-                            <IconButton
-                                onClick={handleWishlistToggle}
-                                disabled={isProcessing(tour?.uuid)}
-                                style={{ color: getHeartColor(tour?.uuid, tour) }}
-                            >
-                                <FaHeart />
-                            </IconButton>
-<ActionButtons>
-  <CopyLink
-    url={typeof window !== 'undefined' ? window.location.href : ''}
-    iconSize={16}
-    showText={false}
-  />
-</ActionButtons>
+                            <CopyLink
+                                url={typeof window !== 'undefined' ? window.location.href : ''}
+                                iconSize={16}
+                                showText={false}
+                            />
+                        </ActionButtons>
                     </TitleSection>
 
                     <MetaInfo>
