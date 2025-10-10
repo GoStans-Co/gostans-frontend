@@ -456,9 +456,7 @@ const ToggleText = styled.span<{ isActive: boolean }>`
     user-select: none;
 `;
 
-const FilterContainer = styled.div.withConfig({
-    shouldForwardProp: (prop) => !['showOnMobile'].includes(prop),
-})<{ showOnMobile: boolean }>`
+const FilterContainer = styled.div<{ showOnMobile: boolean }>`
     position: sticky;
     top: 90px;
     z-index: 50;
@@ -485,31 +483,26 @@ const LoadingAnimationContainer = styled.div`
 
 /**
  * SearchPackageList - Page Component
- * @description This component renders the search package list page,
- * including search bar, filters, and tour results.It handles fetching
- * tours based on search criteria, pagination, and displaying results
- * with options to favorite tours.
+ * @description This component renders the search package list page, including search bar, filters, and tour results.
+ * It handles fetching tours based on search criteria, pagination, and displaying results with options to favorite tours.
  */
 export default function SearchPackageList() {
     const navigate = useNavigate();
     const resultsRef = useRef<HTMLDivElement>(null);
-    const [messageApi, contextHolder] = message.useMessage();
+    const { tours: toursService } = useApiServices();
+    const { isAuthenticated } = useCookieAuth();
 
-    /* recoil state management hooks */
     const searchData = useSearchData();
     const searchActions = useSearchActions();
     const searchFilters = useSearchFilters();
     const filterActions = useFilterActions();
-
-    /* api services and other hooks */
-    const { tours: toursService } = useApiServices();
-    const { isAuthenticated } = useCookieAuth();
     const { toggleWishlistWithTour, getHeartColor, isProcessing } = useFavorite();
+
     const { getCachedResults, isCacheValid } = useSearchCache();
+    const hasInitialized = useRef(false);
+
     const { openModal, closeModal } = useModal();
 
-    /* local state */
-    const hasInitialized = useRef(false);
     const [filteredTours, setFilteredTours] = useState<TourListResponse[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [currentPagination, setCurrentPagination] = useState({
@@ -527,8 +520,11 @@ export default function SearchPackageList() {
         dates: '',
         locations: [] as string[],
     });
+
     const [isLoginAlertOpen, setIsLoginAlertOpen] = useState(false);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
+
+    const [messageApi, contextHolder] = message.useMessage();
 
     const PAGE_SIZE = 10;
 
@@ -731,10 +727,7 @@ export default function SearchPackageList() {
             currentFilterParams.maxPrice !== lastFilterParams.maxPrice ||
             JSON.stringify(currentFilterParams.locations) !== JSON.stringify(lastFilterParams.locations);
 
-        /**
-         * here we first try to apply client side filtering
-         * first before instead of fetching new data
-         */
+        /* here we first try to apply client side filtering first before instead of fetching new data */
         if (filtersChanged) {
             const cacheKey = generateCacheKey(1);
             if (isCacheValid(cacheKey)) {
@@ -760,10 +753,7 @@ export default function SearchPackageList() {
                 }
             }
 
-            /**
-             * if no cached data or cannot
-             * filter client side, then fetch new data
-             */
+            /* if no cached data or cannot filter client side, then fetch new data */
             setLastSearchParams((prev) => ({
                 ...prev,
                 minPrice: searchFilters.minPrice,

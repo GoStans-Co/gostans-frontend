@@ -70,7 +70,6 @@ export type Result<T, E = Error> = { success: true; data: T } | { success: false
 export type VerifyTelegramOtpResponse = {
     uuid: string;
     email: string;
-    phone: string;
     name: string;
     oauthId: string;
     oauthProvider: string;

@@ -1,6 +1,6 @@
 import { ApiResponse, OtpResponse, VerifyOtpResponse } from '@/types/common/fetch';
 import { useMemo } from 'react';
-import { useTypedFetch, extractApiData, extractStatusCode, extractMessage } from '@/hooks/api/useTypedFetch';
+import { useFetch } from '@/hooks/api/useFetch';
 import useCookieAuth from '@/services/cache/cookieAuthService';
 import { useUserProfileCache } from '@/hooks/api/useProfileCache';
 import {
@@ -22,7 +22,7 @@ import { message } from 'antd';
  * @description This module provides functions for user authentication operations
  */
 export const useAuthService = () => {
-    const { execute: fetchData } = useTypedFetch();
+    const { execute: fetchData } = useFetch();
     const { setAuthCookie, removeAuthCookie, getRefreshToken } = useCookieAuth();
     const { userProfile, cacheStatus, updateUserProfileCache, clearProfileCache, forceProfileRefresh } =
         useUserProfileCache();
@@ -30,13 +30,6 @@ export const useAuthService = () => {
     const [messageApi] = message.useMessage();
     const { handleAsyncOperation } = useStatusHandler(messageApi);
 
-    /**
-     * Authenticates a user with email and password
-     * @param {LoginCredentials} credentials - User login credentials containing
-     * email and password
-     * @returns {Promise<Result<AuthResponse, string>>} Promise resolving
-     * to authentication result with user data and tokens, or error message
-     */
     const login = async (credentials: LoginCredentials): Promise<Result<AuthResponse, string>> => {
         const result = await handleAsyncOperation(
             () =>
@@ -53,52 +46,39 @@ export const useAuthService = () => {
             },
         );
 
-        const authData = extractApiData<AuthResponse>(result.data);
-
-        if (authData?.token && authData?.user) {
-            setAuthCookie(authData.token, authData.user, authData.refresh);
-            updateUserProfileCache(authData.user);
-            return { success: true, data: authData };
+        if (result.data?.token && result.data?.user) {
+            setAuthCookie(result.data.token, result.data.user, result.data.refresh);
+            updateUserProfileCache(result.data.user);
+            return { success: true, data: result.data };
         } else {
             return { success: false, error: result.error?.message || 'Login failed' };
         }
     };
 
-    /**
-     * Registers a new user account
-     * @param {SignUpData} userData - User registration data including email,
-     * password, and personal information
-     * @returns {Promise<ApiResponse<AuthResponse>>} Promise resolving
-     * to authentication response with user data and tokens
-     */
     const signUp = async (userData: SignUpData): Promise<ApiResponse<AuthResponse>> => {
-        const response = await fetchData({
-            url: '/auth/sign-up/',
-            method: 'POST',
-            data: userData,
-        });
+        try {
+            const response = await fetchData({
+                url: '/auth/sign-up/',
+                method: 'POST',
+                data: userData,
+            });
 
-        const authData = extractApiData<AuthResponse>(response);
+            if (response?.token && response?.user) {
+                setAuthCookie(response.token, response.user, response.refresh);
+                updateUserProfileCache(response.user);
+            }
 
-        if (authData?.token && authData?.user) {
-            setAuthCookie(authData.token, authData.user, authData.refresh);
-            updateUserProfileCache(authData.user);
+            return {
+                data: response,
+                statusCode: 200,
+                message: 'Sign up successful',
+            };
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            throw errorResponse;
         }
-
-        return {
-            data: authData,
-            statusCode: extractStatusCode(response),
-            message: extractMessage(response, 'Sign up successful'),
-        };
     };
 
-    /**
-     * Authenticates a user using OAuth social login
-     * @param {SocialLoginData} data - Social login data including provider,
-     * authorization code, and redirect URI
-     * @returns {Promise<ApiResponse<SocialAuthResponse>>} Promise resolving to
-     * social authentication response with user data and tokens
-     */
     const socialLogin = async (data: SocialLoginData): Promise<ApiResponse<SocialAuthResponse>> => {
         const response = await handleAsyncOperation(
             () =>
@@ -118,8 +98,7 @@ export const useAuthService = () => {
             },
         );
 
-        const responseData = extractApiData<{ data?: SocialAuthResponse } | SocialAuthResponse>(response);
-        const authData = (responseData as { data?: SocialAuthResponse })?.data || (responseData as SocialAuthResponse);
+        const authData = response.data?.data || response.data;
 
         if (authData?.accessToken && authData?.id) {
             const userForCookie = {
@@ -135,39 +114,33 @@ export const useAuthService = () => {
 
             return {
                 data: authData,
-                statusCode: extractStatusCode(response),
-                message: extractMessage(response, 'Social login successful'),
+                statusCode: response.data?.statusCode || 200,
+                message: response.data?.message || 'Social login successful',
             };
         }
 
         return {
             data: {} as SocialAuthResponse,
-            statusCode: 400,
-            message: 'Social login failed',
+            statusCode: response.error?.statusCode || 400,
+            message: response.error?.message || 'Social login failed',
         };
     };
 
-    /**
-     * Checks if an email address is already registered in the system
-     * @param {string} email - Email address to check
-     * @returns {Promise<boolean>} Promise resolving to true if email exists,
-     * false otherwise
-     */
     const checkEmailExists = async (email: string): Promise<boolean> => {
-        const response = await fetchData({
-            url: '/auth/check-email/',
-            method: 'POST',
-            data: { email },
-        });
+        try {
+            const response = await fetchData({
+                url: '/auth/check-email/',
+                method: 'POST',
+                data: { email },
+            });
 
-        const data = extractApiData<{ emailExists: boolean }>(response);
-        return data?.emailExists === true;
+            return response?.emailExists === true;
+        } catch (error) {
+            console.error('Email check failed:', error);
+            return false;
+        }
     };
 
-    /**
-     * Logs out the current user, clearing authentication state and local data
-     * @returns {Promise<ApiResponse<void>>} Promise resolving to logout confirmation
-     */
     const logout = async (): Promise<ApiResponse<void>> => {
         const cartData = localStorage.getItem('cart-storage');
         try {
@@ -191,12 +164,6 @@ export const useAuthService = () => {
         };
     };
 
-    /**
-     * Initiates password reset process by sending reset email to user
-     * @param {string} email - Email address for password reset
-     * @returns {Promise<Result<void, string>>} Promise resolving to
-     * success confirmation or error message
-     */
     const forgotPassword = async (email: string): Promise<Result<void, string>> => {
         const result = await handleAsyncOperation(
             () =>
@@ -216,52 +183,52 @@ export const useAuthService = () => {
         return result.error ? { success: false, error: result.error.message } : { success: true, data: undefined };
     };
 
-    /**
-     * Sends OTP verification code to user's phone number
-     * @param {string} phone - Phone number to send OTP to
-     * @returns {Promise<OtpResponse>} Promise resolving to OTP send confirmation
-     */
     const sendOtp = async (phone: string): Promise<OtpResponse> => {
-        const response = await fetchData({
-            url: '/auth/send-otp/',
-            method: 'POST',
-            data: { phone },
-        });
+        try {
+            const response = await fetchData({
+                url: '/auth/send-otp/',
+                method: 'POST',
+                data: { phone },
+            });
 
-        return {
-            data: extractApiData(response),
-            statusCode: extractStatusCode(response),
-            message: extractMessage(response, 'OTP sent successfully'),
-        };
+            return {
+                data: response.data,
+                statusCode: response.statuscode || 200,
+                message: response.message || 'OTP sent successfully',
+            };
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            throw {
+                data: null,
+                statusCode: errorResponse.response?.status || 500,
+                message: errorResponse.message || 'Failed to send OTP',
+            };
+        }
     };
 
-    /**
-     * Verifies OTP code sent to user's phone number
-     * @param {string} phone - Phone number that received the OTP
-     * @param {string} otp - OTP verification code to validate
-     * @returns {Promise<VerifyOtpResponse>} Promise resolving to verification confirmation
-     */
     const verifyOtp = async (phone: string, otp: string): Promise<VerifyOtpResponse> => {
-        const response = await fetchData({
-            url: '/auth/verify-otp/',
-            method: 'POST',
-            data: { phone, otp },
-        });
+        try {
+            const response = await fetchData({
+                url: '/auth/verify-otp/',
+                method: 'POST',
+                data: { phone, otp },
+            });
 
-        return {
-            data: { success: true },
-            statusCode: extractStatusCode(response),
-            message: extractMessage(response, 'OTP verified successfully'),
-        };
+            return {
+                data: { success: true },
+                statusCode: response.statuscode || 200,
+                message: response.message || 'OTP verified successfully',
+            };
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            return {
+                data: { success: false },
+                statusCode: errorResponse.response?.status || 500,
+                message: errorResponse.message || 'OTP verification failed',
+            };
+        }
     };
 
-    /**
-     * Verifies OTP code sent to user's email address
-     * @param {string} email - Email address that received the OTP
-     * @param {string} otp - OTP verification code to validate
-     * @returns {Promise<Result<void, string>>} Promise resolving
-     * to verification result or error message
-     */
     const verifyOtpEmail = async (email: string, otp: string): Promise<Result<void, string>> => {
         const result = await handleAsyncOperation(
             () =>
@@ -281,13 +248,6 @@ export const useAuthService = () => {
         return result.error ? { success: false, error: result.error.message } : { success: true, data: undefined };
     };
 
-    /**
-     * Resets user password using verified email and new password
-     * @param {string} email - Verified email address for password reset
-     * @param {string} newPassword - New password to set for the account
-     * @returns {Promise<Result<void, string>>} Promise resolving to
-     * reset confirmation or error message
-     */
     const resetPassword = async (email: string, newPassword: string): Promise<Result<void, string>> => {
         const result = await handleAsyncOperation(
             () =>
@@ -307,114 +267,118 @@ export const useAuthService = () => {
         return result.error ? { success: false, error: result.error.message } : { success: true, data: undefined };
     };
 
-    /**
-     * Re-sends OTP verification code to user's email address
-     * @param {string} email - Email address to resend OTP to
-     * @returns {Promise<ApiResponse<void>>}
-     * Promise resolving to resend confirmation
-     */
     const resendOtp = async (email: string): Promise<ApiResponse<void>> => {
-        const response = await fetchData({
-            url: '/auth/resend-otp/',
-            method: 'POST',
-            data: { email },
-        });
-
-        return {
-            data: undefined as void,
-            statusCode: extractStatusCode(response),
-            message: extractMessage(response, 'OTP resent successfully'),
-        };
-    };
-
-    /**
-     * Verifies Telegram OTP for Telegram-based authentication
-     * @param {string} payload - Telegram OTP payload to verify
-     * @returns {Promise<ApiResponse<VerifyTelegramOtpResponse>>}
-     * Promise resolving to Telegram verification response with user data
-     */
-    const verifyTelegramOtp = async (payload: string): Promise<ApiResponse<VerifyTelegramOtpResponse>> => {
-        const response = await fetchData({
-            url: '/auth/telegram/verify-otp/',
-            method: 'POST',
-            data: { otp: payload },
-        });
-
-        const telegramData = extractApiData<VerifyTelegramOtpResponse>(response);
-
-        if (telegramData?.accessToken && telegramData?.refresh) {
-            const userForCookie = {
-                id: telegramData.uuid,
-                email: telegramData.email,
-                name: telegramData.name,
-                phone: '',
-                avatar: '',
-            };
-            setAuthCookie(telegramData.accessToken, userForCookie, telegramData.refresh);
-            updateUserProfileCache({
-                id: telegramData.uuid,
-                email: telegramData.email,
-                name: telegramData.name,
-                phone: telegramData.phone || '',
-                oauthId: telegramData.oauthId,
-                oauthProvider: telegramData.oauthProvider,
-                imageURL: '',
+        try {
+            await fetchData({
+                url: '/auth/resend-otp/',
+                method: 'POST',
+                data: { email },
             });
-        }
 
-        return {
-            data: telegramData,
-            statusCode: extractStatusCode(response),
-            message: extractMessage(response, 'Login successful'),
-        };
+            return {
+                data: undefined as void,
+                statusCode: 200,
+                message: 'OTP resent successfully',
+            };
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            throw errorResponse;
+        }
     };
 
-    /**
-     * Refreshes authentication tokens using stored refresh token
-     * @returns {Promise<Result<RefreshTokenResponse, string>>}
-     * Promise resolving to new tokens or error message
-     */
-    const refreshToken = async (): Promise<Result<RefreshTokenResponse, string>> => {
-        const refreshTokenValue = getRefreshToken();
+    const verifyTelegramOtp = async (payload: string): Promise<ApiResponse<VerifyTelegramOtpResponse>> => {
+        try {
+            const response = await fetchData({
+                url: '/auth/telegram/verify-otp/',
+                method: 'POST',
+                data: { otp: payload },
+            });
 
-        if (!refreshTokenValue) {
-            return {
-                success: false,
-                error: 'No refresh token available',
-            };
-        }
-
-        const response = await fetchData({
-            url: '/auth/refresh-token/',
-            method: 'POST',
-            data: { refresh: refreshTokenValue },
-        });
-
-        const refreshData = extractApiData<RefreshTokenResponse>(response);
-
-        if (refreshData?.token && refreshData?.refresh) {
-            const currentUser = userProfile;
-            if (currentUser) {
+            if (response.data?.accessToken && response.data?.refresh) {
                 const userForCookie = {
-                    id: currentUser.id,
-                    email: currentUser.email,
-                    name: currentUser.name,
-                    phone: currentUser.phone || '',
-                    avatar: currentUser.image || undefined,
+                    id: response.data.uuid,
+                    email: response.data.email,
+                    name: response.data.name,
+                    phone: '',
+                    avatar: '',
                 };
-                setAuthCookie(refreshData.token, userForCookie, refreshData.refresh);
+                setAuthCookie(response.data.accessToken, userForCookie, response.data.refresh);
+                updateUserProfileCache({
+                    id: response.data.uuid,
+                    email: response.data.email,
+                    name: response.data.name,
+                    phone: response.data.phone || '',
+                    oauthId: response.data.oauthId,
+                    oauthProvider: response.data.oauthProvider,
+                    imageURL: '',
+                });
             }
 
             return {
-                success: true,
-                data: refreshData,
+                data: response.data,
+                statusCode: response.statusCode || 200,
+                message: response.message || 'Login successful',
             };
-        } else {
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            throw {
+                data: null,
+                statusCode: errorResponse.response?.status || 500,
+                message: errorResponse.message || 'Telegram OTP verification failed',
+            };
+        }
+    };
+
+    const refreshToken = async (): Promise<Result<RefreshTokenResponse, string>> => {
+        try {
+            const refreshTokenValue = getRefreshToken();
+
+            if (!refreshTokenValue) {
+                return {
+                    success: false,
+                    error: 'No refresh token available',
+                };
+            }
+
+            const response = await fetchData({
+                url: '/auth/refresh-token/',
+                method: 'POST',
+                data: { refresh: refreshTokenValue },
+            });
+
+            if (response?.data?.token && response?.data?.refresh) {
+                const currentUser = userProfile;
+                if (currentUser) {
+                    const userForCookie = {
+                        id: currentUser.id,
+                        email: currentUser.email,
+                        name: currentUser.name,
+                        phone: currentUser.phone || '',
+                        avatar: currentUser.image || undefined,
+                    };
+                    setAuthCookie(response.data.token, userForCookie, response.data.refresh);
+                }
+
+                return {
+                    success: true,
+                    data: response.data,
+                };
+            } else {
+                clearCache();
+
+                return {
+                    success: false,
+                    error: 'Invalid refresh token response',
+                };
+            }
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+
             clearCache();
 
             return {
                 success: false,
-                error: 'Invalid refresh token response',
+                error: errorResponse.message || 'Token refresh failed',
             };
         }
     };

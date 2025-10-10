@@ -1,5 +1,5 @@
 import { wishlistAtom } from '@/atoms/wishlist';
-import { useTypedFetch, extractApiData, extractStatusCode, extractMessage } from '@/hooks/api/useTypedFetch';
+import { useFetch } from '@/hooks/api/useFetch';
 import { ApiResponse } from '@/types/common/fetch';
 import { useMemo } from 'react';
 import { useRecoilState } from 'recoil';
@@ -12,17 +12,9 @@ import { TokenStorage } from '@/utils/tokenManagement/tokenStorage';
  * @description This module provides functions for wishlist operations
  */
 export const useWishlistService = () => {
-    const { execute: fetchData } = useTypedFetch();
+    const { execute: fetchData } = useFetch();
     const [wishlist, setWishlist] = useRecoilState(wishlistAtom);
 
-    /**
-     * Fetches the user's wishlist with pagination support
-     * @param {Object} params - Pagination parameters
-     * @param {number} [params.page=1] - Page number for pagination
-     * @param {number} [params.pageSize=10] - Number of items per page
-     * @returns {Promise<ApiResponse<WishlistResponse>>}
-     * Promise resolving to wishlist data with pagination info
-     */
     const getWishlist = async ({
         page = 1,
         pageSize = 10,
@@ -30,58 +22,60 @@ export const useWishlistService = () => {
         page?: number;
         pageSize?: number;
     } = {}): Promise<ApiResponse<WishlistResponse>> => {
-        const params = new URLSearchParams();
-        params.append('page', page.toString());
-        params.append('page_size', pageSize.toString());
+        try {
+            const params = new URLSearchParams();
+            params.append('page', page.toString());
+            params.append('page_size', pageSize.toString());
 
-        const response = await fetchData({
-            url: `/user/wishlist/?${params.toString()}`,
-            method: 'GET',
-        });
+            const response = await fetchData({
+                url: `/user/wishlist/?${params.toString()}`,
+                method: 'GET',
+            });
 
-        const wishlistData = extractApiData<WishlistResponse>(response);
+            const apiResponse: ApiResponse<WishlistResponse> = {
+                data: response.data,
+                statusCode: response.statuscode,
+                message: response.message,
+            };
 
-        if (wishlistData?.results) {
-            setWishlist(wishlistData.results);
+            if (response.data?.results) {
+                setWishlist(response.data.results);
+            }
+
+            return apiResponse;
+        } catch (error: unknown) {
+            const errorResponse = error as { response?: { status?: number }; message?: string };
+            return {
+                data: { count: 0, next: null, previous: null, results: [] },
+                statusCode: errorResponse.response?.status || 500,
+                message: errorResponse.message || 'Failed to fetch wishlist',
+            };
         }
-
-        return {
-            data: wishlistData,
-            statusCode: extractStatusCode(response),
-            message: extractMessage(response, 'Wishlist fetched successfully'),
-        };
     };
 
-    /**
-     * Adds a tour to the user's wishlist
-     * @param {string} tourUuid - UUID of the tour to add to wishlist
-     * @returns {Promise<ApiResponse<WishlistAddResponse>>}
-     * Promise resolving to add confirmation response
-     */
     const addToWishlist = async (tourUuid: string): Promise<ApiResponse<WishlistAddResponse>> => {
-        const response = await fetchData({
-            url: `/user/wishlist/add/${tourUuid}/`,
-            method: 'POST',
-        });
+        try {
+            const response = await fetchData({
+                url: `/user/wishlist/add/${tourUuid}/`,
+                method: 'POST',
+            });
 
-        const statusCode = extractStatusCode(response);
+            const apiResponse: ApiResponse<WishlistAddResponse> = {
+                data: response,
+                statusCode: response.status,
+                message: response.message,
+            };
 
-        if (statusCode === 201) {
-            await getWishlist();
+            if (response.status === 201) {
+                await getWishlist();
+            }
+
+            return apiResponse;
+        } catch (error: unknown) {
+            throw error;
         }
-
-        return {
-            data: extractApiData<WishlistAddResponse>(response),
-            statusCode: statusCode,
-            message: extractMessage(response, 'Added to wishlist successfully'),
-        };
     };
 
-    /**
-     * Removes a tour from the user's wishlist with optimistic updates
-     * @param {string} tourUuid - UUID of the tour to remove from wishlist
-     * @returns {Promise<void>} Promise that resolves when tour is removed
-     */
     const removeFromWishlist = async (tourUuid: string): Promise<void> => {
         try {
             setWishlist((prev) => prev.filter((tour) => tour.uuid !== tourUuid));

@@ -1,9 +1,7 @@
 import styled, { css } from 'styled-components';
 import { ButtonProps } from '@/types/index';
 
-const StyledButton = styled.button.withConfig({
-    shouldForwardProp: (prop) => !['variant', 'size', 'fullWidth', 'startIcon', 'startText', 'endIcon'].includes(prop)
-})<Omit<ButtonProps, 'children'>>`
+const StyledButton = styled.button<Omit<ButtonProps, 'children'>>`
     display: inline-flex;
     align-items: center;
     justify-content: center;

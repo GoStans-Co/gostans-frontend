@@ -112,23 +112,7 @@ export default function TourCard({
     variant = 'button',
     buttonText = 'Book Now',
     uuid,
-    currency = 'USD',
 }: TourPropsResponse) {
-    const formatPrice = (price: number | undefined, currency: string) => {
-        const numericPrice = price || 0;
-        try {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: currency,
-            }).format(numericPrice);
-        } catch (error) {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-            }).format(numericPrice);
-        }
-    };
-
     const content = (
         <CardContainer>
             <ImageContainer>
@@ -139,7 +123,7 @@ export default function TourCard({
                 <Description>{description}</Description>
                 <PriceRow>
                     <Price>
-                        <PriceValue>{formatPrice(price, currency)}</PriceValue>
+                        <PriceValue>${price}</PriceValue>
                         <PriceLabel>/Person</PriceLabel>
                     </Price>
                     {variant === 'button' && (

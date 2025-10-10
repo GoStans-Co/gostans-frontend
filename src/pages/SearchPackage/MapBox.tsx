@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import styled from 'styled-components';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -9,13 +9,47 @@ import MapPopup from '@/components/Map/MapPopup';
 import MapMarker from '@/components/Map/MapMarker';
 import { theme } from '@/styles/theme';
 import { MapPinCheckIcon } from 'lucide-react';
-import {
-    CityGroup,
-    EnhancedMapComponentProps,
-    ItineraryItem,
-    MapboxErrorEvent,
-    MarkerRoot,
-} from '@/types/common/maxbox';
+
+type ItineraryItem = {
+    dayNumber: number;
+    dayTitle: string;
+    description: string;
+    locationNames?: Array<{
+        name: string;
+        latitude: number | null;
+        longitude: number | null;
+    }>;
+    locationName?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+    accommodation?: string;
+    includedMeals?: string;
+};
+
+type EnhancedMapComponentProps = {
+    itineraries: ItineraryItem[];
+    tourUuid: string;
+    height?: string;
+    zoom?: number;
+    showRoute?: boolean;
+    onLocationUpdate?: (dayNumber: number, latitude: number, longitude: number) => void;
+};
+
+type MarkerRoot = {
+    root: ReturnType<typeof createRoot>;
+    container: HTMLElement;
+};
+
+type CityGroup = {
+    cityName: string;
+    dayRange: string;
+    latitude: number;
+    longitude: number;
+    isFirst: boolean;
+    isLast: boolean;
+    startDay: number;
+    endDay: number;
+};
 
 const MapContainer = styled.div<{ height: string }>`
     width: 100%;
@@ -230,46 +264,23 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
 
     mapboxgl.accessToken = accessToken;
 
-    /**
-     * We processes all itineraries to ensure they have valid coordinates.
-     * Then we handle geocoding for locations without coordinates and updates the database.
-     * @returns {Promise<void>} Promise that resolves when processing is complete
-     */
     const processAllItineraries = useCallback(async () => {
         if (!itineraries || itineraries.length === 0) {
             setProcessedItineraries([]);
             return;
         }
 
-        const processedWithSlots = itineraries.map((item) => {
-            if (item.slots && item.slots.length > 0) {
-                const firstValidSlot = item.slots.find((slot) => slot.locationNames && slot.locationNames.length > 0);
-                if (firstValidSlot?.locationNames?.[0]) {
-                    return {
-                        ...item,
-                        locationNames: firstValidSlot.locationNames,
-                        locationName: firstValidSlot.locationNames[0].name,
-                    };
-                }
-            }
-            return item;
-        });
-
-        const itinerariesNeedingGeocoding = processedWithSlots.filter((item) => {
-            const hasValidRootCoords = item.locationNames?.some((loc) =>
-                isValidCoordinate(loc.latitude, loc.longitude),
-            );
-            const hasAnyLocationNames =
-                (item.locationNames && item.locationNames.length > 0) ||
-                item.slots?.some((s) => s.locationNames && s.locationNames.length > 0);
-            return !hasValidRootCoords && !!hasAnyLocationNames;
+        /* here we check first which itineraries need geocoding */
+        const itinerariesNeedingGeocoding = itineraries.filter((item) => {
+            /* check if we have valid coordinates in locationNames */
+            const hasValidCoords = item.locationNames?.some((loc) => isValidCoordinate(loc.latitude, loc.longitude));
+            return !hasValidCoords && item.locationNames && item.locationNames.length > 0;
         });
 
         if (itinerariesNeedingGeocoding.length === 0) {
-            const processedItems = processedWithSlots.map((item) => {
-                const validLocation = item.locationNames?.find((location) =>
-                    isValidCoordinate(location.latitude, location.longitude),
-                );
+            /* here we use the existing coordinates from locationNames */
+            const processedItems = itineraries.map((item) => {
+                const validLocation = item.locationNames?.find((loc) => isValidCoordinate(loc.latitude, loc.longitude));
                 return {
                     ...item,
                     latitude: validLocation?.latitude || item.latitude,
@@ -282,10 +293,14 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
             return;
         }
 
+        if (hasProcessed.current && lastProcessedTourUuid.current === tourUuid) {
+            return;
+        }
+
         setIsLoading(true);
         setLoadingMessage('Getting locations...');
 
-        const updatedItineraries = [...processedWithSlots];
+        const updatedItineraries = [...itineraries];
         const locationsToUpdate: Record<
             number,
             {
@@ -300,68 +315,32 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
                 setLoadingMessage(`Getting location for Day ${item.dayNumber}...`);
 
                 try {
+                    /* try to geocode each location name in order */
                     let geocodingResult = null;
-                    let queryString = '';
-
-                    /**
-                     * if slot location is available, we move forward with this
-                     */
-                    if (!queryString && item.slots && item.slots.length > 0) {
-                        const firstSlotWithLocation = item.slots.find(
-                            (slot) =>
-                                slot.locationNames && slot.locationNames.length > 0 && !!slot.locationNames[0]?.name,
-                        );
-                        if (firstSlotWithLocation?.locationNames?.[0]?.name) {
-                            queryString = firstSlotWithLocation.locationNames[0].name;
+                    for (const location of item.locationNames || []) {
+                        if (location.name && location.name.trim()) {
+                            geocodingResult = await geocodeLocation(location.name);
+                            if (geocodingResult) break;
                         }
-                    }
-
-                    /**
-                     * If there are multiple root locations, we handle them properly
-                     */
-                    if (!queryString && item.locationNames && item.locationNames.length > 1) {
-                        const cityName = item.locationNames[0]?.name;
-                        const countryName = item.locationNames[1]?.name;
-
-                        if (cityName && countryName && !cityName.includes(',')) {
-                            queryString = `${cityName}, ${countryName}`;
-                        } else {
-                            queryString = cityName || '';
-                        }
-                    } else if (!queryString && item.locationNames && item.locationNames.length === 1) {
-                        queryString = item.locationNames[0].name;
-                    }
-
-                    if (item.slots && item.slots.length > 0) {
-                        const firstSlotWithLocation = item.slots.find(
-                            (slot) =>
-                                slot.locationNames && slot.locationNames.length > 0 && !!slot.locationNames[0]?.name,
-                        );
-                        if (firstSlotWithLocation?.locationNames?.[0]?.name) {
-                            queryString = firstSlotWithLocation.locationNames[0].name;
-                        }
-                    }
-
-                    if (queryString) {
-                        geocodingResult = await geocodeLocation(queryString);
                     }
 
                     if (geocodingResult) {
                         const index = updatedItineraries.findIndex((it) => it.dayNumber === item.dayNumber);
                         if (index !== -1) {
+                            /* then we update the itinerary with geocoded coordinates */
                             updatedItineraries[index] = {
                                 ...updatedItineraries[index],
                                 latitude: geocodingResult.latitude,
                                 longitude: geocodingResult.longitude,
-                                locationNames: item.locationNames?.map((location) => ({
-                                    ...location,
+                                locationNames: item.locationNames?.map((loc) => ({
+                                    ...loc,
                                     latitude: geocodingResult.latitude,
                                     longitude: geocodingResult.longitude,
                                 })),
                             };
 
-                            const dayId = item.id || item.dayNumber;
-                            locationsToUpdate[dayId] = {
+                            /* then we prepare update for backend */
+                            locationsToUpdate[item.dayNumber] = {
                                 latitude: geocodingResult.latitude,
                                 longitude: geocodingResult.longitude,
                                 locationNames: (updatedItineraries[index].locationNames || []).filter(
@@ -378,22 +357,21 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
                 await new Promise((resolve) => setTimeout(resolve, 90));
             }
 
-            /**
-             * Then we update the database
-             */
+            /* here we update db with new coordinates */
             if (tourUuid && Object.keys(locationsToUpdate).length > 0) {
                 try {
-                    const apiPayload = {
-                        tourUuid,
-                        days: Object.entries(locationsToUpdate).map(([dayId, data]) => ({
-                            id: Number(dayId),
-                            latitude: data.latitude.toString(),
-                            longitude: data.longitude.toString(),
-                            slots: [],
-                        })),
-                    };
+                    const apiPayload = Object.entries(locationsToUpdate).reduce(
+                        (acc, [day, data]) => {
+                            acc[Number(day)] = {
+                                latitude: data.latitude,
+                                longitude: data.longitude,
+                            };
+                            return acc;
+                        },
+                        {} as Record<number, { latitude: number; longitude: number }>,
+                    );
 
-                    const response = await toursService.updateTourLocationData(apiPayload);
+                    const response = await toursService.updateTourLocationData(tourUuid, apiPayload);
                     console.info('Location update response:', response.statusCode === 200 ? 'Created' : 'Updated');
 
                     hasProcessed.current = true;
@@ -412,53 +390,26 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
         }
     }, [itineraries, tourUuid, geocodeLocation]);
 
-    /**
-     * Removes all existing markers and their React roots from the map.
-     * Called before initializing new markers to prevent memory leaks.
-     */
     const cleanupMarkers = useCallback(() => {
-        markers.current.forEach((marker) => {
-            marker.remove();
-        });
+        markers.current.forEach((marker) => marker.remove());
         markers.current = [];
 
-        markerRoots.current.forEach(({ root, container }) => {
-            try {
-                setTimeout(() => {
-                    root.unmount();
-                    /* we remove the  Remove DOM elements after unmounting */
-                    container.remove();
-                }, 0);
-            } catch (error) {
-                console.error('Error unmounting root:', error);
-            }
+        markerRoots.current.forEach(({ root }) => {
+            root.unmount();
         });
         markerRoots.current = [];
     }, []);
 
-    /**
-     * Creates a map marker with popup for a city group.
-     * @param {CityGroup} cityGroup - The city group data containing location and day information
-     * @param {mapboxgl.Map} map - The Mapbox map instance to add the marker to
-     * @returns {mapboxgl.Marker} The created marker instance
-     */
     const createMarker = useCallback((cityGroup: CityGroup, map: mapboxgl.Map): mapboxgl.Marker => {
         const markerContainer = document.createElement('div');
         const markerRoot = createRoot(markerContainer);
         markerRoot.render(
-            <MapMarker
-                dayRange={cityGroup.dayRange}
-                isFirst={cityGroup.isFirst}
-                isLast={cityGroup.isLast}
-                isOffset={cityGroup.isOffset}
-            />,
+            <MapMarker dayRange={cityGroup.dayRange} isFirst={cityGroup.isFirst} isLast={cityGroup.isLast} />,
         );
 
         const popupContainer = document.createElement('div');
         const popupRoot = createRoot(popupContainer);
-        popupRoot.render(
-            <MapPopup cityName={cityGroup.cityName} dayRange={cityGroup.dayRange} isOffset={cityGroup.isOffset} />,
-        );
+        popupRoot.render(<MapPopup cityName={cityGroup.cityName} dayRange={cityGroup.dayRange} />);
 
         const popup = new mapboxgl.Popup({
             offset: [0, -15],
@@ -484,10 +435,6 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
         return marker;
     }, []);
 
-    /**
-     * Initializes the Map-box map with markers, routes, and proper bounds.
-     * Sets up navigation controls and handles map events.
-     */
     const initializeMap = useCallback(() => {
         if (!mapContainer.current || processedItineraries.length === 0) {
             return;
@@ -500,21 +447,9 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
             return;
         }
 
-        let loadHandler: (() => void) | null = null;
-        let errorHandler: ((e: MapboxErrorEvent) => void) | null = null;
-        let isComponentMounted = true;
-
         try {
             if (map.current) {
-                if (loadHandler) {
-                    map.current.off('load', loadHandler);
-                }
-                if (errorHandler) {
-                    map.current.off('error', errorHandler);
-                }
-
                 cleanupMarkers();
-
                 map.current.remove();
                 map.current = null;
             }
@@ -543,140 +478,58 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
             map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
             map.current.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
 
-            loadHandler = () => {
-                if (!isComponentMounted || !map.current) {
-                    return;
-                }
+            /* single load handler for only one location */
+            map.current.on('load', () => {
+                if (!map.current) return;
 
-                try {
-                    if (cityGroups.length > 1) {
-                        const coordinates = cityGroups.map((group) => [group.longitude, group.latitude]);
+                if (cityGroups.length > 1) {
+                    const coordinates = cityGroups.map((group) => [group.longitude, group.latitude]);
 
-                        if (!map.current.getSource('route')) {
-                            map.current.addSource('route', {
-                                type: 'geojson',
-                                data: {
-                                    type: 'Feature',
-                                    properties: {},
-                                    geometry: {
-                                        type: 'LineString',
-                                        coordinates: coordinates,
-                                    },
-                                },
-                            });
-                        }
-
-                        if (!map.current.getLayer('route')) {
-                            map.current.addLayer({
-                                id: 'route',
-                                type: 'line',
-                                source: 'route',
-                                layout: {
-                                    'line-join': 'round',
-                                    'line-cap': 'round',
-                                },
-                                paint: {
-                                    'line-color': theme.colors.warning,
-                                    'line-width': 3,
-                                    'line-opacity': 0.8,
-                                    'line-dasharray': [2, 1],
-                                },
-                            });
-                        }
-                    }
-
-                    cleanupMarkers();
-
-                    cityGroups.forEach((group) => {
-                        if (!isComponentMounted || !map.current) return;
-
-                        try {
-                            const marker = createMarker(group, map.current);
-                            markers.current.push(marker);
-                        } catch (markerError) {
-                            console.error('Error creating marker:', markerError);
-                        }
+                    map.current.addSource('route', {
+                        type: 'geojson',
+                        data: {
+                            type: 'Feature',
+                            properties: {},
+                            geometry: {
+                                type: 'LineString',
+                                coordinates: coordinates,
+                            },
+                        },
                     });
 
-                    if (isComponentMounted) {
-                        setError(null);
-                    }
-                } catch (loadError) {
-                    if (isComponentMounted) {
-                        setError(
-                            `Failed to load map features: ${loadError instanceof Error ? loadError.message : 'Unknown error'}`,
-                        );
-                    }
-                }
-            };
-
-            errorHandler = (e: MapboxErrorEvent) => {
-                console.error('Mapbox error:', e);
-                if (isComponentMounted) {
-                    setError(`Failed to load map: ${e.error?.message || 'Unknown error'}`);
-                }
-            };
-
-            if (map.current) {
-                map.current.on('load', loadHandler);
-                map.current.on('error', errorHandler);
-            }
-
-            return () => {
-                isComponentMounted = false;
-
-                if (map.current) {
-                    if (loadHandler) {
-                        map.current.off('load', loadHandler);
-                    }
-                    if (errorHandler) {
-                        map.current.off('error', errorHandler);
-                    }
-
-                    try {
-                        if (map.current.getLayer('route')) {
-                            map.current.removeLayer('route');
-                        }
-                        if (map.current.getSource('route')) {
-                            map.current.removeSource('route');
-                        }
-                    } catch (cleanupError) {
-                        console.debug('Cleanup error (expected if map is removed):', cleanupError);
-                    }
+                    map.current.addLayer({
+                        id: 'route',
+                        type: 'line',
+                        source: 'route',
+                        layout: {
+                            'line-join': 'round',
+                            'line-cap': 'round',
+                        },
+                        paint: {
+                            'line-color': `${theme.colors.warning}`,
+                            'line-width': 3,
+                            'line-opacity': 0.8,
+                            'line-dasharray': [2, 1],
+                        },
+                    });
                 }
 
-                cleanupMarkers();
+                cityGroups.forEach((group) => {
+                    const marker = createMarker(group, map.current!);
+                    markers.current.push(marker);
+                });
 
-                if (map.current) {
-                    try {
-                        map.current.remove();
-                    } catch (removeError) {
-                        console.debug('Map remove error:', removeError);
-                    }
-                    map.current = null;
-                }
-            };
+                setError(null);
+            });
+
+            map.current.on('error', (e) => {
+                setError(`Failed to load map: ${e.error.message}`);
+            });
         } catch (err) {
-            console.error('Failed to initialize map:', err);
             setError(`Failed to initialize map: ${err instanceof Error ? err.message : 'Unknown error'}`);
-
-            return () => {
-                isComponentMounted = false;
-                cleanupMarkers();
-                if (map.current) {
-                    map.current.remove();
-                    map.current = null;
-                }
-            };
         }
     }, [processedItineraries, cleanupMarkers, createMarker]);
 
-    /**
-     * Groups itineraries by city to create grouped markers.
-     * Handles consecutive days in the same city as a single marker with day range.
-     * @param {ItineraryItem[]} itineraries - Array of itinerary items to group
-     * @returns {CityGroup[]} Array of city groups with location and day range data
-     */
     const groupItinerariesByCity = (itineraries: ItineraryItem[]) => {
         const validItineraries = itineraries.filter(
             (item) => isValidCoordinate(item.latitude, item.longitude) && item.locationName,
@@ -731,47 +584,7 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
             cityGroups[cityGroups.length - 1].isLast = true;
         }
 
-        return handleOverlappingMarkers(cityGroups);
-    };
-
-    /**
-     * Handles overlapping markers by applying small offsets to prevent visual UX collision.
-     * Uses a threshold to detect overlapping coordinates and applies angular offsets.
-     * @param {CityGroup[]} cityGroups - Array of city groups to check for overlaps
-     * @returns {CityGroup[]} Array of city groups with offset coordinates applied
-     */
-    const handleOverlappingMarkers = (cityGroups: CityGroup[]): CityGroup[] => {
-        const OVERLAP_THRESHOLD = 0.0001;
-        const OFFSET_DISTANCE = 0.005; /* 500 meters offset */
-
-        const processedGroups = [...cityGroups];
-
-        for (let i = 0; i < processedGroups.length; i++) {
-            for (let j = i + 1; j < processedGroups.length; j++) {
-                const group1 = processedGroups[i];
-                const group2 = processedGroups[j];
-
-                const latDiff = Math.abs(group1.latitude - group2.latitude);
-                const lngDiff = Math.abs(group1.longitude - group2.longitude);
-
-                if (latDiff < OVERLAP_THRESHOLD && lngDiff < OVERLAP_THRESHOLD) {
-                    /**
-                     * We put a different angle for each overlapping marker
-                     */
-                    const angle = (j * 45) % 360;
-                    const radians = (angle * Math.PI) / 180;
-
-                    processedGroups[j] = {
-                        ...group2,
-                        latitude: group2.latitude + OFFSET_DISTANCE * Math.sin(radians),
-                        longitude: group2.longitude + OFFSET_DISTANCE * Math.cos(radians),
-                        isOffset: true,
-                    };
-                }
-            }
-        }
-
-        return processedGroups;
+        return cityGroups;
     };
 
     useEffect(() => {
@@ -800,62 +613,28 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
         };
     }, [processedItineraries, initializeMap, cleanupMarkers]);
 
-    const validItineraries = useMemo(() => {
-        return processedItineraries.filter((item) => isValidCoordinate(item.latitude, item.longitude));
-    }, [processedItineraries]);
+    const validItineraries = processedItineraries.filter((item) => isValidCoordinate(item.latitude, item.longitude));
 
-    /**
-     * Extracts a clean city name from itinerary item data.
-     * Prioritizes slot location names, then location names, then day title parsing.
-     * @param {ItineraryItem} item - The itinerary item to extract city name from
-     * @returns {string} The extracted city name
-     */
     const extractCityName = (item: ItineraryItem): string => {
-        if (item.slots && item.slots.length > 0) {
-            const firstSlotWithLocation = item.slots.find(
-                (slot) => slot.locationNames && slot.locationNames.length > 0,
-            );
-            const slotTitle = firstSlotWithLocation?.locationNames?.[0]?.title;
-            if (slotTitle) {
-                return slotTitle;
-            }
-        }
-
         if (item.locationNames && item.locationNames.length > 0) {
-            const firstLocation = item.locationNames[0]?.name;
-            if (firstLocation) {
-                if (firstLocation.includes(',')) {
-                    return firstLocation.split(',')[0].trim();
-                }
-                if (!firstLocation.includes('stan') || firstLocation.includes(',')) {
-                    return firstLocation.trim();
-                }
-            }
-        }
-
-        if (item.dayTitle) {
-            const titleParts = item.dayTitle.split(/[–-]/);
-            if (titleParts.length > 0) {
-                const location = titleParts[0].split('(')[0].trim();
-                if (location && location !== 'Day') {
-                    return location;
-                }
+            const cityCandidate = item.locationNames[1]?.name || item.locationNames[0]?.name;
+            if (cityCandidate && !cityCandidate.includes('+')) {
+                return cityCandidate.trim();
             }
         }
 
         if (!item.locationName) return '';
 
         const parts = item.locationName.split(',');
-        return parts[0].trim();
+        if (parts.length >= 4) {
+            return parts[2].trim();
+        } else if (parts.length >= 2) {
+            return parts[1].trim();
+        }
+
+        return item.locationName.trim();
     };
 
-    /**
-     * Renders a visual flow showing the tour progression through different cities.
-     * Displays city names with start/end badges and arrow indicators.
-     * @param {Object} props - Component props
-     * @param {ItineraryItem[]} props.itineraries - Array of itinerary items to display
-     * @returns {JSX.Element|null} The tour flow component or null if no valid itineraries
-     */
     const TourFlow = ({ itineraries }: { itineraries: ItineraryItem[] }) => {
         const validItineraries = itineraries.filter(
             (item) => isValidCoordinate(item.latitude, item.longitude) && item.locationName,

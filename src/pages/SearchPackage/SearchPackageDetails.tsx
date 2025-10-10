@@ -1,26 +1,47 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import type { Dayjs } from 'dayjs';
-import { FaStar, FaMapMarkerAlt, FaHeart } from 'react-icons/fa';
-import { message } from 'antd';
+import {
+    FaStar,
+    FaMapMarkerAlt,
+    FaHeart,
+    FaClock,
+    FaUsers,
+    FaGlobe,
+    FaUserFriends,
+    FaChevronLeft,
+    FaChevronRight,
+    FaArrowLeft,
+    FaArrowRight,
+    FaUtensils,
+    FaBed,
+} from 'react-icons/fa';
+import { DatePicker, message } from 'antd';
 import Button from '@/components/common/Button';
+import Card from '@/components/common/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
 import { tourDetailsAtom } from '@/atoms/tours';
 import CopyLink from '@/components/CopyLink';
+import default_n1 from '@/assets/default/default_1.jpg';
+import default_n2 from '@/assets/default/default_2.jpg';
+import TourCard from '@/components/tours/ToursCard';
 import { cartAtom } from '@/atoms/cart';
 import { useRecoilValue, useRecoilState, useSetRecoilState } from 'recoil';
 import useFavorite from '@/hooks/ui/useFavorite';
 import useCookieAuth from '@/services/cache/cookieAuthService';
 import useModal from '@/hooks/ui/useModal';
 import { ModalAlert, ModalAuth } from '@/components/ModalPopup';
+import { TourDetailsResponse } from '@/services/api/tours';
+import { CartItem } from '@/services/api/cart';
 import { useApiServices } from '@/services/api';
 import useTrendingTours from '@/hooks/api/useTrendingTours';
+import MapBox from '@/pages/SearchPackage/MapBox';
 import Lottie from 'lottie-react';
 import loadingAnimation from '@/assets/animation/loading.json';
-import SearchPackageContent from './SearchPackageContent';
-import SearchPackageDetailSidebar from './SearchPackageSidebar';
-import { createCartItem, processImages } from '@/utils/general/tourDetailsHelper';
+import { isValidCoordinate } from '@/utils/geoCodingCheck';
+import { FaInfoCircle, FaCheck, FaTimes } from 'react-icons/fa';
+import { theme } from '@/styles/theme';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -51,6 +72,81 @@ const MainContent = styled.div`
         padding: ${({ theme }) => theme.spacing.md};
         gap: ${({ theme }) => theme.spacing.md};
         max-width: 100%;
+    }
+`;
+
+const LeftContent = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 800px;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.lg};
+        max-width: 100%;
+        order: 0; /* Ensures it comes after RightSidebar on mobile */
+    }
+`;
+
+const MapContainer = styled.div`
+    width: 100%;
+    height: 300px;
+    background: ${({ theme }) => theme.colors.lightBackground};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: ${({ theme }) => theme.colors.lightText};
+    background-size: cover;
+    background-position: center;
+`;
+
+const ReviewsContainer = styled.div`
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        margin-top: ${({ theme }) => theme.spacing.sm};
+    }
+`;
+
+const ReviewCard = styled(Card)`
+    padding: 1rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+        width: 100%;
+        max-width: 100%;
+    }
+`;
+
+const ReviewHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+
+    .left-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+`;
+
+const RelatedTours = styled.div`
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    overflow: hidden;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.md};
     }
 `;
 
@@ -253,6 +349,35 @@ const ContentSection = styled.div`
     }
 `;
 
+const RightSidebar = styled.div`
+    position: -webkit-sticky;
+    position: sticky;
+    height: fit-content;
+    z-index: 10;
+    top: 100px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        position: static;
+        top: auto;
+        max-height: none;
+        overflow-y: visible;
+        order: -1; /* This moves it before LeftContent on mobile */
+        margin-bottom: ${({ theme }) => theme.spacing.lg};
+    }
+`;
+
+const PriceCard = styled(Card)`
+    padding: 1.5rem;
+    border: 2px solid ${({ theme }) => theme.colors.border};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        margin-bottom: ${({ theme }) => theme.spacing.lg};
+    }
+`;
+
 const SeeAllButton = styled.button`
     position: absolute;
     bottom: 1rem;
@@ -263,6 +388,169 @@ const SeeAllButton = styled.button`
     padding: 0.5rem 1rem;
     border-radius: ${({ theme }) => theme.borderRadius.md};
     cursor: pointer;
+`;
+
+const Section = styled.div`
+    margin-bottom: 1rem;
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        text-align: left;
+        color: ${({ theme }) => theme.colors.text};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            font-size: ${({ theme }) => theme.fontSizes.xl};
+        }
+    }
+
+    p {
+        line-height: 1.6;
+        text-align: left;
+        color: ${({ theme }) => theme.colors.lightText};
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            font-size: ${({ theme }) => theme.fontSizes.sm};
+            line-height: 1.5;
+        }
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-bottom: 0;
+    }
+`;
+
+const Itinerary = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    text-align: left;
+`;
+
+const ItineraryDay = styled.div<{ active?: boolean }>`
+    display: block;
+    align-items: flex-start;
+    gap: 1rem;
+`;
+
+const TimelineContainer = styled.div`
+    position: relative;
+`;
+
+const DayContent = styled.div`
+    flex: 1;
+
+    h4 {
+        margin: 0 0 0.5rem 0;
+        color: ${({ theme }) => theme.colors.text};
+    }
+
+    p {
+        padding-left: 60px;
+        margin: 0.5rem 0 0 0;
+        color: ${({ theme }) => theme.colors.lightText};
+        font-size: 14px;
+    }
+`;
+
+const Arrow = styled.span<{ expanded: boolean }>`
+    transform: ${({ expanded }) => (expanded ? 'rotate(180deg)' : 'rotate(0deg)')};
+    transition: transform 0.3s ease;
+    color: ${({ theme }) => theme.colors.primary};
+    font-size: 12px;
+`;
+
+const PriceHeader = styled.div`
+    text-align: right;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+
+    .from {
+        font-size: 14px;
+        color: ${({ theme }) => theme.colors.lightText};
+    }
+
+    .price {
+        font-size: 2rem;
+        font-weight: bold;
+        color: ${({ theme }) => theme.colors.text};
+    }
+`;
+
+const BookingForm = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.sm};
+    }
+`;
+
+const FormGroup = styled.div`
+    margin-bottom: 1rem;
+`;
+
+const FormLabel = styled.label`
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: 14px;
+    text-align: left;
+`;
+
+const Total = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-top: 1px solid ${({ theme }) => theme.colors.border};
+    margin-top: 1rem;
+
+    .label {
+        font-weight: 600;
+        color: ${({ theme }) => theme.colors.text};
+    }
+
+    .amount {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: ${({ theme }) => theme.colors.text};
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.sm} 0;
+        margin-top: ${({ theme }) => theme.spacing.sm};
+
+        .amount {
+            font-size: ${({ theme }) => theme.fontSizes.lg};
+        }
+    }
+`;
+
+const ReviewsSection = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+`;
+
+const ReviewerName = styled.span`
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
+`;
+
+const ReviewDate = styled.span`
+    font-size: 12px;
+    color: ${({ theme }) => theme.colors.lightText};
 `;
 
 const ImageModalOverlay = styled(motion.div)`
@@ -401,48 +689,395 @@ const ImageCounter = styled.div`
     }
 `;
 
+const NavigationButtons = styled.div`
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+`;
+
+const CartItemCount = styled.span`
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #ff6b35;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    fontsize: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+
+const TourDetailsSection = styled.div`
+    padding: 1rem;
+    background-color: ${({ theme }) => theme.colors.lightBackground};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    margin-bottom: 1rem;
+`;
+
+const TourDetailsTitle = styled.div`
+    font-size: 14px;
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    text-align: left;
+`;
+
+const TourDetailsContent = styled.div`
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 3rem;
+    color: ${({ theme }) => theme.colors.lightText};
+
+    div {
+        margin-bottom: 0.5rem;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .label {
+        font-weight: 400;
+        color: ${({ theme }) => theme.colors.lightText};
+    }
+
+    .value {
+        color: ${({ theme }) => theme.colors.secondary};
+        font-weight: 500;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.lg};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+
+        div {
+            flex: 1;
+            min-width: 45%;
+        }
+    }
+`;
+
+const DayContainer = styled.div<{ last: boolean }>`
+    position: relative;
+    margin-bottom: ${({ last }) => (last ? '0' : '20px')};
+`;
+
+const DayNumberStyled = styled.div<{ active: boolean }>`
+    position: absolute;
+    left: 10px;
+    z-index: 2;
+    background: ${({ active }) => (active ? '#000' : '#fff')};
+    color: ${({ active }) => (active ? '#fff' : '#000')};
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+
+const Description = styled.p`
+    white-space: pre-line;
+`;
+
+const InfoParagraph = styled.p`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: ${({ theme }) => theme.colors.error};
+`;
+
+const DayHeaderStyled = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding-left: 60px;
+    min-height: 40px;
+`;
+
+const StartContainer = styled.div`
+    position: relative;
+    margin-bottom: 20px;
+`;
+
+const StartBubble = styled.div`
+    position: absolute;
+    left: 10px;
+    z-index: 2;
+    background: #ffd700;
+    color: #000;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-weight: bold;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+`;
+
+const StartContent = styled.div`
+    padding-left: 60px;
+    h4 {
+        margin: 0;
+        color: ${({ theme }) => theme.colors.text};
+        font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        margin-left: 8px;
+        padding: 4px 0;
+    }
+    p {
+        margin: 4px 0 0;
+        color: ${({ theme }) => theme.colors.primary};
+        font-size: 14px;
+    }
+`;
+
+const EndContainer = styled.div`
+    position: relative;
+    margin-top: 20px;
+`;
+
+const EndBubble = styled.div`
+    position: absolute;
+    left: 10px;
+    z-index: 2;
+    background: #ffd700;
+    color: #000;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-weight: bold;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+`;
+
+const EndContent = styled.div`
+    padding-left: 60px;
+    h4 {
+        margin: 0;
+        padding: 4px 0;
+        color: ${({ theme }) => theme.colors.text};
+        font-weight: ${({ theme }) => theme.typography.fontWeight.regular};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        margin-left: 8px;
+    }
+`;
+
+const TimelineLine = styled.div`
+    position: absolute;
+    left: 29px;
+    top: 0;
+    bottom: 0;
+    border-left: 2px dotted #ccc;
+    z-index: 1;
+`;
+
+const InfoRow = styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-top: 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex-direction: column;
+        align-items: stretch;
+    }
+`;
+
+const InfoCards = styled.div`
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: ${({ theme }) => theme.spacing.sm};
+    }
+`;
+
+const InfoCardItemValue = styled.div`
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 110px;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        max-width: 100%;
+    }
+`;
+
+const InfoCardItemIcon = styled.div`
+    color: ${({ theme }) => theme.colors.primary};
+
+    svg {
+        vertical-align: center;
+        line-height: 1;
+        font-size: 1.2rem;
+        height: 1.4rem;
+        width: 1.4rem;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        svg {
+            vertical-align: center;
+            line-height: 1;
+            font-size: 0.9rem;
+            height: 1.2rem;
+            width: 1.2rem;
+        }
+    }
+`;
+
+const StyledInfoCard = styled(Card)`
+    background: ${({ theme }) => theme.colors.lightBackground};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    padding: ${({ theme }) => theme.spacing.md};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.sm};
+    flex: 0 1 auto;
+    min-width: 140px;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+        flex-direction: row; /* Keep horizontal on mobile */
+        align-items: center; /* Keep center alignment */
+        text-align: left; /* Keep left alignment */
+        min-width: unset;
+        gap: ${({ theme }) => theme.spacing.sm};
+    }
+`;
+
+const IncludedExcludedCard = styled(Card)`
+    background: white;
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    padding: ${({ theme }) => theme.spacing.lg};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+    }
+`;
+
+const StyledCallout = styled.div`
+    background: ${({ theme }) => `${theme.colors.warning}15`};
+    border: 1px solid ${({ theme }) => `${theme.colors.warning}30`};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    padding: ${({ theme }) => theme.spacing.md};
+    margin-bottom: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: ${({ theme }) => theme.spacing.sm};
+
+    .callout-icon {
+        color: ${({ theme }) => theme.colors.warning};
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .callout-text {
+        flex: 1;
+        color: ${({ theme }) => theme.colors.text};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        line-height: 1.5;
+        text-align: left;
+    }
+`;
+
+const IncludedExcludedItem = styled.div<{ included?: boolean }>`
+    display: flex;
+    align-items: flex-start;
+    gap: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacing.sm} 0;
+
+    .item-icon {
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .item-text {
+        flex: 1;
+        color: ${({ theme }) => theme.colors.text};
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        line-height: 1.5;
+        text-align: left;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: ${({ theme }) => theme.spacing.sm};
+
+        .item-text {
+            font-size: ${({ theme }) => theme.fontSizes.sm};
+        }
+    }
+`;
+
 /**
- * SearchPackageDetails - Page Root Component
- * @description This component displays detailed information
- * about a specific tour package, including images, reviews,
- * itinerary, and booking options. It also handles user interactions
- * such as adding to cart, viewing images, and managing wishlist.
+ * SearchPackageDetails - Page Component
+ * @description This component displays detailed information about a specific tour package,
+ * including images, reviews, itinerary, and booking options.
+ * It also handles user interactions such as adding to cart, viewing images, and managing wishlist.
  */
 export default function SearchPackageDetails() {
     const { packageId: id } = useParams<{ packageId: string }>();
     const navigate = useNavigate();
-    const [messageApi, contextHolder] = message.useMessage();
 
-    /* recoil states defined here */
+    const { toggleWishlistWithTour, getHeartColor, isProcessing } = useFavorite();
+
     const tourDetailsCache = useRecoilValue(tourDetailsAtom);
     const setTourDetailsCache = useSetRecoilState(tourDetailsAtom);
     const [cart, setCart] = useRecoilState(cartAtom);
 
-    /*  api services calls and hooks here */
     const { tours: toursService, cart: cartApiService } = useApiServices();
     const { tours: trendingTours, fetchTrendingTours } = useTrendingTours();
-    const { toggleWishlistWithTour, getHeartColor, isProcessing } = useFavorite();
+
     const { isAuthenticated } = useCookieAuth();
     const { openModal, closeModal } = useModal();
 
-    /* local states defined here */
     const hasInitialized = useRef(false);
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
     const [showImageModal, setShowImageModal] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
-    const [expandedDays, setExpandedDays] = useState(new Set([1]));
+    const [currentPage, setCurrentPage] = useState(0);
+    const [messageApi, contextHolder] = message.useMessage();
     const [modalConfig, setModalConfig] = useState<{
         isOpen: boolean;
         type: 'wishlist-login' | 'select-package-login' | 'date-confirmation' | null;
-    }>({ isOpen: false, type: null });
+    }>({
+        isOpen: false,
+        type: null,
+    });
+    const [expandedDays, setExpandedDays] = useState(new Set([1]));
+
+    const toursPerPage = 3;
 
     const tour = id ? tourDetailsCache[id]?.data : null;
-    const isInCart = cart.some((item) => item.tourId === tour?.uuid);
-    const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const images = tour ? processImages(tour) : [];
 
-    /* fetch tour details defined */
     useEffect(() => {
         if (!id) {
             setIsLoading(false);
@@ -452,6 +1087,7 @@ export default function SearchPackageDetails() {
         if (hasInitialized.current) return;
 
         const cachedTour = tourDetailsCache[id];
+
         if (cachedTour?.data) {
             setIsLoading(false);
             hasInitialized.current = true;
@@ -472,6 +1108,8 @@ export default function SearchPackageDetails() {
                             lastFetch: Date.now(),
                         },
                     }));
+                } else {
+                    console.error('Failed to fetch tour details:', response.message);
                 }
             } catch (error) {
                 console.error('Error fetching tour details:', error);
@@ -482,13 +1120,12 @@ export default function SearchPackageDetails() {
         };
 
         fetchTourDetails();
-    }, [id, tourDetailsCache, toursService, setTourDetailsCache]);
+    }, [id, tourDetailsCache]);
 
     useEffect(() => {
         fetchTrendingTours();
     }, [fetchTrendingTours]);
 
-    /* reset on package change */
     useEffect(() => {
         setSelectedDate(null);
         setExpandedDays(new Set([1]));
@@ -499,163 +1136,6 @@ export default function SearchPackageDetails() {
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, []);
-
-    const toggleDay = (dayNumber: number) => {
-        setExpandedDays((prev) => {
-            const newSet = new Set(prev);
-            if (newSet.has(dayNumber)) {
-                newSet.delete(dayNumber);
-            } else {
-                newSet.add(dayNumber);
-            }
-            return newSet;
-        });
-    };
-
-    const handleBookingAction = async () => {
-        if (isInCart) {
-            if (isAuthenticated()) {
-                navigate('/cart');
-            } else {
-                setModalConfig({ isOpen: true, type: 'select-package-login' });
-            }
-        } else {
-            if (isAuthenticated()) {
-                if (!tour) return;
-                try {
-                    const response = await cartApiService.addToCart({
-                        tourUuid: tour.uuid,
-                        quantity: 1,
-                    });
-                    if (response.statusCode === 201) {
-                        messageApi.success(`Tour "${tour.title}" added to your cart!`);
-                    } else if (response.statusCode === 200) {
-                        messageApi.info(`Tour "${tour.title}" quantity updated in cart!`);
-                    }
-                } catch (error) {
-                    messageApi.error('Failed to add tour to cart');
-                }
-            } else {
-                if (!tour) return;
-                const cartItem = createCartItem(tour, selectedDate?.format('YYYY-MM-DD'));
-                setCart((prev) => [...prev, cartItem]);
-                messageApi.success(`Tour "${tour.title}" added to your cart!`);
-            }
-        }
-    };
-
-    const handleWishlistToggle = async () => {
-        if (!isAuthenticated()) {
-            setModalConfig({ isOpen: true, type: 'wishlist-login' });
-            return;
-        }
-
-        if (!tour?.uuid || !id) return;
-
-        const wasLiked = tour?.isLiked || false;
-        const success = await toggleWishlistWithTour(tour.uuid, tour);
-
-        if (success) {
-            setTourDetailsCache((prev) => ({
-                ...prev,
-                [id]: {
-                    ...prev[id],
-                    data: { ...prev[id].data, isLiked: !prev[id].data.isLiked },
-                },
-            }));
-            messageApi.success(wasLiked ? 'Removed from favorites' : 'Added to favorites');
-        } else {
-            messageApi.error('Failed to update favorites');
-        }
-    };
-
-    const handleConfirmedAddToCart = () => {
-        if (!tour) return;
-        const cartItem = createCartItem(tour, selectedDate?.format('YYYY-MM-DD'));
-        setCart((prev) => {
-            const existingIndex = prev.findIndex((item) => item.tourId === tour.uuid);
-            if (existingIndex >= 0) {
-                const updated = [...prev];
-                updated[existingIndex] = {
-                    ...updated[existingIndex],
-                    quantity: updated[existingIndex].quantity + 1,
-                };
-                return updated;
-            }
-            return [...prev, cartItem];
-        });
-        messageApi.success(`Tour "${tour.title}" added to your cart!`);
-        setModalConfig({ isOpen: false, type: null });
-        navigate('/cart');
-    };
-
-    const handleModalConfirm = () => {
-        switch (modalConfig.type) {
-            case 'wishlist-login':
-            case 'select-package-login':
-                setModalConfig({ isOpen: false, type: null });
-                openModal('login-modal', <ModalAuth onClose={() => closeModal('login-modal')} initialTab="login" />);
-                break;
-            case 'date-confirmation':
-                handleConfirmedAddToCart();
-                break;
-            default:
-                setModalConfig({ isOpen: false, type: null });
-        }
-    };
-
-    const navigateToTour = (tourUuid: string) => {
-        setIsLoading(true);
-        hasInitialized.current = false;
-        navigate(`/searchTrips/${tourUuid}`, { replace: true });
-    };
-
-    const openImageModal = (index: number) => {
-        setSelectedImageIndex(index);
-        setShowImageModal(true);
-        document.body.style.overflow = 'hidden';
-    };
-
-    const closeImageModal = () => {
-        setShowImageModal(false);
-        document.body.style.overflow = 'unset';
-    };
-
-    const nextImage = () => setSelectedImageIndex((prev) => (prev + 1) % images.length);
-    const prevImage = () => setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
-
-    const getModalContent = () => {
-        switch (modalConfig.type) {
-            case 'wishlist-login':
-                return {
-                    title: 'Login Required',
-                    message: 'Please login to add items to your favorites.',
-                    type: 'info' as const,
-                    confirmText: 'Login',
-                };
-            case 'select-package-login':
-                return {
-                    title: 'Login Required',
-                    message: 'Please login to continue to your cart and complete your booking.',
-                    type: 'info' as const,
-                    confirmText: 'Login',
-                };
-            case 'date-confirmation':
-                return {
-                    title: 'Confirm Package Selection',
-                    message: 'Are you sure you want to continue to the payment section?',
-                    type: 'warning' as const,
-                    confirmText: 'Continue',
-                };
-            default:
-                return {
-                    title: '',
-                    message: '',
-                    type: 'info' as const,
-                    confirmText: 'OK',
-                };
-        }
-    };
 
     if (isLoading) {
         return (
@@ -694,6 +1174,272 @@ export default function SearchPackageDetails() {
         );
     }
 
+    const filteredTours = trendingTours.filter((trendingTour) => trendingTour.uuid !== tour?.uuid).slice(0, 12);
+    const totalPages = Math.ceil(filteredTours.length / toursPerPage);
+    const visibleTours = filteredTours.slice(currentPage * toursPerPage, (currentPage + 1) * toursPerPage);
+    const totalPrice = parseFloat(tour.price);
+
+    const startTitle = tour.itineraries?.[0]?.dayTitle.split(' (')[0] ?? 'Unknown';
+    const startLocation = startTitle.includes(' - ') ? startTitle.split(' - ')[0] : startTitle;
+    const endTitle = tour.itineraries?.[tour.itineraries.length - 1]?.dayTitle.split(' (')[0] ?? 'Unknown';
+    const endLocation = endTitle.includes(' - ') ? endTitle.split(' - ')[1] : endTitle;
+    const isLoop = startLocation === endLocation;
+    const endMessage = isLoop ? "You'll return to the starting point" : `You'll end at ${endLocation}`;
+
+    const languageMap: { [key: string]: string } = {
+        en: 'ENG',
+        ko: 'KOR',
+        rus: 'RUS',
+        uz: 'UZB',
+    };
+
+    const getDisplayLanguages = (lang: unknown) => {
+        if (!lang) return 'Not specified';
+        if (Array.isArray(lang)) {
+            return lang.map((code) => languageMap[String(code).toLowerCase()] || code).join(', ');
+        }
+        if (typeof lang === 'string') {
+            const codes = lang.match(/.{1,2}/g) || [];
+            return codes.map((code) => languageMap[code.toLowerCase()] || code).join(', ');
+        }
+        return 'Not specified';
+    };
+
+    const images =
+        tour.images?.length > 0 ? tour.images.map((img) => img.image || default_n1) : [tour.mainImage || default_n1];
+    const galleryImages = [...images];
+
+    const defaultImages = [default_n1, default_n2];
+    let defaultIndex = 0;
+
+    while (galleryImages.length < 5) {
+        galleryImages.push(defaultImages[defaultIndex % 2]);
+        defaultIndex++;
+    }
+
+    const reviews = [
+        {
+            name: 'Oybek',
+            date: '4.13.2025',
+            rating: 5,
+            text: 'I had an amazing experience with this tour! The guides were knowledgeable and the sights were breathtaking. Highly recommend!',
+        },
+        {
+            name: 'Aziz',
+            date: '4.13.2025',
+            rating: 5,
+            text: 'This tour exceeded my expectations! The itinerary was well-planned, and I got to see so many incredible places. The food was also fantastic!',
+        },
+    ];
+
+    const openImageModal = (index: number) => {
+        setSelectedImageIndex(index);
+        setShowImageModal(true);
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeImageModal = () => {
+        setShowImageModal(false);
+        document.body.style.overflow = 'unset';
+    };
+
+    const nextImage = () => {
+        setSelectedImageIndex((prev) => (prev + 1) % images.length);
+    };
+
+    const prevImage = () => {
+        setSelectedImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    };
+
+    const handlePrevPage = () => {
+        setCurrentPage((prev) => Math.max(0, prev - 1));
+    };
+
+    const handleNextPage = () => {
+        setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+    };
+
+    const createCartItem = (tour: TourDetailsResponse, selectedDate?: string): CartItem => {
+        return {
+            tourId: tour.uuid,
+            tourData: {
+                uuid: tour.uuid,
+                title: tour.title,
+                price: tour.price,
+                mainImage: tour.mainImage ?? '',
+                duration: tour.duration,
+                about: tour.about,
+                tourType: parseInt(tour.tourType) || 0,
+                shortDescription: tour.shortDescription || '',
+            },
+            quantity: 1,
+            selectedDate: selectedDate,
+            adults: 1,
+            addedAt: Date.now(),
+            price: parseFloat(tour.price),
+            duration: tour.duration,
+        };
+    };
+
+    /* we handle booking action based on whether the user is authenticated or not */
+    const handleBookingAction = async () => {
+        const isInCart = cart.some((item) => item.tourId === tour.uuid);
+
+        if (isInCart) {
+            if (isAuthenticated()) {
+                navigate('/cart');
+            } else {
+                setModalConfig({
+                    isOpen: true,
+                    type: 'select-package-login',
+                });
+            }
+        } else {
+            if (isAuthenticated()) {
+                try {
+                    const response = await cartApiService.addToCart({
+                        tourUuid: tour.uuid,
+                        quantity: 1,
+                    });
+
+                    if (response.statusCode === 201) {
+                        messageApi.success(`Tour "${tour.title}" added to your cart!`);
+                    } else if (response.statusCode === 200) {
+                        messageApi.info(`Tour "${tour.title}" quantity updated in cart!`);
+                    }
+                } catch (error) {
+                    messageApi.error('Failed to add tour to cart');
+                }
+            } else {
+                /* if user is not authenticated, we show a confirmation modal */
+                const cartItem = createCartItem(tour, selectedDate?.format('YYYY-MM-DD'));
+                setCart((prev) => [...prev, cartItem]);
+                messageApi.success(`Tour "${tour.title}" added to your cart!`);
+            }
+        }
+    };
+
+    const handleConfirmedAddToCart = () => {
+        const cartItem = createCartItem(tour, selectedDate?.format('YYYY-MM-DD'));
+
+        setCart((prev) => {
+            const existingIndex = prev.findIndex((item) => item.tourId === tour.uuid);
+            if (existingIndex >= 0) {
+                const updated = [...prev];
+                updated[existingIndex] = {
+                    ...updated[existingIndex],
+                    quantity: updated[existingIndex].quantity + 1,
+                };
+                return updated;
+            }
+            return [...prev, cartItem];
+        });
+
+        messageApi.success(`Tour "${tour.title}" added to your cart!`);
+        setModalConfig({ isOpen: false, type: null });
+        navigate('/cart');
+    };
+
+    const toggleDay = (dayNumber: number) => {
+        setExpandedDays((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(dayNumber)) {
+                newSet.delete(dayNumber);
+            } else {
+                newSet.add(dayNumber);
+            }
+            return newSet;
+        });
+    };
+
+    const handleModalConfirm = () => {
+        switch (modalConfig.type) {
+            case 'wishlist-login':
+            case 'select-package-login':
+                setModalConfig({ isOpen: false, type: null });
+                openLoginModal('login');
+                break;
+            case 'date-confirmation':
+                handleConfirmedAddToCart();
+                break;
+            default:
+                setModalConfig({ isOpen: false, type: null });
+        }
+    };
+
+    const getModalContent = () => {
+        switch (modalConfig.type) {
+            case 'wishlist-login':
+                return {
+                    title: 'Login Required',
+                    message: 'Please login to add items to your favorites.',
+                    type: 'info' as const,
+                    confirmText: 'Login',
+                };
+            case 'select-package-login':
+                return {
+                    title: 'Login Required',
+                    message: 'Please login to continue to your cart and complete your booking.',
+                    type: 'info' as const,
+                    confirmText: 'Login',
+                };
+            case 'date-confirmation':
+                return {
+                    title: 'Confirm Package Selection',
+                    message: 'Are you sure you want to continue to the payment section?',
+                    type: 'warning' as const,
+                    confirmText: 'Continue',
+                };
+            default:
+                return {
+                    title: '',
+                    message: '',
+                    type: 'info' as const,
+                    confirmText: 'OK',
+                };
+        }
+    };
+
+    const handleWishlistToggle = async () => {
+        if (!isAuthenticated()) {
+            setModalConfig({
+                isOpen: true,
+                type: 'wishlist-login',
+            });
+            return;
+        }
+
+        if (!tour?.uuid || !id) return;
+
+        const wasLiked = tour?.isLiked || false;
+        const success = await toggleWishlistWithTour(tour.uuid, tour);
+
+        if (success) {
+            setTourDetailsCache((prev) => ({
+                ...prev,
+                [id]: {
+                    ...prev[id],
+                    data: {
+                        ...prev[id].data,
+                        isLiked: !prev[id].data.isLiked,
+                    },
+                },
+            }));
+
+            if (wasLiked) {
+                messageApi.success('Removed from favorites');
+            } else {
+                messageApi.success('Added to favorites');
+            }
+        } else {
+            messageApi.error('Failed to update favorites');
+        }
+    };
+
+    const openLoginModal = (initialTab: 'login' | 'signup' = 'login') => {
+        openModal('login-modal', <ModalAuth onClose={() => closeModal('login-modal')} initialTab={initialTab} />);
+    };
+
     const modalContent = getModalContent();
 
     return (
@@ -704,26 +1450,25 @@ export default function SearchPackageDetails() {
                     <Breadcrumb>
                         <a href="/">Home</a> &gt; <a href="/searchTrips">Tours</a> &gt;
                         <span>
-                            {' '}
                             {tour.country}, {tour.city}
                         </span>
                     </Breadcrumb>
 
                     <TitleSection>
                         <Title>{tour.title}</Title>
-                        <IconButton
-                            onClick={handleWishlistToggle}
-                            disabled={isProcessing(tour?.uuid)}
-                            style={{ color: getHeartColor(tour?.uuid, tour) }}
-                        >
-                            <FaHeart />
-                        </IconButton>
                         <ActionButtons>
-                            <CopyLink
-                                url={typeof window !== 'undefined' ? window.location.href : ''}
-                                iconSize={16}
-                                showText={false}
-                            />
+                            <IconButton
+                                onClick={handleWishlistToggle}
+                                disabled={isProcessing(tour?.uuid)}
+                                style={{
+                                    color: getHeartColor(tour?.uuid, tour),
+                                }}
+                            >
+                                <FaHeart />
+                            </IconButton>
+                            <IconButton>
+                                <CopyLink url={window.location.href} iconSize={16} showText={false} />
+                            </IconButton>
                         </ActionButtons>
                     </TitleSection>
 
@@ -749,19 +1494,19 @@ export default function SearchPackageDetails() {
                     <ImageSection>
                         <ImageGallery>
                             <MainImage onClick={() => openImageModal(0)}>
-                                <img src={images[0]} alt="Main tour image" />
+                                <img src={galleryImages[0]} alt="Main tour image" />
                             </MainImage>
                             <SideImage onClick={() => openImageModal(1)}>
-                                <img src={images[1]} alt="Tour image" />
+                                <img src={galleryImages[1]} alt="Tour image" />
                             </SideImage>
                             <SideImage onClick={() => openImageModal(2)}>
-                                <img src={images[2]} alt="Tour image" />
+                                <img src={galleryImages[2]} alt="Tour image" />
                             </SideImage>
                             <SideImage onClick={() => openImageModal(3)}>
-                                <img src={images[3]} alt="Tour image" />
+                                <img src={galleryImages[3]} alt="Tour image" />
                             </SideImage>
                             <SideImage onClick={() => openImageModal(4)}>
-                                <img src={images[4]} alt="Tour image" />
+                                <img src={galleryImages[4]} alt="Tour image" />
                                 <SeeAllButton
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -773,27 +1518,479 @@ export default function SearchPackageDetails() {
                             </SideImage>
                         </ImageGallery>
                     </ImageSection>
-
                     <ContentSection>
-                        <SearchPackageContent
-                            tour={tour}
-                            expandedDays={expandedDays}
-                            onToggleDay={toggleDay}
-                            trendingTours={trendingTours}
-                            onNavigateToTour={navigateToTour}
-                        />
-                        <SearchPackageDetailSidebar
-                            tour={tour}
-                            selectedDate={selectedDate}
-                            onDateChange={setSelectedDate}
-                            isInCart={isInCart}
-                            cartItemsCount={cartItemsCount}
-                            onBookingAction={handleBookingAction}
-                        />
+                        <LeftContent>
+                            <InfoRow>
+                                <InfoCards>
+                                    <StyledInfoCard>
+                                        <InfoCardItemIcon>
+                                            <FaClock />
+                                        </InfoCardItemIcon>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: theme.fontSizes.xs,
+                                                    color: theme.colors.lightText,
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'left',
+                                                }}
+                                            >
+                                                Duration
+                                            </div>
+                                            <InfoCardItemValue>{tour.duration}</InfoCardItemValue>
+                                        </div>
+                                    </StyledInfoCard>
+
+                                    <StyledInfoCard>
+                                        <InfoCardItemIcon>
+                                            <FaMapMarkerAlt />
+                                        </InfoCardItemIcon>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: theme.fontSizes.xs,
+                                                    color: theme.colors.lightText,
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'left',
+                                                }}
+                                            >
+                                                Tour Type
+                                            </div>
+                                            <InfoCardItemValue>{tour.tourType}</InfoCardItemValue>
+                                        </div>
+                                    </StyledInfoCard>
+
+                                    <StyledInfoCard>
+                                        <InfoCardItemIcon>
+                                            <FaUsers />
+                                        </InfoCardItemIcon>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: theme.fontSizes.xs,
+                                                    color: theme.colors.lightText,
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'left',
+                                                }}
+                                            >
+                                                Group Size
+                                            </div>
+                                            <InfoCardItemValue>{tour.groupSize}</InfoCardItemValue>
+                                        </div>
+                                    </StyledInfoCard>
+
+                                    <StyledInfoCard>
+                                        <InfoCardItemIcon>
+                                            <FaUserFriends />
+                                        </InfoCardItemIcon>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: theme.fontSizes.xs,
+                                                    color: theme.colors.lightText,
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'left',
+                                                }}
+                                            >
+                                                Ages
+                                            </div>
+                                            <InfoCardItemValue>
+                                                {tour.ageMin}-{tour.ageMax}
+                                            </InfoCardItemValue>
+                                        </div>
+                                    </StyledInfoCard>
+
+                                    <StyledInfoCard>
+                                        <InfoCardItemIcon>
+                                            <FaGlobe />
+                                        </InfoCardItemIcon>
+                                        <div>
+                                            <div
+                                                style={{
+                                                    fontSize: theme.fontSizes.xs,
+                                                    color: theme.colors.lightText,
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'left',
+                                                }}
+                                            >
+                                                Languages
+                                            </div>
+                                            <InfoCardItemValue>
+                                                {getDisplayLanguages(tour.language || '')}
+                                            </InfoCardItemValue>
+                                        </div>
+                                    </StyledInfoCard>
+                                </InfoCards>
+                            </InfoRow>
+                            <Section>
+                                <h2>Tour Overview</h2>
+                                <p>{tour.about}</p>
+                            </Section>
+
+                            <Section>
+                                <h2>What's included</h2>
+                                <IncludedExcludedCard>
+                                    <div>
+                                        {tour.includedItem?.length > 0 ? (
+                                            tour.includedItem.map((item, index) => (
+                                                <IncludedExcludedItem key={`included-${index}`} included>
+                                                    <FaCheck
+                                                        style={{
+                                                            color: '#228b22',
+                                                            fontSize: '1.25rem',
+                                                            flexShrink: 0,
+                                                            marginTop: '2px',
+                                                        }}
+                                                    />
+                                                    <span className="item-text">{item.text}</span>
+                                                </IncludedExcludedItem>
+                                            ))
+                                        ) : (
+                                            <IncludedExcludedItem included>
+                                                <FaCheck
+                                                    style={{
+                                                        color: '#228b22',
+                                                        fontSize: '1.25rem',
+                                                        flexShrink: 0,
+                                                        marginTop: '2px',
+                                                    }}
+                                                />
+                                                <span className="item-text">No included items specified.</span>
+                                            </IncludedExcludedItem>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        {tour.excludedItem?.length > 0 ? (
+                                            tour.excludedItem.map((item, index) => (
+                                                <IncludedExcludedItem key={`excluded-${index}`}>
+                                                    <FaTimes
+                                                        style={{
+                                                            color: '#ff0000',
+                                                            fontSize: '1.25rem',
+                                                            flexShrink: 0,
+                                                            marginTop: '2px',
+                                                        }}
+                                                    />
+                                                    <span className="item-text">{item.text}</span>
+                                                </IncludedExcludedItem>
+                                            ))
+                                        ) : (
+                                            <IncludedExcludedItem>
+                                                <FaTimes
+                                                    style={{
+                                                        color: '#ff0000',
+                                                        fontSize: '1.25rem',
+                                                        flexShrink: 0,
+                                                        marginTop: '2px',
+                                                    }}
+                                                />
+                                                <span className="item-text">No excluded items specified.</span>
+                                            </IncludedExcludedItem>
+                                        )}
+                                    </div>
+                                </IncludedExcludedCard>
+                                <StyledCallout>
+                                    <FaInfoCircle className="callout-icon" size={20} />
+                                    <div className="callout-text">
+                                        <strong>Important:</strong> Please review what's included and excluded in your
+                                        tour package carefully. Additional expenses not listed below will be your
+                                        responsibility.
+                                    </div>
+                                </StyledCallout>
+                            </Section>
+                            <Section>
+                                <h2>Itinerary</h2>
+                                <Itinerary>
+                                    <TimelineContainer>
+                                        <StartContainer>
+                                            <StartBubble>Start</StartBubble>
+                                            <StartContent>
+                                                <h4>You'll start at {startLocation}</h4>
+                                            </StartContent>
+                                        </StartContainer>
+                                        <TimelineLine />
+                                        {tour.itineraries?.map((day, index) => (
+                                            <ItineraryDay key={day.dayNumber} active={expandedDays.has(day.dayNumber)}>
+                                                <DayContainer
+                                                    key={day.dayNumber}
+                                                    last={index === tour.itineraries.length - 1}
+                                                >
+                                                    <DayNumberStyled active={expandedDays.has(day.dayNumber)}>
+                                                        {day.dayNumber}
+                                                    </DayNumberStyled>
+                                                    <DayContent>
+                                                        <DayHeaderStyled onClick={() => toggleDay(day.dayNumber)}>
+                                                            <h4>
+                                                                Day {day.dayNumber}: {day.dayTitle}
+                                                            </h4>
+                                                            <Arrow expanded={expandedDays.has(day.dayNumber)}>▼</Arrow>
+                                                        </DayHeaderStyled>
+                                                        {expandedDays.has(day.dayNumber) && (
+                                                            <>
+                                                                <Description>{day.description}</Description>
+                                                                {day.includedMeals && (
+                                                                    <InfoParagraph>
+                                                                        <FaUtensils size={16} />
+                                                                        <strong>Included Meals:</strong>{' '}
+                                                                        {day.includedMeals}
+                                                                    </InfoParagraph>
+                                                                )}
+                                                                {day.accommodation && (
+                                                                    <InfoParagraph>
+                                                                        <FaBed size={16} />
+                                                                        <strong>Accommodation:</strong>{' '}
+                                                                        {day.accommodation}
+                                                                    </InfoParagraph>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </DayContent>
+                                                </DayContainer>
+                                            </ItineraryDay>
+                                        ))}
+                                        <EndContainer>
+                                            <EndBubble>End</EndBubble>
+                                            <EndContent>
+                                                <h4>{endMessage}</h4>
+                                            </EndContent>
+                                        </EndContainer>
+                                    </TimelineContainer>
+                                </Itinerary>
+                            </Section>
+
+                            <Section id="map">
+                                <h2>Location</h2>
+                                {Array.isArray(tour.itineraries) && tour.itineraries.length > 0 ? (
+                                    <MapBox
+                                        key={tour.uuid + '-' + tour.itineraries.length}
+                                        itineraries={tour.itineraries.map((item) => ({
+                                            dayNumber: item.dayNumber,
+                                            dayTitle: item.dayTitle,
+                                            description: item.description,
+                                            locationNames: item.locationNames || [],
+                                            locationName: item.locationNames?.map((l) => l.name).join(', ') || '',
+                                            latitude:
+                                                item.locationNames?.find((l) =>
+                                                    isValidCoordinate(l.latitude, l.longitude),
+                                                )?.latitude ?? null,
+                                            longitude:
+                                                item.locationNames?.find((l) =>
+                                                    isValidCoordinate(l.latitude, l.longitude),
+                                                )?.longitude ?? null,
+                                            accommodation: item.accommodation,
+                                            includedMeals: item.includedMeals,
+                                        }))}
+                                        tourUuid={tour.uuid}
+                                        height="500px"
+                                    />
+                                ) : (
+                                    <MapContainer>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                height: '200px',
+                                                color: '#666666',
+                                                fontFamily: 'Inter, sans-serif',
+                                            }}
+                                        >
+                                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗺️</div>
+                                            <div>No itinerary available</div>
+                                        </div>
+                                    </MapContainer>
+                                )}
+                            </Section>
+                            <Section>
+                                <ReviewsSection>
+                                    <h2>Reviews</h2>
+                                    <Button variant="text" size="sm">
+                                        Read all reviews
+                                    </Button>
+                                </ReviewsSection>
+                                <ReviewsContainer>
+                                    {reviews.map((review, index) => (
+                                        <ReviewCard key={index} variant="outlined">
+                                            <ReviewHeader>
+                                                <div className="left-content">
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            gap: '12px',
+                                                        }}
+                                                    >
+                                                        <Rating>
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <FaStar key={i} color="#ffc107" size={14} />
+                                                            ))}
+                                                        </Rating>
+                                                        <ReviewerName>{review.name}</ReviewerName>
+                                                    </div>
+                                                </div>
+                                                <ReviewDate>{review.date}</ReviewDate>
+                                            </ReviewHeader>
+                                            <p>{review.text}</p>
+                                        </ReviewCard>
+                                    ))}
+                                </ReviewsContainer>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        gap: '1rem',
+                                        marginTop: '1rem',
+                                    }}
+                                >
+                                    <Button variant="outline" size="sm">
+                                        <FaChevronLeft />
+                                    </Button>
+                                    <Button variant="outline" size="sm">
+                                        <FaChevronRight />
+                                    </Button>
+                                </div>
+                            </Section>
+                            <Section>
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '1rem',
+                                    }}
+                                >
+                                    <h2>Explore other options</h2>
+                                    <NavigationButtons>
+                                        <Button
+                                            variant="circle"
+                                            onClick={handlePrevPage}
+                                            disabled={currentPage === 0}
+                                            aria-label="Previous page"
+                                        >
+                                            <FaArrowLeft />
+                                        </Button>
+                                        <Button
+                                            variant="circle"
+                                            onClick={handleNextPage}
+                                            disabled={currentPage === totalPages - 1}
+                                            aria-label="Next page"
+                                        >
+                                            <FaArrowRight />
+                                        </Button>
+                                    </NavigationButtons>
+                                </div>
+                                <RelatedTours>
+                                    {visibleTours.map((relatedTour) => (
+                                        <div
+                                            style={{ cursor: 'pointer' }}
+                                            key={relatedTour.id}
+                                            onClick={() => {
+                                                setIsLoading(true);
+                                                hasInitialized.current = false;
+                                                navigate(`/searchTrips/${relatedTour.uuid}`, { replace: true });
+                                            }}
+                                        >
+                                            <TourCard
+                                                buttonText="See more"
+                                                key={relatedTour.id}
+                                                id={relatedTour.id}
+                                                title={relatedTour.title}
+                                                shortDescription={relatedTour.shortDescription}
+                                                mainImage={relatedTour.mainImage ? relatedTour.mainImage : default_n1}
+                                                tourType={{
+                                                    id: relatedTour.tourType?.id || 0,
+                                                    name: relatedTour.tourType?.name || 'General',
+                                                }}
+                                                price={relatedTour.price}
+                                                country={relatedTour.country}
+                                                variant="button"
+                                                currency="USD"
+                                                isLiked={relatedTour.isLiked}
+                                            />
+                                        </div>
+                                    ))}
+                                </RelatedTours>
+                            </Section>
+                        </LeftContent>
+                        <RightSidebar>
+                            <PriceCard>
+                                <PriceHeader>
+                                    <div className="from">From</div>
+                                    <div className="price">${tour.price}</div>
+                                </PriceHeader>
+
+                                <BookingForm>
+                                    <div style={{ gap: '5px' }}>
+                                        <FormGroup>
+                                            <FormLabel>Date</FormLabel>
+                                            <DatePicker
+                                                value={selectedDate}
+                                                style={{ width: '100%', height: '48px' }}
+                                                placeholder="04.13.2025"
+                                                onChange={setSelectedDate}
+                                            />
+                                        </FormGroup>
+
+                                        <TourDetailsSection>
+                                            <TourDetailsTitle>Tour Details:</TourDetailsTitle>
+                                            <TourDetailsContent>
+                                                <div>
+                                                    <span className="label">Duration:</span>{' '}
+                                                    <span className="value">{tour.duration}</span>
+                                                </div>
+                                                <div>
+                                                    <span className="label">Ages:</span>{' '}
+                                                    <span className="value">
+                                                        {tour.ageMin}-{tour.ageMax} years
+                                                    </span>
+                                                </div>
+                                            </TourDetailsContent>
+                                        </TourDetailsSection>
+
+                                        <Total>
+                                            <span className="label">Total:</span>
+                                            <span className="amount">${totalPrice.toFixed(2)}</span>
+                                        </Total>
+                                    </div>
+
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            gap: '20px',
+                                        }}
+                                    >
+                                        <Button
+                                            variant="primary"
+                                            size="lg"
+                                            fullWidth={true}
+                                            onClick={handleBookingAction}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px',
+                                                position: 'relative',
+                                            }}
+                                        >
+                                            {cart.some((item) => item.tourId === tour.uuid)
+                                                ? 'Continue to Checkout'
+                                                : 'Select Package'}
+                                            {cart.length > 0 && (
+                                                <CartItemCount>
+                                                    {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                                                </CartItemCount>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </BookingForm>
+                            </PriceCard>
+                        </RightSidebar>
                     </ContentSection>
                 </MainContent>
 
-                {/* Image Modal */}
                 <AnimatePresence>
                     {showImageModal && (
                         <ImageModalOverlay
@@ -817,17 +2014,15 @@ export default function SearchPackageDetails() {
                                 <NextButton variant="outline" fullWidth={false} size="sm" onClick={nextImage}>
                                     ›
                                 </NextButton>
-                                <ModalImage src={images[selectedImageIndex]} alt="Tour image" />
+                                <ModalImage src={galleryImages[selectedImageIndex]} alt="Tour image" />
                                 <ImageCounter>
-                                    {selectedImageIndex + 1} / {images.length}
+                                    {selectedImageIndex + 1} / {galleryImages.length}
                                 </ImageCounter>
                             </ImageModalContent>
                         </ImageModalOverlay>
                     )}
                 </AnimatePresence>
             </PageContainer>
-
-            {/* Confirmation Modal */}
             <ModalAlert
                 isOpen={modalConfig.isOpen}
                 onClose={() => setModalConfig({ isOpen: false, type: null })}

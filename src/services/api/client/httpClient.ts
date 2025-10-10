@@ -2,18 +2,12 @@ import { profileCacheManager } from '@/utils/tokenManagement/profileCacheManager
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { queryClient } from '@/providers/QueryProviders';
 
-/**
- * Custom axios request config with retry flag
- */
 type CustomInternalAxiosRequestConfig = InternalAxiosRequestConfig & {
     _retry?: boolean;
 };
 
 const API_BASE_URL = 'https://api.gostans.com/api/v1';
 
-/**
- * Main API client instance with base configuration
- */
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
     timeout: 10000,
@@ -22,11 +16,6 @@ const apiClient = axios.create({
     },
 });
 
-/**
- * Retrieves a cookie value by name
- * @param {string} name - Cookie name to retrieve
- * @returns {string | null} Cookie value or null if not found
- */
 const getCookie = (name: string): string | null => {
     const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return match ? decodeURIComponent(match[2]) : null;

@@ -275,9 +275,7 @@ const CountryHeaderContainer = styled.div`
     width: 100%;
 `;
 
-const CountryAllOption = styled.button.withConfig({
-    shouldForwardProp: (prop) => !['isSelected'].includes(prop)
-})<{ isSelected?: boolean }>`
+const CountryAllOption = styled.button<{ isSelected?: boolean }>`
     display: flex;
     align-items: center;
     padding: 4px 8px;

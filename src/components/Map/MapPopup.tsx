@@ -4,7 +4,6 @@ import styled from 'styled-components';
 type MapPopupProps = {
     cityName: string;
     dayRange: string;
-    isOffset?: boolean;
 };
 
 const PopupContainer = styled.div`
@@ -35,7 +34,7 @@ const PopupLocation = styled.p`
  * MapPopup - UI Component
  * Displays information about a specific location on the map.
  */
-export default function MapPopup({ cityName, dayRange, isOffset = false }: MapPopupProps) {
+export default function MapPopup({ cityName, dayRange }: MapPopupProps) {
     return (
         <PopupContainer>
             <PopupTitle>
@@ -44,7 +43,6 @@ export default function MapPopup({ cityName, dayRange, isOffset = false }: MapPo
             <PopupLocation>
                 <span>📍</span>
                 <span>{cityName}</span>
-                {isOffset && <span style={{ color: theme.colors.primary, fontSize: '10px' }}>⚪ Overlapping location</span>}
             </PopupLocation>
         </PopupContainer>
     );
