@@ -947,7 +947,7 @@ export default function CartPage() {
                                         date={item.selectedDate || 'Date not specified'}
                                         variant="compact"
                                         meta={{
-                                            duration: item.tourData.duration,
+                                            duration: item.tourData.durationDays,
                                             peopleCount: getTotalPeople(item.tourId),
                                         }}
                                         price={parseFloat(item.tourData.price)}

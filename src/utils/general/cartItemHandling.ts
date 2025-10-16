@@ -16,7 +16,7 @@ export const createCartItemFromBooking = (booking: Booking): CartItem => {
             title: booking.tourTitle,
             price: booking.amount,
             mainImage: booking.mainImage.startsWith('http') ? booking.mainImage : `${baseUrl}${booking.mainImage}`,
-            duration: booking.tourType,
+            durationDays: booking.durationDays ? booking.durationDays : null,
             about: '',
             tourType: parseInt(booking.tourType) || 0,
             shortDescription: '',
@@ -36,16 +36,10 @@ export const createCartItemFromBooking = (booking: Booking): CartItem => {
  */
 export const formatImageUrl = (imageUrl: string): string => {
     if (!imageUrl) return '/api/placeholder/400/300';
-
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        return imageUrl;
-    }
-
-    if (imageUrl.startsWith('/')) {
-        return `${process.env.REACT_APP_API_BASE_URL || 'https://api.gostans.com'}${imageUrl}`;
-    }
-
-    return `${process.env.REACT_APP_API_BASE_URL || 'https://api.gostans.com'}/media/${imageUrl}`;
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
+    const base = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/+$/, '') || 'https://api.gostans.com';
+    if (imageUrl.startsWith('/')) return `${base}${imageUrl}`;
+    return `${base}/media/${imageUrl}`;
 };
 
 /**
@@ -84,7 +78,7 @@ export const mapApiToCartItem = (apiItem: ApiCartItem): CartItem => {
             title: apiItem.tour.title,
             price: apiItem.tour.price,
             mainImage: apiItem.tour.mainImage || formatImageUrl('placeholder/400/300'),
-            duration: apiItem.tour.durationDays ? `${apiItem.tour.durationDays} days` : 'Multi-day',
+            durationDays: apiItem.tour.durationDays ? apiItem.tour.durationDays : null,
             about: apiItem.tour.shortDescription,
             tourType: apiItem.tour.tourType,
             shortDescription: apiItem.tour.shortDescription,
@@ -93,7 +87,7 @@ export const mapApiToCartItem = (apiItem: ApiCartItem): CartItem => {
         addedAt: new Date(apiItem.addedAt).getTime(),
         adults: 1,
         price: parseFloat(apiItem.tour.price),
-        duration: apiItem.tour.durationDays ? `${apiItem.tour.durationDays} days` : 'Multi-day',
+        durationDays: apiItem.tour.durationDays || null,
     };
 };
 
@@ -110,7 +104,7 @@ export const mapCartItemResponseToCartItem = (apiItem: CartItemResponse): CartIt
             title: apiItem.tour.title,
             price: apiItem.tour.price,
             mainImage: formatImageUrl(apiItem.tour.mainImage),
-            duration: apiItem.tour.durationDays ? `${apiItem.tour.durationDays} days` : 'Multi-day',
+            durationDays: apiItem.tour.durationDays ? apiItem.tour.durationDays : null,
             about: apiItem.tour.shortDescription,
             tourType: apiItem.tour.tourType,
             shortDescription: apiItem.tour.shortDescription,
@@ -119,6 +113,6 @@ export const mapCartItemResponseToCartItem = (apiItem: CartItemResponse): CartIt
         addedAt: new Date(apiItem.addedAt).getTime(),
         adults: 1,
         price: parseFloat(apiItem.tour.price),
-        duration: apiItem.tour.durationDays ? `${apiItem.tour.durationDays} days` : 'Multi-day',
+        durationDays: apiItem.tour.durationDays || null,
     };
 };
