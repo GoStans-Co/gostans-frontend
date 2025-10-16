@@ -77,7 +77,7 @@ export const mapApiToCartItem = (apiItem: ApiCartItem): CartItem => {
             uuid: apiItem.tour.uuid,
             title: apiItem.tour.title,
             price: apiItem.tour.price,
-            mainImage: apiItem.tour.mainImage || formatImageUrl('placeholder/400/300'),
+            mainImage: formatImageUrl(apiItem.tour.mainImage || ''),
             durationDays: apiItem.tour.durationDays ? apiItem.tour.durationDays : null,
             about: apiItem.tour.shortDescription,
             tourType: apiItem.tour.tourType,
