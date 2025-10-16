@@ -164,6 +164,16 @@ const ScrollButton = styled.button<{ direction: 'left' | 'right' }>`
     }
 `;
 
+/**
+ * Renders the "Top destinations" section with filter tabs and a horizontally scrollable list of destination cards.
+ *
+ * Displays a skeleton loader when `loading` is true. When not loading, it shows tabs derived from `countries`, filters `destinations` by the active tab (or limits to the first 12 for the "All" tab), and exposes left/right scroll controls when there are more than four destinations.
+ *
+ * @param destinations - Array of destination data to render as destination cards.
+ * @param loading - If true, render a loading skeleton instead of the destination list.
+ * @param countries - Array of countries used to build the filter tabs.
+ * @returns The Popular Destinations section as a JSX element.
+ */
 export default function PopularDestinations({ destinations, loading = false, countries }: PopularDestinationsProps) {
     const [activeTab, setActiveTab] = useState('all');
     const scrollContainerRef = useRef<HTMLDivElement>(null);

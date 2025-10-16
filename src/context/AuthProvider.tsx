@@ -20,6 +20,18 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+/**
+ * Provides authentication context to descendants, managing cookie-based session state,
+ * user profile prefetching/fetching, periodic token refresh, and cart synchronization on login.
+ *
+ * Initializes auth state from cookies, prefetches the user profile, attempts to fetch and store
+ * the full profile (refreshing tokens on 401), and ensures the user's cart is synchronized once per client
+ * (persisting that state in localStorage under `cartSynced`). Also sets up an interval to refresh tokens
+ * every 50 minutes when a refresh token is available.
+ *
+ * @param children - React nodes to render inside the provider
+ * @returns The AuthContext provider element that supplies { isAuthenticated, isLoading, user } to descendants
+ */
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
     const queryClient = useQueryClient();
     const { user, auth, cart } = useApiServices();

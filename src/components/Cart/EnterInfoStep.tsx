@@ -245,10 +245,15 @@ const WarningBox = styled.div`
 `;
 
 /**
- * Enter Information Step  - Organism Component
- * @description Collects participant information for the cart items.
- * @param props - Props for the component
- * @returns JSX.Element
+ * Collects and validates participant information for the current cart and advances the checkout flow.
+ *
+ * @param cartItems - Cart items for the current booking used to display trip summary
+ * @param formData - Existing form data; initial participants will be populated from this if present
+ * @param guestCounts - Optional mapping of guest counts used to auto-fill participant entries when formData has none
+ * @param calculateTotal - Function that returns the current total price for the order
+ * @param onNext - Callback invoked with updated form data when validation succeeds and the flow should proceed
+ * @param onBack - Callback invoked to navigate to the previous step
+ * @returns The rendered JSX element for the enter-information step
  */
 export default function EnterInfoStep({
     cartItems,

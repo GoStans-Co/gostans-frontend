@@ -487,14 +487,18 @@ const TotalRow = styled(PriceRow)`
     }
 `;
 /**
- * Order History - UI Component
- * @description Displays the user's order history with details and status.
- * @param {Object} props - Component props
- * @param {BookingDetail} props.bookingDetail - The booking details to display
- * @param {boolean} props.loading - Loading state
- * @param {string} props.error - Error message
- * @param {Function} props.onBack - Callback for back button
- * @param {Function} props.onRetry - Callback for retrying the request
+ * Render the Order Details view showing booking status, tour info, participants, and payments.
+ *
+ * Displays loading and error states; when booking data is present it renders a status overview,
+ * booking metadata, tour information, an optional participant list, and one or more payment cards
+ * with price breakdowns.
+ *
+ * @param bookingDetail - Booking data used to populate the view; if null the component shows an error state
+ * @param loading - When true, shows a centered loading indicator instead of the details
+ * @param error - Optional error message to display when loading fails
+ * @param onBack - Callback invoked when the back button is clicked
+ * @param onRetry - Callback invoked when the retry action is triggered from the error state
+ * @returns The component UI for the order details page as JSX
  */
 export default function OrderHistory({ bookingDetail, loading, error, onBack, onRetry }: OrderHistoryProps) {
     const formatDate = (dateString: string | null) => {

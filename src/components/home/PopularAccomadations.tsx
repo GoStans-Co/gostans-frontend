@@ -219,6 +219,15 @@ type PopularAccommodationsProps = {
     accommodations: AccommodationProps[];
 };
 
+/**
+ * Renders the "Popular accommodations" section with a header, subtitle, and a responsive grid of accommodation cards.
+ *
+ * Displays each accommodation's image, name, location, short description, and price. Clicking the "Explore All" button
+ * shows an informational toast stating the feature is coming soon.
+ *
+ * @param accommodations - Array of accommodation items to render in the grid.
+ * @returns The component's React element tree for the popular accommodations section.
+ */
 export default function PopularAccommodations({ accommodations }: PopularAccommodationsProps) {
     const [messageApi, contextHolder] = message.useMessage();
 

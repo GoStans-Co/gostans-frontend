@@ -357,6 +357,19 @@ const InfoMessage = styled.div`
     }
 `;
 
+/**
+ * Renders the payment step UI that collects billing details, lets the user choose PayPal or card, and coordinates payment initialization and submission.
+ *
+ * The component displays a guest/billing form, a countdown timer, payment method options, inline validation and errors, and the appropriate PayPal redirect flow or Stripe card form flow.
+ *
+ * @param isProcessing - Whether a payment action is currently in progress; disables interactive controls and shows a loading message.
+ * @param error - External error message to display in the error banner.
+ * @param paymentCreated - Optional PayPal initialization response containing at least an `approvalUrl` used to redirect the user for PayPal approval.
+ * @param onPayPalClick - Callback invoked to initialize a PayPal payment; should return after the server-side PayPal setup completes.
+ * @param onCardClick - Callback invoked to initialize a card payment; expected to return an object with `data.clientSecret` on success.
+ * @param onBack - Callback invoked when the Back button is clicked.
+ * @returns The rendered JSX for the payment step UI.
+ */
 export default function PaymentStepUI({
     isProcessing,
     error,

@@ -75,8 +75,11 @@ const SearchButton = styled.button`
 `;
 
 /**
- * MapPopup - UI Component
- * Displays information about a specific location on the map.
+ * Render a map popup showing a city's name, a day range, and a button to search the city on Google.
+ *
+ * @param cityName - The name of the city to display in the popup
+ * @param dayRange - Textual representation of the day range to display (e.g., "1–3")
+ * @returns The rendered popup element
  */
 export default function MapPopup({ cityName, dayRange }: MapPopupProps) {
     const handleGoogleSearch = (e: React.MouseEvent) => {

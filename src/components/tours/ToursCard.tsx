@@ -212,6 +212,17 @@ const CardWrapper = styled(Link)`
     display: block;
 `;
 
+/**
+ * Render a tour card displaying image, title, short description, formatted price, and an optional action control.
+ *
+ * The component either renders an internal "Book Now" button (variant = "button") or makes the whole card a link (variant = "link").
+ *
+ * @param variant - If "button", shows a small booking button; if "link", wraps the entire card as a link to the tour details. Defaults to "button".
+ * @param buttonText - Text displayed inside the action button when `variant` is "button". Defaults to "Book Now".
+ * @param currency - Currency code used to format the displayed price. Defaults to "USD".
+ * @param uuid - Unique identifier used to build the tour detail URL (/searchTrips/{uuid}).
+ * @returns A JSX element representing the composed tour card.
+ */
 export default function TourCard({
     title,
     shortDescription: description,

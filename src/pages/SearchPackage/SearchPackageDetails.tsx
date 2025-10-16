@@ -396,11 +396,11 @@ const ImageCounter = styled.div`
 `;
 
 /**
- * SearchPackageDetails - Page Root Component
- * @description This component displays detailed information
- * about a specific tour package, including images, reviews,
- * itinerary, and booking options. It also handles user interactions
- * such as adding to cart, viewing images, and managing wishlist.
+ * Render the tour package details page including gallery, itinerary, reviews, booking controls, and wishlist actions.
+ *
+ * Displays tour information, an image modal viewer, booking sidebar, and auth/confirmation modals while handling user interactions (add to cart, wishlist toggles, image navigation).
+ *
+ * @returns The rendered component as a JSX.Element
  */
 export default function SearchPackageDetails() {
     const { packageId: id } = useParams<{ packageId: string }>();

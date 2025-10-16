@@ -246,15 +246,12 @@ const TourDetails = styled.span`
 `;
 
 /**
- * TripCard - A versatile Molecule Component for displaying trip or tour information.
- * @param {TripCardProps} props - Props for configuring the TripCard
- * @param {string} props.image - URL of the image to display
- * @param {string} props.title - Title of the trip or tour
- * @param {string} [props.subtitle] - Subtitle or brief description
- * @param {string} [props.date] - Date or date range for the trip
- * @param {object} [props.meta] - Additional metadata like duration and people count
- * @param {() => void} [props.onEdit] - Callback when edit action is triggered
- * @param {() => void} [props.onRemove] - Callback when remove action is triggered
+ * Render a configurable trip/tour card that displays an image, title, metadata, pricing, status, and action areas.
+ *
+ * The component supports legacy and new action patterns, optional editable/removable actions, top or bottom placement for custom content, and responsive styling via `variant`, `imageSize`, and `titleSize`.
+ *
+ * @param props - TripCardProps used to configure content, appearance, and action handlers (see TripCardProps for full property details)
+ * @returns A JSX element representing the trip card
  */
 export default function TripCard(props: TripCardProps) {
     const { image, title, subtitle, date, meta, onEdit, onRemove, price, status } = props;

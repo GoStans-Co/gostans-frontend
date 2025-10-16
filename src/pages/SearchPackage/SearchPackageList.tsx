@@ -513,11 +513,11 @@ const LoadingAnimationContainer = styled.div`
 `;
 
 /**
- * SearchPackageList - Page Component
- * @description This component renders the search package list page,
- * including search bar, filters, and tour results.It handles fetching
- * tours based on search criteria, pagination, and displaying results
- * with options to favorite tours.
+ * Render the search results page for tours and packages with filters, pagination, and wishlist support.
+ *
+ * Renders a search bar, filter panel, results list with pagination controls, and per-item favorite actions.
+ * Fetches and caches tour data based on search parameters, applies client-side price/location filters,
+ * handles pagination and debounced updates for destination/dates, and prompts for login when wishlist actions require authentication.
  */
 export default function SearchPackageList() {
     const navigate = useNavigate();

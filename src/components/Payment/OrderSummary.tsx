@@ -195,6 +195,20 @@ const ButtonWrapper = styled.div`
     }
 `;
 
+/**
+ * Render an order summary card showing items, subtotal, tax, total, optional payment/booking details, and an optional action button.
+ *
+ * @param cartItems - Array of cart items to display; each item provides tour data, quantity, and guest counts.
+ * @param paymentCreated - Optional payment/booking object; expected to contain `bookingId` and `paymentId` to display.
+ * @param total - Total amount to display (already calculated by caller).
+ * @param showItemDetails - When true, render individual item lines with title, duration, adults, and quantity.
+ * @param showButton - When true, render the action button if `onButtonClick` is provided and `buttonText` is not `'none'`.
+ * @param buttonText - Label for the action button; use the literal string `'none'` to suppress the button even when `showButton` is true.
+ * @param onButtonClick - Click handler for the action button.
+ * @param buttonDisabled - If true, the action button is disabled.
+ * @param validationErrors - Map of validation error messages; the presence of any keys will disable the action button.
+ * @returns A React element containing the formatted order summary UI.
+ */
 export default function OrderSummary({
     cartItems,
     paymentCreated,

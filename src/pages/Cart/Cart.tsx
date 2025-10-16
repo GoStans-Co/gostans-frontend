@@ -417,9 +417,11 @@ const ValidationError = styled.div`
 `;
 
 /**
- * Cart - Page Component
- * @description This component renders the shopping cart page and its contents
- * @returns JSX.Element
+ * Render the cart and checkout flow UI, managing cart state, guest and date selection, validation, and payment flows.
+ *
+ * Displays different views for the cart, information entry, payment, and confirmation steps; coordinates guest counts, per-item dates, validation errors, and integrations with PayPal and Stripe.
+ *
+ * @returns A JSX element representing the cart page UI.
  */
 export default function CartPage() {
     const navigate = useNavigate();

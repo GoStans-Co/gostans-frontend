@@ -174,10 +174,14 @@ const EmptyStateDescription = styled.p`
 `;
 
 /**
- * TopDestinationsByCity - Page Component
- * @description Displays all tours available in a specific city and country.
- * Fetches tours based on the city and country IDs from the URL parameters.
- * Shows a loading state while fetching data, and handles empty states gracefully.
+ * Renders a page showing top tours for a specific city and country identified by URL parameters.
+ *
+ * Fetches tour data when the city or country parameters change, displays a loading skeleton while
+ * fetching, shows a responsive grid of tour cards when results exist, and displays an empty state
+ * with navigation when no tours are available. If URL parameters are missing, navigates to the
+ * general destinations page.
+ *
+ * @returns The JSX element for the Top Destinations by City page.
  */
 export default function TopDestinationsByCity() {
     const [tours, setTours] = useState<TourListResponse[]>([]);

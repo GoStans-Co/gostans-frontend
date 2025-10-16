@@ -199,10 +199,12 @@ const SectionSubtitle = styled.p`
 `;
 
 /**
- * Recently Added Tours - Organism Component
- * @description Displays a scrollable list of recently added tours with a title, subtitle, and scroll buttons.
- * @param {Array} tours - The list of recently added tours.
- * @param {boolean} loading - Indicates if the tours are still loading.
+ * Render a horizontally scrollable list of recently added tours with a title, subtitle, and optional scroll controls.
+ *
+ * Shows skeleton placeholders while `loading` is true; otherwise renders a horizontally scrollable row of tour cards and scroll buttons when there are more than four tours.
+ *
+ * @param tours - Array of tour entries to display (each item is a TourListResponse).
+ * @param loading - When true, render loading placeholders instead of tour cards.
  */
 export default function RecentlyAddedTours({ tours, loading }: RecentlyAddedToursProps) {
     const scrollRef = useRef<HTMLDivElement>(null);

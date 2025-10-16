@@ -166,6 +166,17 @@ const EmptyCartMessage = styled.div`
     }
 `;
 
+/**
+ * Render a dropdown cart modal anchored to an element that displays the cart contents, subtotal, and actions.
+ *
+ * @param isOpen - Whether the modal is currently open
+ * @param onClose - Callback to close the modal
+ * @param anchorElement - DOM element the modal is anchored to
+ * @param cartItems - Array of cart items to display
+ * @param onRemoveItem - Callback invoked with a `tourId` to remove an item from the cart
+ * @param onGoToCart - Callback invoked to navigate to the full cart view
+ * @returns The cart dropdown modal element
+ */
 export default function CartModal({
     isOpen,
     onClose,

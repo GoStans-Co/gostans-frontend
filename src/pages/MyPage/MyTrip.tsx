@@ -102,10 +102,13 @@ const EmptyText = styled.p`
 `;
 
 /**
- * My Trips - Page Component
- * @description This component displays the user's trip bookings and allows them to manage their trips.
- * @param {TripsPageProps} props - Props for the TripsPage component
- * @returns JSX.Element
+ * Renders the user's trips page with status tabs, trip list, and actions for managing bookings.
+ *
+ * Shows an empty state when there are no trips and filters trips by status when a tab is selected.
+ *
+ * @param bookings - Optional grouped bookings used to build the trip list (e.g., all, upcoming, completed)
+ * @param onTripClick - Optional callback invoked with a bookingId when a trip card is clicked
+ * @returns The rendered trips page JSX element
  */
 export default function MyTips({ bookings, onTripClick }: TripsPageProps) {
     const { handlePayment, handleCancel, handleDelete, handleBookAgain } = useTripActions(bookings ?? { all: [] });

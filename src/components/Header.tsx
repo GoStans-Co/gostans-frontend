@@ -382,9 +382,11 @@ const PartnerLink = styled(Link)`
 `;
 
 /**
- * Header Component
- * @description Main navigation header for the application
- * @returns {JSX.Element} Header component
+ * Renders the application's top navigation header with branding, primary navigation links, currency selector, cart, and user controls.
+ *
+ * Includes mobile drawer navigation, country and currency selection modals, a cart modal, a user profile modal, and built-in login/logout flows.
+ *
+ * @returns The header JSX element
  */
 export default function Header() {
     const location = useLocation();

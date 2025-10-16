@@ -152,6 +152,13 @@ const StepDescription = styled.div`
 
 const CheckIconElement = () => <CheckCircle2 size={16} style={{ color: 'white' }} aria-label="Step completed" />;
 
+/**
+ * Render a horizontal stepper that visualizes step titles, optional descriptions, and completion state based on the current index.
+ *
+ * @param current - Zero-based index of the active step; steps with an index lower than this are treated as completed.
+ * @param steps - Array of step objects each containing `title` and an optional `description` to display for that step.
+ * @returns A JSX element representing the steps progress UI with circles, titles, optional descriptions, and connector lines.
+ */
 export default function CustomSteps({ current, steps }: CustomStepsProps) {
     return (
         <StepsContainer>

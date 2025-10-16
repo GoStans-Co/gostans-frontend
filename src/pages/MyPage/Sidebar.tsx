@@ -189,6 +189,24 @@ const IconWrapper = styled.span<{ $active?: boolean }>`
     }
 `;
 
+/**
+ * Renders the user sidebar containing the avatar, profile info, navigation items, and logout action.
+ *
+ * The avatar supports hover state and image upload; navigation items call `onSectionChange` with the selected section.
+ *
+ * @param userName - Display name shown in the profile section
+ * @param joinDate - User join date string displayed below the name
+ * @param activePage - Currently active page key that highlights the corresponding nav item
+ * @param onSectionChange - Callback invoked with the selected PageSection when a navigation item is clicked
+ * @param handleLogout - Optional callback invoked when the Logout item is clicked
+ * @param profileImage - Optional URL for the avatar image; when present the avatar displays the image
+ * @param isHovering - Controls whether the avatar's overlay (camera icon) is visible
+ * @param onImageUpload - File input change handler for avatar image uploads
+ * @param onAvatarClick - Click handler for the avatar area
+ * @param onMouseEnter - Mouse enter handler forwarded to the avatar
+ * @param onMouseLeave - Mouse leave handler forwarded to the avatar
+ * @returns The rendered sidebar React element
+ */
 export default function Sidebar({
     userName,
     joinDate,

@@ -196,12 +196,14 @@ const ErrorText = styled.span`
 `;
 
 /**
- * PartnerForm - UI Component
- * @description This component renders the partner registration form and
- * will handle form validation flow as well.
- * @param onClose - Function to close the form
- * @param onSubmit - Function to submit the form
- * @param loading - Boolean indicating if the form is in a loading state
+ * Render a two-step partner registration form with client-side validation and submission handling.
+ *
+ * The form collects contact and business details, enforces field and password requirements,
+ * and advances between steps before calling the submission callback.
+ *
+ * @param onClose - Optional callback invoked when the user cancels or closes the form
+ * @param onSubmit - Callback invoked with the collected form data (all fields except `confirmPassword`) when the application is submitted; expected to return a Promise that resolves when submission completes
+ * @param loading - When true, disables inputs and shows loading states for form actions
  */
 export default function PartnerForm({ onClose, onSubmit, loading = false }: PartnerFormProps) {
     const countriesWithCities = useRecoilValue(countriesWithCitiesAtom);

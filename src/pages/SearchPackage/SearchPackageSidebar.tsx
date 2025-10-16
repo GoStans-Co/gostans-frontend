@@ -182,6 +182,19 @@ const TourDetailsContent = styled.div`
     }
 `;
 
+/**
+ * Render a right-hand sidebar for selecting a tour date, viewing price and tour details, and initiating booking.
+ *
+ * Displays the tour's rounded price, a date picker bound to `selectedDate`/`onDateChange`, duration and age range, the total amount, and a primary action button whose label and behavior depend on cart state.
+ *
+ * @param tour - Tour details used to populate price, duration, and age range
+ * @param selectedDate - Currently selected date shown in the date picker; pass `null` to show no selection
+ * @param onDateChange - Callback invoked when the date picker value changes
+ * @param isInCart - If `true`, the action button shows "Continue to Checkout"; otherwise it shows "Select Package"
+ * @param cartItemsCount - Number shown in the cart badge; badge is rendered only when this value is greater than 0
+ * @param onBookingAction - Callback invoked when the primary action button is clicked
+ * @returns A React element representing the tour booking sidebar
+ */
 export default function SearchPackageDetailSidebar({
     tour,
     selectedDate,

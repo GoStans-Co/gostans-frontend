@@ -202,11 +202,14 @@ const FlowArrow = styled.span`
 `;
 
 /**
- * MapBox - Page Component
- * @description Displays a map with markers for each itinerary location.
- * Also includes a popup for each marker displaying additional information.
- * If there are more than one itinerary, the map will show all relevant markers.
- * @param {EnhancedMapComponentProps} props - The properties for the map component.
+ * Render an interactive Mapbox map showing itinerary city markers and a tour flow.
+ *
+ * Processes itinerary items to ensure valid coordinates (geocoding missing locations and persisting updates when `tourUuid` is provided), groups consecutive days by city, and initializes a Mapbox map with markers, popups, and an optional route polyline. Manages loading and error states and cleans up map resources and React roots on unmount.
+ *
+ * @param itineraries - Array of itinerary items to display and process
+ * @param tourUuid - Optional tour identifier used to persist geocoded location updates
+ * @param height - CSS height for the map container (defaults to `"500px"`)
+ * @returns The rendered map component as JSX.Element
  */
 export default function MapBox({ itineraries, tourUuid, height = '500px' }: EnhancedMapComponentProps) {
     const { tours: toursService } = useApiServices();
