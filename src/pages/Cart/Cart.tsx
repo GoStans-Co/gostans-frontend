@@ -25,6 +25,14 @@ const Container = styled.div`
     padding: 2rem 2rem;
     min-height: 100vh;
     background-color: ${({ theme }) => theme.colors.lightBackground || '#f8f9fa'};
+
+    ${({ theme }) => theme.responsive.tablet} {
+        padding: ${({ theme }) => theme.spacing.lg};
+    }
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: 1rem 1rem 2.5rem 1rem;
+    }
 `;
 
 const CartGrid = styled.div`
@@ -32,8 +40,14 @@ const CartGrid = styled.div`
     grid-template-columns: 1fr 350px;
     gap: 2rem;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.laptop} {
         grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.lg};
+    }
+
+    ${({ theme }) => theme.responsive.mobile} {
+        grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.md};
     }
 `;
 
@@ -43,8 +57,14 @@ const PaymentGrid = styled.div`
     gap: ${({ theme }) => theme.spacing.xl};
     align-items: start;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.laptop} {
         grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.lg};
+    }
+
+    ${({ theme }) => theme.responsive.mobile} {
+        grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.md};
     }
 `;
 
@@ -61,17 +81,34 @@ const EmptyCart = styled.div`
     max-width: 600px;
     margin: 0 auto;
 
+    ${({ theme }) => theme.responsive.tablet} {
+        padding: 8rem ${({ theme }) => theme.spacing.lg};
+    }
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: 6rem ${({ theme }) => theme.spacing.lg};
+    }
+
     h2 {
         font-size: 1.5rem;
         font-weight: 600;
         color: ${({ theme }) => theme.colors.text};
         margin-bottom: 1rem;
+
+        ${({ theme }) => theme.responsive.mobile} {
+            font-size: ${({ theme }) => theme.fontSizes.xl};
+        }
     }
 
     p {
         font-size: 1.1rem;
         margin-bottom: 2rem;
         color: ${({ theme }) => theme.colors.lightText};
+
+        ${({ theme }) => theme.responsive.mobile} {
+            font-size: ${({ theme }) => theme.fontSizes.md};
+            margin-bottom: ${({ theme }) => theme.spacing.xl};
+        }
     }
 `;
 
@@ -82,6 +119,11 @@ const GuestSelectionCard = styled.div`
     border: 1px solid ${({ theme }) => theme.colors.border};
     box-shadow: ${({ theme }) => theme.shadows.sm};
     margin-top: ${({ theme }) => theme.spacing.md};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        margin-top: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const GuestSelectionGrid = styled.div`
@@ -90,9 +132,14 @@ const GuestSelectionGrid = styled.div`
     gap: ${({ theme }) => theme.spacing.xl};
     align-items: start;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    ${({ theme }) => theme.responsive.tablet} {
         grid-template-columns: 1fr;
         gap: ${({ theme }) => theme.spacing.lg};
+    }
+
+    ${({ theme }) => theme.responsive.mobile} {
+        grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.md};
     }
 `;
 
@@ -104,6 +151,13 @@ const GuestRow = styled.div`
 
     &:last-child {
         margin-bottom: 0;
+    }
+
+    ${({ theme }) => theme.responsive.mobile} {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: ${({ theme }) => theme.spacing.sm};
+        margin-bottom: ${({ theme }) => theme.spacing.md};
     }
 `;
 
@@ -120,12 +174,23 @@ const GuestLabel = styled.div`
     font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
     color: ${({ theme }) => theme.colors.text};
     margin-bottom: ${({ theme }) => theme.spacing.xs};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        font-weight: 500;
+        margin-bottom: ${({ theme }) => theme.spacing.xs};
+    }
 `;
 
 const GuestAgeRange = styled.div`
     font-family: ${({ theme }) => theme.typography.fontFamily.display};
     font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.lightText};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        line-height: 1.3;
+    }
 `;
 
 const GuestControls = styled.div`
@@ -133,6 +198,11 @@ const GuestControls = styled.div`
     align-items: center;
     gap: ${({ theme }) => theme.spacing.sm};
     text-align: left;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        align-self: flex-end;
+        margin-top: ${({ theme }) => theme.spacing.xs};
+    }
 `;
 
 const GuestCount = styled.span`
@@ -141,6 +211,12 @@ const GuestCount = styled.span`
     font-family: ${({ theme }) => theme.typography.fontFamily.body};
     font-size: ${({ theme }) => theme.fontSizes.md};
     color: ${({ theme }) => theme.colors.text};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        min-width: 28px;
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        font-weight: 600;
+    }
 `;
 
 const ControlButton = styled(Button)`
@@ -150,6 +226,12 @@ const ControlButton = styled(Button)`
     display: flex;
     align-items: center;
     justify-content: center;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        width: 35px;
+        height: 35px;
+        font-size: ${({ theme }) => theme.fontSizes.lg};
+    }
 `;
 
 const FamilyPackageNotice = styled.div`
@@ -170,19 +252,36 @@ const GuestSelectionTitle = styled.h3`
     color: ${({ theme }) => theme.colors.text};
     margin-bottom: 0.9rem;
     text-align: left;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        font-weight: 500;
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const LeftAlignedSection = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
+    gap: ${({ theme }) => theme.spacing.lg};
+    padding: ${({ theme }) => theme.spacing.lg};
+    padding-left: 0;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.sm};
+        gap: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const CalendarContainer = styled.div`
     background: ${({ theme }) => theme.colors.background};
     border-radius: 8px;
     padding: 1rem;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.xs};
+        margin-top: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const CalendarHeader = styled.div`
@@ -190,6 +289,12 @@ const CalendarHeader = styled.div`
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        flex-direction: row;
+        gap: ${({ theme }) => theme.spacing.sm};
+        margin-bottom: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const CalendarTitle = styled.h3`
@@ -237,6 +342,10 @@ const CalendarGrid = styled.div`
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 0.25rem;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        gap: 0.125rem;
+    }
 `;
 
 const CalendarWeekday = styled.div`
@@ -256,6 +365,12 @@ const CalendarDay = styled.button<{ $isSelected?: boolean; $isToday?: boolean; $
     cursor: ${(props) => (props.$isDisabled ? 'not-allowed' : 'pointer')};
     font-size: 0.875rem;
     transition: all 0.2s;
+    min-height: 32px;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        min-height: 28px;
+    }
 
     &:hover:not(:disabled) {
         background: ${(props) => (props.$isSelected ? '#0056b3' : '#f0f0f0')};
@@ -266,47 +381,8 @@ const CalendarDay = styled.button<{ $isSelected?: boolean; $isToday?: boolean; $
     }
 `;
 
-const TourActions = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    width: 100%;
-`;
-
-const TourActionButtons = styled.div`
-    display: flex;
-    gap: 1rem;
-`;
-
-const TourPricing = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-`;
-
-const TourQuantity = styled.span`
-    color: #666;
-`;
-
-const TourPrice = styled.span`
-    fontsize: 1.25rem;
-    fontweight: 600;
-    color: ${({ theme }) => theme.colors.primary};
-`;
-
-const CustomContent = styled.div`
-    margin-top: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-`;
-
-const TourDetails = styled.span`
-    font-size: 0.875rem;
-    color: ${({ theme }) => theme.colors.lightText};
-`;
-
 const TestButton = styled.button<{ $active?: boolean }>`
+    display: none;
     background-color: ${(props) => (props.$active ? '#ffc107' : '#007bff')};
     color: white;
     border: none;
@@ -326,6 +402,13 @@ const ValidationError = styled.div`
     background-color: rgb(246, 227, 229);
     padding: ${({ theme }) => theme.spacing.sm};
     border-radius: ${({ theme }) => theme.borderRadius.sm};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+        margin-top: ${({ theme }) => theme.spacing.xs};
+        line-height: 1.3;
+    }
 
     &:focus {
         outline-offset: 2px;
@@ -741,6 +824,8 @@ export default function CartPage() {
         return counts.adults * basePrice + counts.children * basePrice * 0.5;
     };
 
+    console.log('Cart Items:', cartItems);
+
     if (searchParams.get('paymentId') && searchParams.get('PayerID')) {
         return (
             <Container>
@@ -860,36 +945,15 @@ export default function CartPage() {
                                         title={item.tourData.title}
                                         subtitle={item.tourData.shortDescription}
                                         date={item.selectedDate || 'Date not specified'}
-                                        variant="default"
-                                        customContent={
-                                            <CustomContent>
-                                                <TourDetails>
-                                                    {item.tourData.duration} • {getTotalPeople(item.tourId)} people
-                                                </TourDetails>
-                                            </CustomContent>
-                                        }
-                                        actions={
-                                            <TourActions>
-                                                <TourActionButtons>
-                                                    <Button variant="text" size="sm">
-                                                        Edit
-                                                    </Button>
-                                                    <Button
-                                                        variant="text"
-                                                        size="sm"
-                                                        onClick={() => removeItem(item.tourId)}
-                                                    >
-                                                        Remove
-                                                    </Button>
-                                                </TourActionButtons>
-                                                <TourPricing>
-                                                    <TourQuantity>Qty: {item.quantity}</TourQuantity>
-                                                    <TourPrice>
-                                                        ${(parseFloat(item.tourData.price) * item.quantity).toFixed(2)}
-                                                    </TourPrice>
-                                                </TourPricing>
-                                            </TourActions>
-                                        }
+                                        variant="compact"
+                                        meta={{
+                                            duration: item.tourData.duration,
+                                            peopleCount: getTotalPeople(item.tourId),
+                                        }}
+                                        price={parseFloat(item.tourData.price)}
+                                        quantity={item.quantity}
+                                        showQuantity={true}
+                                        onRemove={() => removeItem(item.tourId)}
                                     />
                                     <TestButton
                                         $active={isFamilyPackage}

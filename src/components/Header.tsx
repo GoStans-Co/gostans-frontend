@@ -16,7 +16,6 @@ import CurrencyModal from '@/components/Modal/HeaderModals/CurrencyModal';
 import CartModal from '@/components/Modal/HeaderModals/CartModal';
 import { useRecoilState } from 'recoil';
 import { cartAtom } from '@/atoms/cart';
-import { useCartService } from '@/services/api/cart/useCartService';
 import { useApiServices } from '@/services/api';
 import goStansLogo from '@/assets/white.jpg';
 import {
@@ -70,7 +69,7 @@ const Logo = styled(Link)`
 `;
 
 const Nav = styled.nav.withConfig({
-    shouldForwardProp: (prop) => !['isOpen'].includes(prop)
+    shouldForwardProp: (prop) => !['isOpen'].includes(prop),
 })<{ isOpen: boolean }>`
     ${({ theme }) => theme.responsive.maxMobile} {
         position: fixed;
@@ -101,7 +100,7 @@ const RightSection = styled.div`
 `;
 
 const LanguageSelector = styled.div.withConfig({
-    shouldForwardProp: (prop) => !['isActive'].includes(prop)
+    shouldForwardProp: (prop) => !['isActive'].includes(prop),
 })<{ isActive?: boolean }>`
     display: flex;
     align-items: center;
@@ -382,11 +381,18 @@ const PartnerLink = styled(Link)`
     }
 `;
 
+/**
+ * Header Component
+ * @description Main navigation header for the application
+ * @returns {JSX.Element} Header component
+ */
 export default function Header() {
     const location = useLocation();
     const { openModal, closeModal } = useModal();
     const { auth: authService } = useApiServices();
-    const { clearCartOnLogout, removeFromCart } = useCartService();
+    const {
+        cart: { removeFromCart, clearCartOnLogout },
+    } = useApiServices();
 
     const { isAuthenticated, getUserData, removeAuthCookie } = useCookieAuth();
 

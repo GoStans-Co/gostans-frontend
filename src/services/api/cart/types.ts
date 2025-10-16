@@ -83,7 +83,7 @@ export type CartItemResponse = {
         price: string;
         mainImage: string;
         tourType: number;
-        duration: string;
+        durationDays: number | null;
         shortDescription: string;
     };
     quantity: number;
@@ -118,7 +118,7 @@ export type ApiCartItem = {
         price: string;
         mainImage: string;
         tourType: number;
-        duration: string;
+        durationDays: number | null;
         shortDescription: string;
     };
     quantity: number;
