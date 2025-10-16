@@ -22,13 +22,13 @@ export const useAuth = () => useContext(AuthContext);
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
     const queryClient = useQueryClient();
-    const { user, auth } = useApiServices();
+    const { user, auth, cart } = useApiServices();
     const { isAuthenticated: cookieAuth, getUserData, getRefreshToken } = useCookieAuth();
     const { syncCartOnLogin } = useCartService();
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [userProfile, setUserProfile] = useState<UserProfile>();
-    const [hasInitializedCart, setHasInitializedCart] = useState(false);
+    const [hasInitializedCart, setHasInitializedCart] = useState(localStorage.getItem('cartSynced') === 'true');
 
     useEffect(() => {
         const initializeAuth = async () => {
@@ -47,17 +47,31 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
                     },
                 });
 
-                /* sync cart only once per session */
+                /* we sync cart only if not already initialized */
                 if (!hasInitializedCart) {
                     try {
                         await syncCartOnLogin();
                         setHasInitializedCart(true);
+                        localStorage.setItem('cartSynced', 'true');
                     } catch (error) {
                         console.error('Cart sync failed:', error);
+                    }
+                } else {
+                    try {
+                        await cart.getCartList(true);
+                    } catch (error) {
+                        console.error('Failed to fetch cart on init:', error);
                     }
                 }
 
                 try {
+                    const profileResponse = await user.getUserProfile();
+                    if (profileResponse.success) {
+                        setUserProfile(profileResponse.data);
+                    } else {
+                        setIsAuthenticated(false);
+                        setHasInitializedCart(false);
+                    }
                 } catch (error: unknown) {
                     /* if profile fetch fails with 401, then refresh token */
                     if (
@@ -82,6 +96,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
             } else {
                 setIsAuthenticated(false);
                 setHasInitializedCart(false);
+                localStorage.removeItem('cartSynced');
             }
 
             setIsLoading(false);
@@ -107,18 +122,22 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     useEffect(() => {
         const handleAuthChange = async () => {
-            /* we only run if auth state changed to true and we haven't synced yet */
+            /* Only run if auth state changed to true and we haven't synced yet and not currently loading */
             if (isAuthenticated && !hasInitializedCart && !isLoading) {
                 try {
                     await syncCartOnLogin();
                     setHasInitializedCart(true);
+                    localStorage.setItem('cartSynced', 'true');
                 } catch (error) {
                     console.error('Cart sync failed after authentication change:', error);
                 }
             }
         };
 
-        handleAuthChange();
+        /* only trigger if isAuthenticated is true, we haven't initialized cart, and not during initial load */
+        if (isAuthenticated && !hasInitializedCart && !isLoading) {
+            handleAuthChange();
+        }
     }, [isAuthenticated, hasInitializedCart, isLoading]);
 
     return (

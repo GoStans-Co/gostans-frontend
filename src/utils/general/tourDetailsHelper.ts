@@ -10,7 +10,7 @@ export const createCartItem = (tour: TourDetailsResponse, selectedDate?: string)
         title: tour.title,
         price: tour.price,
         mainImage: tour.mainImage ?? '',
-        duration: tour.duration,
+        durationDays: tour.durationDays ? parseInt(tour.durationDays) : null,
         about: tour.about,
         tourType: parseInt(tour.tourType) || 0,
         shortDescription: tour.shortDescription || '',
@@ -20,7 +20,7 @@ export const createCartItem = (tour: TourDetailsResponse, selectedDate?: string)
     adults: 1,
     addedAt: Date.now(),
     price: parseFloat(tour.price),
-    duration: tour.duration,
+    durationDays: tour.durationDays ? parseInt(tour.durationDays) : null,
 });
 
 export const getDisplayLanguages = (lang: unknown): string => {

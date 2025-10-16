@@ -273,8 +273,8 @@ export default function RecentlyAddedTours({ tours, loading }: RecentlyAddedTour
                                         isLiked={tour.isLiked}
                                         variant="link"
                                         tourType={tour.tourType}
-                                            currency={tour.currency}
-                                        />
+                                        currency={tour.currency}
+                                    />
                                 </TourCardWrapper>
                             ))}
                         </ToursGrid>

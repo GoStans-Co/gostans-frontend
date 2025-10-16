@@ -1,51 +1,100 @@
-import { theme } from '@/styles/theme';
 import styled from 'styled-components';
+import { Search } from 'lucide-react';
 
 type MapPopupProps = {
     cityName: string;
     dayRange: string;
-    isOffset?: boolean;
 };
 
 const PopupContainer = styled.div`
-    font-family: ${theme.typography.fontFamily.body};
-    padding: 0;
-    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 6px;
+    min-width: 180px;
+    max-width: 300px;
+    background-color: white;
+    border-radius: 8px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
 `;
 
-const PopupTitle = styled.h4`
-    margin: 0 0 8px 0;
-    color: ${theme.colors.primary};
+const PopupContent = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+`;
+
+const CityTitle = styled.h4`
+    font-size: 16px;
     font-weight: 700;
-    font-size: ${theme.fontSizes.sm};
-    font-family: ${theme.typography.fontFamily.body};
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.3;
+    word-break: break-word;
     text-align: left;
 `;
 
-const PopupLocation = styled.p`
-    margin: 0 0 0;
-    color: ${theme.colors.text};
-    font-size: ${theme.fontSizes.xs};
-    display: flex;
+const DayRange = styled.span`
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-align: left;
+`;
+
+const SearchButton = styled.button`
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    font-family: inherit;
+
+    &:hover {
+        background-color: #0056b3;
+    }
+
+    &:active {
+        transform: scale(0.98);
+    }
+
+    svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+    }
 `;
 
 /**
  * MapPopup - UI Component
  * Displays information about a specific location on the map.
  */
-export default function MapPopup({ cityName, dayRange, isOffset = false }: MapPopupProps) {
+export default function MapPopup({ cityName, dayRange }: MapPopupProps) {
+    const handleGoogleSearch = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(cityName)}`;
+        window.open(searchUrl, '_blank', 'noopener,noreferrer');
+    };
+
     return (
         <PopupContainer>
-            <PopupTitle>
-                Days {dayRange}: {cityName}
-            </PopupTitle>
-            <PopupLocation>
-                <span>📍</span>
-                <span>{cityName}</span>
-                {isOffset && <span style={{ color: theme.colors.primary, fontSize: '10px' }}>⚪ Overlapping location</span>}
-            </PopupLocation>
+            <PopupContent>
+                <CityTitle>{cityName}</CityTitle>
+                <DayRange>Days {dayRange}</DayRange>
+            </PopupContent>
+            <SearchButton onClick={handleGoogleSearch}>
+                <Search size={14} />
+                Search
+            </SearchButton>
         </PopupContainer>
     );
 }

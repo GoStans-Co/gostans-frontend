@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Button from '@/components/common/Button';
 import { BookingDetail } from '@/services/api/checkout/types';
+import { formatCurrency } from '@/utils/general/formatCurrency';
 
 type OrderHistoryProps = {
     bookingId: string;
@@ -706,15 +707,11 @@ export default function OrderHistory({ bookingDetail, loading, error, onBack, on
                                 <PriceBreakdown>
                                     <PriceRow>
                                         <span>Tour Price</span>
-                                        <span>
-                                            {payment.currency} {payment.amount}
-                                        </span>
+                                        <span> {formatCurrency(payment.amount)}</span>
                                     </PriceRow>
                                     <TotalRow>
                                         <span>Total Amount</span>
-                                        <span>
-                                            {payment.currency} {payment.amount}
-                                        </span>
+                                        <span>{formatCurrency(payment.amount)}</span>
                                     </TotalRow>
                                 </PriceBreakdown>
                             </PaymentCard>

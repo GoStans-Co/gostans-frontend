@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import Button from '@/components/common/Button';
 import { CartItem } from '@/services/api/cart';
+import { formatCurrency } from '@/utils/general/formatCurrency';
 
 type OrderSummaryProps = {
     cartItems: CartItem[];
@@ -16,10 +17,16 @@ type OrderSummaryProps = {
 
 const OrderSummaryCard = styled.div`
     background-color: ${({ theme }) => theme.colors.background};
-    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
     padding: ${({ theme }) => theme.spacing.xl};
     box-shadow: ${({ theme }) => theme.shadows.md};
     border: 1px solid ${({ theme }) => theme.colors.border};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        border-radius: ${({ theme }) => theme.borderRadius.md};
+        box-shadow: ${({ theme }) => theme.shadows.sm};
+    }
 `;
 
 const OrderTitle = styled.h3`
@@ -29,18 +36,28 @@ const OrderTitle = styled.h3`
     color: ${({ theme }) => theme.colors.primary};
     margin: 0 0 ${({ theme }) => theme.spacing.lg} 0;
     text-align: left;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        margin: 0 0 ${({ theme }) => theme.spacing.md} 0;
+    }
 `;
 
 const OrderItems = styled.div`
     margin-bottom: ${({ theme }) => theme.spacing.lg};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-bottom: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const OrderItem = styled.div`
-    padding: ${({ theme }) => theme.spacing.md} 0;
-    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-
     &:last-child {
         border-bottom: none;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.sm} 0;
     }
 `;
 
@@ -59,6 +76,11 @@ const ItemTitle = styled.span`
     flex: 1;
     padding-right: ${({ theme }) => theme.spacing.md};
     text-align: left;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        padding-right: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const ItemPrice = styled.span`
@@ -66,6 +88,10 @@ const ItemPrice = styled.span`
     font-size: ${({ theme }) => theme.fontSizes.md};
     font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
     color: ${({ theme }) => theme.colors.text};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
 `;
 
 const ItemDetails = styled.div`
@@ -73,6 +99,11 @@ const ItemDetails = styled.div`
     color: ${({ theme }) => theme.colors.lightText};
     display: flex;
     gap: ${({ theme }) => theme.spacing.sm};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        gap: ${({ theme }) => theme.spacing.xs};
+    }
 `;
 
 const DetailItem = styled.span`
@@ -90,12 +121,21 @@ const SummaryRow = styled.div`
     font-family: ${({ theme }) => theme.typography.fontFamily.body};
     font-size: ${({ theme }) => theme.fontSizes.md};
     color: ${({ theme }) => theme.colors.text};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        padding: ${({ theme }) => theme.spacing.xs} 0;
+    }
 `;
 
 const Divider = styled.hr`
     border: none;
     border-top: 1px solid ${({ theme }) => theme.colors.border};
     margin: ${({ theme }) => theme.spacing.md} 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin: ${({ theme }) => theme.spacing.sm} 0;
+    }
 `;
 
 const TotalRow = styled.div`
@@ -107,6 +147,11 @@ const TotalRow = styled.div`
     font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
     color: ${({ theme }) => theme.colors.primary};
     margin-top: ${({ theme }) => theme.spacing.md};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        margin-top: ${({ theme }) => theme.spacing.sm};
+    }
 `;
 
 const PaymentInfo = styled.div`
@@ -116,6 +161,12 @@ const PaymentInfo = styled.div`
     border-radius: ${({ theme }) => theme.borderRadius.md};
     font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.secondary};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-top: ${({ theme }) => theme.spacing.md};
+        padding: ${({ theme }) => theme.spacing.sm};
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+    }
 `;
 
 const PaymentInfoRow = styled.div`
@@ -130,6 +181,19 @@ const OrderSummaryWrapper = styled.div<{ sticky?: boolean }>`
     position: sticky;
     top: 100px;
     height: fit-content;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        position: relative;
+        top: auto;
+    }
+`;
+
+const ButtonWrapper = styled.div`
+    margin-top: 1.5rem;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-top: 1rem;
+    }
 `;
 
 export default function OrderSummary({
@@ -157,12 +221,10 @@ export default function OrderSummary({
                             <OrderItem key={item.tourId}>
                                 <ItemRow>
                                     <ItemTitle>{item.tourData.title}</ItemTitle>
-                                    <ItemPrice>
-                                        ${(parseFloat(item.tourData.price) * item.quantity).toFixed(2)}
-                                    </ItemPrice>
+                                    <ItemPrice>{formatCurrency(item.tourData.price)}</ItemPrice>
                                 </ItemRow>
                                 <ItemDetails>
-                                    <DetailItem>{item.tourData.duration}</DetailItem>
+                                    <DetailItem>{item.tourData.durationDays}</DetailItem>
                                     <DetailItem>{item.adults || 1} adults</DetailItem>
                                     <DetailItem>Quantity: {item.quantity}</DetailItem>
                                 </ItemDetails>
@@ -175,11 +237,11 @@ export default function OrderSummary({
                     <>
                         <SummaryRow>
                             <span>Subtotal ({cartItems.length} items)</span>
-                            <span>${subtotal.toFixed(2)}</span>
+                            <span>{formatCurrency(subtotal)}</span>
                         </SummaryRow>
                         <SummaryRow>
                             <span>Tax</span>
-                            <span>${tax.toFixed(2)}</span>
+                            <span>{formatCurrency(tax)}</span>
                         </SummaryRow>
                     </>
                 )}
@@ -189,14 +251,14 @@ export default function OrderSummary({
                         <Divider />
                         <SummaryRow>
                             <span>Tax (10%)</span>
-                            <span>${tax.toFixed(2)}</span>
+                            <span>{formatCurrency(tax)}</span>
                         </SummaryRow>
                     </>
                 )}
 
                 <TotalRow>
                     <span>{showItemDetails ? 'Total' : 'Total:'}</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatCurrency(total)}</span>
                 </TotalRow>
 
                 {paymentCreated && (
@@ -211,16 +273,17 @@ export default function OrderSummary({
                 )}
 
                 {showButton && onButtonClick && buttonText !== 'none' && (
-                    <Button
-                        variant="primary"
-                        onClick={onButtonClick}
-                        disabled={buttonDisabled || Object.keys(validationErrors).length > 0}
-                        fullWidth
-                        size="lg"
-                        style={{ marginTop: '1.5rem' }}
-                    >
-                        {buttonText}
-                    </Button>
+                    <ButtonWrapper>
+                        <Button
+                            variant="primary"
+                            onClick={onButtonClick}
+                            disabled={buttonDisabled || Object.keys(validationErrors).length > 0}
+                            fullWidth
+                            size="lg"
+                        >
+                            {buttonText}
+                        </Button>
+                    </ButtonWrapper>
                 )}
             </OrderSummaryCard>
         </OrderSummaryWrapper>

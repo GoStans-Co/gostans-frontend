@@ -1,4 +1,3 @@
-import { theme } from '@/styles/theme';
 import React, { useState } from 'react';
 import styled, { css } from 'styled-components';
 import Input from '@/components/common/Input';
@@ -6,6 +5,7 @@ import Button from '@/components/common/Button';
 import partnerImage from '@/assets/uzb2.jpg';
 import { useRecoilValue } from 'recoil';
 import { countriesWithCitiesAtom } from '@/atoms/countryWithCities';
+import { theme } from '@/styles/theme';
 
 type PartnerFormData = {
     firstName: string;
@@ -28,12 +28,12 @@ type PartnerFormProps = {
 const FormWrapper = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: ${theme.spacing.lg};
+    gap: ${({ theme }) => theme.spacing.xs};
     max-width: 1200px;
     width: 100%;
     margin: 0 70px;
 
-    ${theme.responsive.maxMobile} {
+    ${({ theme }) => theme.responsive.maxMobile} {
         grid-template-columns: 1fr;
     }
 `;
@@ -43,12 +43,12 @@ const ImageSection = styled.div`
     align-items: center;
     justify-content: center;
     background: none;
-    border-radius: ${theme.borderRadius.lg};
-    padding: ${theme.spacing['2xl']};
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    padding: ${({ theme }) => theme.spacing['2xl']};
     position: relative;
     overflow: hidden;
 
-    ${theme.responsive.maxMobile} {
+    ${({ theme }) => theme.responsive.maxMobile} {
         display: none;
     }
 `;
@@ -57,7 +57,7 @@ const PartnerImage = styled.img`
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: ${theme.borderRadius.lg};
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
     position: absolute;
     top: 0;
     left: 0;
@@ -65,47 +65,47 @@ const PartnerImage = styled.img`
 `;
 
 const FormContainer = styled.div`
-    background: ${theme.colors.background};
-    border-radius: ${theme.borderRadius.lg};
-    padding: ${theme.spacing.xl};
+    background: ${({ theme }) => theme.colors.background};
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    padding: ${({ theme }) => theme.spacing.xl};
     width: 100%;
-    box-shadow: ${theme.shadows.xl};
+    box-shadow: ${({ theme }) => theme.shadows.xl};
 
-    ${theme.responsive.mobile} {
-        padding: ${theme.spacing.md};
-        margin-bottom: ${theme.spacing['2xl']};
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        margin-bottom: ${({ theme }) => theme.spacing['2xl']};
     }
 `;
 
 const FormTitle = styled.h2`
-    font-size: ${theme.fontSizes['2xl']};
-    font-weight: ${theme.typography.fontWeight.bold};
-    color: ${theme.colors.text};
-    margin-bottom: ${theme.spacing.sm};
+    font-size: ${({ theme }) => theme.fontSizes['2xl']};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: ${({ theme }) => theme.spacing.sm};
     text-align: left;
 `;
 
 const FormSubtitle = styled.p`
-    font-size: ${theme.fontSizes.sm};
-    color: ${theme.colors.secondary};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    color: ${({ theme }) => theme.colors.secondary};
     text-align: left;
-    margin-bottom: ${theme.spacing.xl};
-    border-bottom: 0.5px solid ${theme.colors.border};
-    padding-bottom: ${theme.spacing.lg};
+    margin-bottom: ${({ theme }) => theme.spacing.xl};
+    border-bottom: 0.5px solid ${({ theme }) => theme.colors.border};
+    padding-bottom: ${({ theme }) => theme.spacing.lg};
 
-    ${theme.responsive.maxMobile} {
-        margin-bottom: ${theme.spacing.md};
-        border-bottom: 0.5px solid ${theme.colors.border};
-        padding-bottom: ${theme.spacing.md};
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-bottom: ${({ theme }) => theme.spacing.md};
+        border-bottom: 0.5px solid ${({ theme }) => theme.colors.border};
+        padding-bottom: ${({ theme }) => theme.spacing.md};
     }
 `;
 
 const FormGrid = styled.div`
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: ${theme.spacing.lg};
+    gap: ${({ theme }) => theme.spacing.lg};
 
-    ${theme.responsive.maxMobile} {
+    ${({ theme }) => theme.responsive.maxMobile} {
         grid-template-columns: 1fr;
     }
 `;
@@ -116,27 +116,27 @@ const FullWidthField = styled.div`
 
 const Label = styled.label`
     display: block;
-    font-size: ${theme.fontSizes.sm};
-    font-weight: ${theme.typography.fontWeight.medium};
-    color: ${theme.colors.text};
-    margin-bottom: ${theme.spacing.xs};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: ${({ theme }) => theme.spacing.xs};
     text-align: left;
 `;
 
 const Select = styled.select`
     width: 100%;
-    padding: ${theme.spacing.sm};
-    border: 1px solid ${theme.colors.border};
-    border-radius: ${theme.borderRadius.md};
-    font-size: ${theme.fontSizes.sm};
-    background: ${theme.colors.background};
-    color: ${theme.colors.text};
-    transition: ${theme.transitions.default};
+    padding: ${({ theme }) => theme.spacing.sm};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    background: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.colors.text};
+    transition: ${({ theme }) => theme.transitions.default};
 
     &:focus {
         outline: none;
-        border-color: ${theme.colors.primary};
-        box-shadow: 0 0 0 3px ${theme.colors.primary}20;
+        border-color: ${({ theme }) => theme.colors.primary};
+        box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
     }
 
     &:disabled {
@@ -148,20 +148,20 @@ const Select = styled.select`
 const TextArea = styled.textarea`
     width: 100%;
     min-height: 120px;
-    padding: ${theme.spacing.md};
-    border: 1px solid ${theme.colors.border};
-    border-radius: ${theme.borderRadius.md};
-    font-size: ${theme.fontSizes.sm};
+    padding: ${({ theme }) => theme.spacing.md};
+    border: 1px solid ${({ theme }) => theme.colors.border};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
     font-family: inherit;
-    background: ${theme.colors.background};
-    color: ${theme.colors.text};
+    background: ${({ theme }) => theme.colors.background};
+    color: ${({ theme }) => theme.colors.text};
     resize: vertical;
-    transition: ${theme.transitions.default};
+    transition: ${({ theme }) => theme.transitions.default};
 
     &:focus {
         outline: none;
-        border-color: ${theme.colors.primary};
-        box-shadow: 0 0 0 3px ${theme.colors.primary}20;
+        border-color: ${({ theme }) => theme.colors.primary};
+        box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primary}20;
     }
 
     &:disabled {
@@ -172,26 +172,26 @@ const TextArea = styled.textarea`
 
 const ButtonGroup = styled.div<{ isFirstStep: boolean }>`
     display: flex;
-    gap: ${theme.spacing.md};
-    margin-top: ${theme.spacing.lg};
+    gap: ${({ theme }) => theme.spacing.md};
+    margin-top: ${({ theme }) => theme.spacing.lg};
     justify-content: space-between;
     align-items: center;
 
     ${({ isFirstStep }) =>
         isFirstStep
             ? css`
-                  margin-top: ${theme.spacing['4xl']};
+                  margin-top: ${({ theme }) => theme.spacing['4xl']};
               `
             : css`
-                  margin-top: ${theme.spacing.xl};
+                  margin-top: ${({ theme }) => theme.spacing.xl};
               `}
 `;
 
 const ErrorText = styled.span`
     display: block;
-    color: ${theme.colors.error};
-    font-size: ${theme.fontSizes.sm};
-    margin-top: ${theme.spacing.xs};
+    color: ${({ theme }) => theme.colors.error};
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    margin-top: ${({ theme }) => theme.spacing.xs};
     text-align: left;
 `;
 
@@ -350,7 +350,7 @@ export default function PartnerForm({ onClose, onSubmit, loading = false }: Part
                                     aria-label="Enter your first name"
                                     inputConfig={{ variant: 'outlined', size: 'sm' }}
                                     label="First Name"
-                                    placeholder="Boltavoy"
+                                    placeholder="Dave"
                                     value={formData.firstName}
                                     onChange={(e) => handleChange('firstName', e.target.value)}
                                     error={errors.firstName}
@@ -361,7 +361,7 @@ export default function PartnerForm({ onClose, onSubmit, loading = false }: Part
                                 <Input
                                     aria-label="Enter your last name"
                                     label="Last Name"
-                                    placeholder="Teshaboyev"
+                                    placeholder="Smith"
                                     value={formData.lastName}
                                     onChange={(e) => handleChange('lastName', e.target.value)}
                                     error={errors.lastName}
@@ -374,7 +374,7 @@ export default function PartnerForm({ onClose, onSubmit, loading = false }: Part
                                     <Input
                                         label="Email Address"
                                         type="email"
-                                        placeholder="boltavoy@gmail.com"
+                                        placeholder="dave.smith@example.com"
                                         value={formData.email}
                                         onChange={(e) => handleChange('email', e.target.value)}
                                         error={errors.email}

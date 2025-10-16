@@ -2,16 +2,16 @@ import { useTypedFetch, extractApiData, extractStatusCode, extractMessage } from
 import { ApiResponse } from '@/types/common/fetch';
 import {
     AddToCartRequest,
-    ApiCartItem,
     ApiCartResponse,
     CartItem,
     CartItemResponse,
     RemoveFromCartResponse,
 } from '@/services/api/cart/types';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useRecoilState } from 'recoil';
 import { cartAtom } from '@/atoms/cart';
 import useCookieAuth from '@/services/cache/cookieAuthService';
+import { cleanCartData, mapApiToCartItem, mapCartItemResponseToCartItem } from '@/utils/general/cartItemHandling';
 
 /**
  * Cart Fetch Service - Cart Operations
@@ -30,35 +30,19 @@ export const useCartService = () => {
     });
 
     /**
-     * Maps API cart item response to internal CartItem format
-     * @param {ApiCartItem} apiItem - Cart item data from API response
-     * @returns {CartItem} Mapped cart item in internal format
+     * we will clean the cart data
+     * on load to prevent any corruption
      */
-    const mapApiToCartItem = (apiItem: ApiCartItem): CartItem => {
-        return {
-            tourId: apiItem.tour.uuid,
-            tourData: {
-                uuid: apiItem.tour.uuid,
-                title: apiItem.tour.title,
-                price: apiItem.tour.price,
-                mainImage: apiItem.tour.mainImage,
-                duration: apiItem.tour.duration,
-                about: apiItem.tour.shortDescription,
-                tourType: apiItem.tour.tourType,
-                shortDescription: apiItem.tour.shortDescription,
-            },
-            quantity: apiItem.quantity,
-            addedAt: new Date(apiItem.addedAt).getTime(),
-            adults: 1,
-            price: parseFloat(apiItem.tour.price),
-            duration: apiItem.tour.duration,
-        };
-    };
+    useEffect(() => {
+        removeDuplicates();
+        setCart(cleanCartData(cart));
+    }, []);
 
     /**
      * Synchronizes local cart with server cart when user logs in
      * Merges local cart items with server cart, handling conflicts smoothly
-     * @returns {Promise<void>} Promise that resolves when synchronization is complete
+     * @returns {Promise<void>}
+     * Promise that resolves when synchronization is complete
      */
     const syncCartOnLogin = async (): Promise<void> => {
         const now = Date.now();
@@ -74,43 +58,48 @@ export const useCartService = () => {
         syncStatus.current.isInProgress = true;
         syncStatus.current.lastSyncTime = now;
 
-        const serverCartResponse = await getCartList();
-        const serverCart = serverCartResponse.data?.data || [];
+        try {
+            /* remove duplicates first */
+            const localCart = cart.filter(
+                (item, index, self) => index === self.findIndex((t) => t.tourId === item.tourId),
+            );
 
-        const localCart = cart;
+            /* we fet server cart without updating local state first */
+            const serverCartResponse = await getCartList(false);
+            const serverCart = serverCartResponse.data?.data || [];
 
-        /**
-         *  We sync local items to server as we handle individual failures smoothly
-         */
-        for (const localItem of localCart) {
-            const existsOnServer = serverCart.some((serverItem) => serverItem.tour.uuid === localItem.tourId);
+            /* then we sync local items to server that don't exist there  */
+            const syncPromises = localCart.map(async (localItem) => {
+                const existsOnServer = serverCart.some((serverItem) => serverItem.tour.uuid === localItem.tourId);
 
-            if (!existsOnServer) {
-                try {
-                    await addToCart({
-                        tourUuid: localItem.tourId,
-                        quantity: localItem.quantity,
-                    });
-                } catch (error) {
-                    console.error('Item sync failed (likely already exists):', error);
+                if (!existsOnServer) {
+                    try {
+                        await addToCart({
+                            tourUuid: localItem.tourId,
+                            quantity: localItem.quantity,
+                        });
+                    } catch (error) {
+                        console.info('Failed to sync item:', localItem.tourData.title, error);
+                    }
                 }
-            }
+            });
+
+            await Promise.all(syncPromises);
+            await getCartList(true);
+        } catch (error) {
+            console.info('Cart sync failed:', error);
+        } finally {
+            syncStatus.current.isInProgress = false;
         }
-
-        /* Fetch updated server cart and set it to local state */
-        const updatedServerCart = await getCartList();
-        const mappedCart = updatedServerCart.data?.data.map(mapApiToCartItem) || [];
-        setCart(mappedCart);
-
-        syncStatus.current.isInProgress = false;
     };
 
     /**
-     * Fetches the user's cart items from the server and updates local state
+     * Fetches the user's cart items from the server without automatically updating local state
+     * @param {boolean} updateLocal - Whether to update local cart state (default: false)
      * @returns {Promise<ApiResponse<ApiCartResponse>>}
      * Promise resolving to cart data from server
      */
-    const getCartList = async (): Promise<ApiResponse<ApiCartResponse>> => {
+    const getCartList = async (updateLocal: boolean = false): Promise<ApiResponse<ApiCartResponse>> => {
         const response = await fetchData({
             url: '/user/cartList/',
             method: 'GET',
@@ -118,10 +107,13 @@ export const useCartService = () => {
 
         const cartData = extractApiData<ApiCartResponse>(response);
 
-        if (cartData?.data) {
-            /* then we map API response to CartItem format */
+        if (cartData?.data && updateLocal) {
+            /* Map API response to CartItem format */
             const mappedCart = cartData.data.map(mapApiToCartItem);
-            setCart(mappedCart);
+
+            /* Clean and validate cart data */
+            const cleanedCart = cleanCartData(mappedCart);
+            setCart(cleanedCart);
         }
 
         return {
@@ -132,42 +124,69 @@ export const useCartService = () => {
     };
 
     /**
-     * Adds a tour item to the user's cart
-     * @param {AddToCartRequest} data
-     * Cart item data including tour UUID and quantity
-     * @returns {Promise<ApiResponse<CartItemResponse>>}
+     * Adds a tour item to the cart (local first, then sync to server if authenticated)
+     * @param {AddToCartRequest} data Cart item data including tour UUID and quantity
+     * @param {CartItem} [localCartItem] Local cart item data for non-authenticated users
+     * @returns {Promise<ApiResponse<CartItemResponse | null>>}
      * Promise resolving to added cart item response
      */
-    const addToCart = async (data: AddToCartRequest): Promise<ApiResponse<CartItemResponse>> => {
-        const response = await fetchData({
-            url: '/user/addTocart/',
-            method: 'POST',
-            data,
-        });
+    const addToCart = async (
+        data: AddToCartRequest,
+        localCartItem?: CartItem,
+    ): Promise<ApiResponse<CartItemResponse | null>> => {
+        /* if not authenticated, we add to local cart only */
+        if (!isAuthenticated()) {
+            if (localCartItem) {
+                setCart((prev) => {
+                    const existingIndex = prev.findIndex((item) => item.tourId === localCartItem.tourId);
+                    if (existingIndex >= 0) {
+                        const updated = [...prev];
+                        updated[existingIndex].quantity += data.quantity;
+                        return updated;
+                    }
+                    return [...prev, localCartItem];
+                });
 
-        const cartItemData = extractApiData<CartItemResponse>(response);
-        const statusCode = extractStatusCode(response);
-
-        /* if authenticated and successful, then update local cart */
-        if (isAuthenticated() && (statusCode === 201 || statusCode === 200)) {
-            const mappedItem = mapApiToCartItem(cartItemData);
-
-            setCart((prev) => {
-                const existingIndex = prev.findIndex((item) => item.tourId === mappedItem.tourId);
-                if (existingIndex >= 0) {
-                    const updated = [...prev];
-                    updated[existingIndex] = mappedItem;
-                    return updated;
-                }
-                return [...prev, mappedItem];
-            });
+                return {
+                    data: null,
+                    statusCode: 200,
+                    message: 'Added to local cart successfully',
+                };
+            } else {
+                throw new Error('Local cart item data required for non-authenticated users');
+            }
         }
+        try {
+            const response = await fetchData({
+                url: '/user/addTocart/',
+                method: 'POST',
+                data,
+            });
 
-        return {
-            data: cartItemData,
-            statusCode: statusCode,
-            message: extractMessage(response, 'Added to cart successfully'),
-        };
+            const cartItemData = extractApiData<CartItemResponse>(response);
+            const statusCode = extractStatusCode(response);
+
+            /* then we update the local cart if successful */
+            if ((statusCode === 201 || statusCode === 200) && cartItemData) {
+                const mappedItem = mapCartItemResponseToCartItem(cartItemData);
+
+                setCart((prev) => {
+                    const filteredCart = prev.filter((item) => item.tourId !== mappedItem.tourId);
+                    const updatedCart = [...filteredCart, mappedItem];
+
+                    return updatedCart;
+                });
+            }
+
+            return {
+                data: cartItemData,
+                statusCode: statusCode,
+                message: extractMessage(response, 'Added to cart successfully'),
+            };
+        } catch (error) {
+            console.info('Failed to add to server cart:', error);
+            throw error;
+        }
     };
 
     /**
@@ -196,12 +215,42 @@ export const useCartService = () => {
     };
 
     /**
+     * Adds item to local cart only (for guest users)
+     * @param {CartItem} cartItem - The cart item to add locally
+     * @returns {void}
+     */
+    const addToLocalCart = (cartItem: CartItem): void => {
+        setCart((prev) => {
+            const existingIndex = prev.findIndex((item) => item.tourId === cartItem.tourId);
+            if (existingIndex >= 0) {
+                const updated = [...prev];
+                updated[existingIndex].quantity += cartItem.quantity;
+                return updated;
+            }
+            return [...prev, cartItem];
+        });
+    };
+    /**
+     * Removes duplicate items from cart based on tourId
+     * @returns {void}
+     */
+    const removeDuplicates = () => {
+        setCart((prev) => {
+            const uniqueItems = prev.filter(
+                (item, index, self) => index === self.findIndex((t) => t.tourId === item.tourId),
+            );
+            return uniqueItems;
+        });
+    };
+
+    /**
      * Clears all cart data when user logs out
      * Removes cart items from local state and localStorage, resets sync status
      */
     const clearCartOnLogout = () => {
         setCart([]);
         localStorage.removeItem('cart-storage');
+        localStorage.removeItem('cartSynced');
 
         syncStatus.current = {
             isInProgress: false,
@@ -214,11 +263,25 @@ export const useCartService = () => {
         () => ({
             getCartList,
             addToCart,
+            addToLocalCart,
             removeFromCart,
             syncCartOnLogin,
             clearCartOnLogout,
+            removeDuplicates,
+            cleanCartData,
             cart,
         }),
-        [fetchData, cart],
+        [
+            fetchData,
+            cart,
+            getCartList,
+            addToCart,
+            addToLocalCart,
+            removeFromCart,
+            syncCartOnLogin,
+            clearCartOnLogout,
+            removeDuplicates,
+            cleanCartData,
+        ],
     );
 };

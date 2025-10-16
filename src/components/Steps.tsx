@@ -22,10 +22,15 @@ const StepItem = styled.div`
     }
     padding-bottom: 3rem;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        flex-direction: column;
-        width: 100%;
-        padding-bottom: 1rem;
+    ${({ theme }) => theme.responsive.mobile} {
+        flex-direction: row;
+        align-items: center;
+        padding-bottom: ${({ theme }) => theme.spacing.xs};
+        flex: 1;
+
+        &:last-child {
+            flex: 0;
+        }
     }
 `;
 
@@ -40,11 +45,8 @@ const StepContent = styled.div`
     margin-top: 0.75rem;
     width: max-content;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        position: static;
-        transform: none;
-        margin-top: 0.5rem;
-        text-align: center;
+    ${({ theme }) => theme.responsive.mobile} {
+        display: none;
     }
 `;
 
@@ -64,10 +66,11 @@ const StepsContainer = styled.div`
     max-width: 900px;
     margin: 0 auto;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        padding: 1rem 0.5rem;
-        flex-direction: column;
-        gap: 1rem;
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.sm};
+        flex-direction: row;
+        gap: 0;
+        justify-content: space-between;
     }
 `;
 
@@ -82,6 +85,12 @@ const StepCircle = styled.div<{ status: 'completed' | 'active' | 'pending' }>`
     font-size: 12px;
     flex-shrink: 0;
     transition: all 0.3s ease;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        width: 24px;
+        height: 24px;
+        font-size: 10px;
+    }
 
     ${({ status, theme }) => {
         switch (status) {
@@ -115,8 +124,10 @@ const StepLine = styled.div<{ completed: boolean }>`
     background-color: ${({ completed, theme }) => (completed ? theme.colors.primary : theme.colors.border)};
     transition: background-color 0.3s ease;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        display: none;
+    ${({ theme }) => theme.responsive.mobile} {
+        margin: 0 ${({ theme }) => theme.spacing.sm};
+        height: 2px;
+        flex: 1;
     }
 `;
 
@@ -139,7 +150,7 @@ const StepDescription = styled.div`
     white-space: nowrap;
 `;
 
-const CheckIconElement = () => <CheckCircle2 size={24} style={{ color: 'white' }} aria-label="Step completed" />;
+const CheckIconElement = () => <CheckCircle2 size={16} style={{ color: 'white' }} aria-label="Step completed" />;
 
 export default function CustomSteps({ current, steps }: CustomStepsProps) {
     return (
@@ -182,10 +193,6 @@ export const StepsWrapper = ({
         { title: 'Payment' },
         { title: 'Confirmation' },
     ];
-
-    if (showConfirmation) {
-        steps.push({ title: 'Confirmation' });
-    }
 
     const getStepIndex = (step: CheckoutStep): number => {
         switch (step) {

@@ -1,11 +1,11 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import DestinationCard, { DestinationProps } from '@/components/destinations/DestinationCard';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import TabContainer, { TabItem } from '@/components/common/Tabs';
 import { TopDestination } from '@/services/api/tours';
 import SkeletonLoader from '@/components/common/SkeletonLoader';
-import { ArrowRightIcon } from 'lucide-react';
+import { ArrowRightIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type PopularDestinationsProps = {
     destinations: DestinationProps[];
@@ -83,14 +83,19 @@ const ViewAllLink = styled(Link)`
     }
 `;
 
+const DestinationsContainer = styled.div`
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+`;
+
 const DestinationsGrid = styled.div`
     display: flex;
     gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
     overflow-x: auto;
     overflow-y: visible;
     padding: 0 0 1rem 0;
+    scroll-behavior: smooth;
 
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -126,8 +131,55 @@ const MobileDestinationItem = styled.div`
     }
 `;
 
+const ScrollButton = styled.button<{ $direction: 'left' | 'right' }>`
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    ${({ $direction }) => ($direction === 'left' ? 'left: -20px;' : 'right: -20px;')}
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: ${({ theme }) => theme.colors.lightBackground};
+    border: none;
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: ${({ theme }) => theme.transitions.fast};
+    color: ${({ theme }) => theme.colors.primary};
+
+    &:hover {
+        box-shadow: ${({ theme }) => theme.shadows.md};
+        transform: translateY(-50%) scale(1.05);
+    }
+
+    &:active {
+        transform: translateY(-50%) scale(0.95);
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: none;
+    }
+`;
+
 export default function PopularDestinations({ destinations, loading = false, countries }: PopularDestinationsProps) {
     const [activeTab, setActiveTab] = useState('all');
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    const handleScroll = ($direction: 'left' | 'right') => {
+        if (scrollContainerRef.current) {
+            const scrollAmount = 300;
+            const currentScroll = scrollContainerRef.current.scrollLeft;
+            const targetScroll = $direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount;
+
+            scrollContainerRef.current.scrollTo({
+                left: targetScroll,
+                behavior: 'smooth',
+            });
+        }
+    };
 
     const tabs: TabItem[] = [
         { id: 'all', label: 'All' },
@@ -170,24 +222,40 @@ export default function PopularDestinations({ destinations, loading = false, cou
 
             <TabContainer tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="centered" />
 
-            <DestinationsGrid>
-                {filteredDestinations.map((destination) => (
-                    <MobileDestinationItem key={destination.id}>
-                        <Link
-                            to={`/top-destinations/${destination.cityId}/${destination.countryId}`}
-                            style={{ textDecoration: 'none' }}
+            <DestinationsContainer>
+                {!loading && filteredDestinations.length > 4 && (
+                    <>
+                        <ScrollButton $direction="left" onClick={() => handleScroll('left')} aria-label="Scroll left">
+                            <ChevronLeft size={20} />
+                        </ScrollButton>
+                        <ScrollButton
+                            $direction="right"
+                            onClick={() => handleScroll('right')}
+                            aria-label="Scroll right"
                         >
-                            <DestinationCard
-                                shape="oval"
-                                id={destination.id}
-                                name={destination.name}
-                                image={destination.image}
-                                toursCount={destination.toursCount}
-                            />
-                        </Link>
-                    </MobileDestinationItem>
-                ))}
-            </DestinationsGrid>
+                            <ChevronRight size={20} />
+                        </ScrollButton>
+                    </>
+                )}
+                <DestinationsGrid ref={scrollContainerRef}>
+                    {filteredDestinations.map((destination) => (
+                        <MobileDestinationItem key={destination.id}>
+                            <Link
+                                to={`/top-destinations/${destination.cityId}/${destination.countryId}`}
+                                style={{ textDecoration: 'none' }}
+                            >
+                                <DestinationCard
+                                    shape="oval"
+                                    id={destination.id}
+                                    name={destination.name}
+                                    image={destination.image}
+                                    toursCount={destination.toursCount}
+                                />
+                            </Link>
+                        </MobileDestinationItem>
+                    ))}
+                </DestinationsGrid>
+            </DestinationsContainer>
         </SectionContainer>
     );
 }

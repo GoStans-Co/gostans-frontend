@@ -19,6 +19,7 @@ export type Booking = {
     tripStartDate: string;
     tripEndDate: string;
     createdAt: string;
+    durationDays: number | null;
 };
 
 export type UserBookings = {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Card from '@/components/common/Card';
+import { Link } from 'react-router-dom';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
 import { DatePicker } from 'antd';
@@ -21,8 +22,18 @@ const StepContainer = styled.div`
     max-width: 1200px;
     margin: 0 auto;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
+    ${({ theme }) => theme.responsive.laptop} {
         grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.lg};
+    }
+
+    ${({ theme }) => theme.responsive.mobile} {
+        display: flex;
+        flex-direction: column;
+        gap: ${({ theme }) => theme.spacing.md};
+        padding-bottom: ${({ theme }) => theme.spacing['2xl']};
+        padding-left: ${({ theme }) => theme.spacing.sm};
+        padding-right: ${({ theme }) => theme.spacing.sm};
     }
 `;
 
@@ -30,11 +41,19 @@ const MainContent = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        gap: ${({ theme }) => theme.spacing.lg};
+    }
 `;
 
 const ParticipantCard = styled(Card)`
     background-color: white;
     border: 1px solid ${({ theme }) => theme.colors.border};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const ParticipantHeader = styled.div`
@@ -42,6 +61,23 @@ const ParticipantHeader = styled.div`
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        // flex-direction: column;
+        align-items: flex-start;
+        gap: ${({ theme }) => theme.spacing.sm};
+        margin-bottom: ${({ theme }) => theme.spacing.lg};
+
+        h3 {
+            margin: 0;
+            font-size: ${({ theme }) => theme.fontSizes.lg};
+            font-weight: 500;
+        }
+
+        button {
+            align-self: flex-end;
+        }
+    }
 `;
 
 const FormGrid = styled.div`
@@ -49,8 +85,9 @@ const FormGrid = styled.div`
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    ${({ theme }) => theme.responsive.mobile} {
         grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.md};
     }
 `;
 
@@ -58,8 +95,9 @@ const FormRow = styled.div`
     display: flex;
     gap: 1rem;
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    ${({ theme }) => theme.responsive.mobile} {
         flex-direction: column;
+        gap: ${({ theme }) => theme.spacing.md};
     }
 `;
 
@@ -69,12 +107,21 @@ const DatePickerWrapper = styled.div<{ hasError?: boolean }>`
     gap: 0.5rem;
     width: 49%;
 
+    ${({ theme }) => theme.responsive.mobile} {
+        width: 100%;
+        margin-top: ${({ theme }) => theme.spacing.md};
+    }
+
     label {
         font-size: ${({ theme }) => theme.fontSizes.sm};
         font-weight: 500;
         color: ${({ theme }) => theme.colors.text};
         text-align: left;
         margin-top: 0.6rem;
+
+        ${({ theme }) => theme.responsive.mobile} {
+            margin-top: 0;
+        }
     }
 
     .ant-picker {
@@ -82,6 +129,11 @@ const DatePickerWrapper = styled.div<{ hasError?: boolean }>`
         height: 44px;
         border-radius: ${({ theme }) => theme.borderRadius.md};
         border: 1px solid ${({ hasError, theme }) => (hasError ? theme.colors.accent : theme.colors.border)};
+
+        ${({ theme }) => theme.responsive.mobile} {
+            height: 48px;
+            font-size: ${({ theme }) => theme.fontSizes.md};
+        }
 
         &:hover {
             border-color: ${({ theme }) => theme.colors.primary};
@@ -104,20 +156,47 @@ const ButtonGroup = styled.div`
     display: flex;
     gap: 1rem;
     justify-content: space-between;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        flex-direction: row;
+        gap: ${({ theme }) => theme.spacing.md};
+        width: 100%;
+    }
 `;
 
 const Select = styled.select`
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.65rem 1rem;
     border: 1px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius.md};
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-size: ${({ theme }) => theme.fontSizes.md};
     background-color: white;
-    transition: border-color 0.2s ease;
+    transition: all ${({ theme }) => theme.transitions.default};
+    color: ${({ theme }) => theme.colors.text};
+    cursor: pointer;
+    height: 48px;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        height: 48px;
+        width: 100%;
+    }
 
     &:focus {
         outline: none;
         border-color: ${({ theme }) => theme.colors.primary};
+        box-shadow: 0 0 0 2px rgba(31, 101, 160, 0.2);
+    }
+
+    &:hover {
+        border-color: ${({ theme }) => theme.colors.primary};
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: ${({ theme }) => theme.colors.lightBackground};
     }
 `;
 
@@ -133,6 +212,17 @@ const SelectWrapper = styled.div`
         font-size: ${({ theme }) => theme.fontSizes.sm};
         font-weight: 500;
         color: ${({ theme }) => theme.colors.text};
+        text-align: left;
+
+        ${({ theme }) => theme.responsive.maxMobile} {
+            font-size: ${({ theme }) => theme.fontSizes.xs};
+        }
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: 0.375rem;
+        flex-direction: column;
+        align-items: flex-start;
     }
 `;
 
@@ -141,11 +231,19 @@ const WarningBox = styled.div`
     border: 1px solid #f59e0b;
     border-radius: ${({ theme }) => theme.borderRadius.md};
     padding: 0.6rem;
-    align-items: left;
+    align-items: flex-start;
     display: flex;
     color: #92400e;
     font-size: ${({ theme }) => theme.fontSizes.sm};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        text-align: left;
+        line-height: 1.1;
+    }
 `;
+
 /**
  * Enter Information Step  - Organism Component
  * @description Collects participant information for the cart items.
@@ -287,18 +385,20 @@ export default function EnterInfoStep({
     return (
         <StepContainer>
             <MainContent>
-                <TripCard
-                    id={cartItems[0]?.tourId || '1'}
-                    image={cartItems[0]?.tourData.mainImage || '/api/placeholder/80/80'}
-                    title={cartItems[0]?.tourData.title || 'Samarkand city Tour (Individual)'}
-                    subtitle={String(cartItems[0]?.tourData.tourType || 'One day trip')}
-                    date={cartItems[0]?.selectedDate || '17 Apr 2025'}
-                    price={total}
-                    variant="compact"
-                    imageSize="small"
-                    titleSize="large"
-                    showQuantityControls={false}
-                />
+                <Link to={`/searchTrips/${cartItems[0]?.tourId || '1'}`}>
+                    <TripCard
+                        id={cartItems[0]?.tourId || '1'}
+                        image={cartItems[0]?.tourData.mainImage || '/api/placeholder/80/80'}
+                        title={cartItems[0]?.tourData.title || 'Samarkand city Tour (Individual)'}
+                        subtitle={String(cartItems[0]?.tourData.tourType || 'One day trip')}
+                        date={cartItems[0]?.selectedDate || '17 Apr 2025'}
+                        price={total}
+                        variant="compact"
+                        imageSize="small"
+                        titleSize="large"
+                        showQuantityControls={false}
+                    />
+                </Link>
                 {participants.map((participant, index) => (
                     <ParticipantCard key={participant.id}>
                         <ParticipantHeader>
@@ -338,9 +438,8 @@ export default function EnterInfoStep({
                                 error={participantErrors[participant.id]?.lastName}
                             />
                         </FormGrid>
-
                         <FormRow style={{ marginTop: '1rem', alignItems: 'flex-start' }}>
-                            <div style={{ flex: 1 }}>
+                            <div style={{ flex: 1, width: '100%' }}>
                                 <SelectWrapper>
                                     <label>ID Type *</label>
                                     <Select
@@ -354,7 +453,7 @@ export default function EnterInfoStep({
                                 </SelectWrapper>
                             </div>
 
-                            <div style={{ flex: 1 }}>
+                            <div style={{ flex: 1, width: '100%' }}>
                                 <Input
                                     label="ID Number *"
                                     value={participant.idNumber}
@@ -399,10 +498,10 @@ export default function EnterInfoStep({
                 </WarningBox>
 
                 <ButtonGroup>
-                    <Button variant="outline" onClick={onBack}>
+                    <Button variant="outline" onClick={onBack} size="md">
                         Back
                     </Button>
-                    <Button variant="primary" onClick={handleNext}>
+                    <Button variant="primary" onClick={handleNext} size="md">
                         Continue to Payment
                     </Button>
                 </ButtonGroup>

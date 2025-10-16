@@ -56,6 +56,15 @@ const IconContainer = styled.div`
         height: 20px;
         stroke-width: 2px; /* Make icon lines thicker */
     }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        left: ${({ theme }) => theme.spacing.sm};
+
+        svg {
+            width: 18px;
+            height: 18px;
+        }
+    }
 `;
 
 const EndIconContainer = styled.div`
@@ -76,6 +85,17 @@ const EndIconContainer = styled.div`
         width: 16px;
         height: 16px;
     }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        right: ${({ theme }) => theme.spacing.sm};
+        width: 20px;
+        height: 20px;
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
 `;
 
 const StyledInput = styled.input<{
@@ -92,16 +112,24 @@ const StyledInput = styled.input<{
 
     padding: ${({ $size }) => ($size === 'sm' ? '0.1rem 0.75rem' : $size === 'lg' ? '0.75rem 1rem' : '0.625rem 1rem')};
 
-    ${({ $hasIcon }) =>
+    ${({ $hasIcon, theme }) =>
         $hasIcon &&
         css`
             padding-left: 2.5rem;
+
+            ${theme.responsive.maxMobile} {
+                padding-left: 2.2rem;
+            }
         `}
 
-    ${({ $hasEndIcon }) =>
+    ${({ $hasEndIcon, theme }) =>
         $hasEndIcon &&
         css`
             padding-right: 2.5rem;
+
+            ${theme.responsive.maxMobile} {
+                padding-right: 2.2rem;
+            }
         `}
 
 
@@ -112,12 +140,24 @@ const StyledInput = styled.input<{
                     padding: 0.5rem 0.75rem;
                     font-size: ${theme.fontSizes.sm};
                     height: 40px;
+
+                    ${theme.responsive.maxMobile} {
+                        padding: 0.4rem 0.6rem;
+                        font-size: ${theme.fontSizes.xs};
+                        height: 36px;
+                    }
                 `;
             case 'lg':
                 return css`
                     padding: 0.75rem 1rem;
                     font-size: ${theme.fontSizes.lg};
                     height: 56px;
+
+                    ${theme.responsive.maxMobile} {
+                        padding: 0.6rem 0.85rem;
+                        font-size: ${theme.fontSizes.md};
+                        height: 48px;
+                    }
                 `;
             case 'md':
             default:
@@ -125,6 +165,12 @@ const StyledInput = styled.input<{
                     padding: 0.65rem 1rem;
                     font-size: ${theme.fontSizes.md};
                     height: 48px;
+
+                    ${theme.responsive.maxMobile} {
+                        padding: 0.5rem 0.75rem;
+                        font-size: ${theme.fontSizes.sm};
+                        height: 42px;
+                    }
                 `;
         }
     }}

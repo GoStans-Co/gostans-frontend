@@ -4,6 +4,7 @@ import { DatePicker } from 'antd';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import { TourDetailsResponse } from '@/services/api/tours';
+import { formatCurrency } from '@/utils/general/formatCurrency';
 
 type RightSidebarProps = {
     tour: TourDetailsResponse;
@@ -35,7 +36,7 @@ const RightSidebar = styled.div`
 
 const PriceCard = styled(Card)`
     padding: 1.5rem;
-    border: 2px solid ${({ theme }) => theme.colors.border};
+    border: 1px solid ${({ theme }) => theme.colors.border};
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: ${({ theme }) => theme.spacing.md};
@@ -55,7 +56,7 @@ const PriceHeader = styled.div`
     }
 
     .price {
-        font-size: 2rem;
+        font-size: 1.4rem;
         font-weight: bold;
         color: ${({ theme }) => theme.colors.text};
     }
@@ -190,14 +191,12 @@ export default function SearchPackageDetailSidebar({
     cartItemsCount,
     onBookingAction,
 }: RightSidebarProps) {
-    const totalPrice = parseFloat(tour.price);
-
     return (
         <RightSidebar>
             <PriceCard>
                 <PriceHeader>
                     <div className="from">From</div>
-                    <div className="price">${tour.price}</div>
+                    <div className="price">{formatCurrency(tour.price)}</div>
                 </PriceHeader>
 
                 <BookingForm>
@@ -217,7 +216,7 @@ export default function SearchPackageDetailSidebar({
                             <TourDetailsContent>
                                 <div>
                                     <span className="label">Duration:</span>{' '}
-                                    <span className="value">{tour.duration}</span>
+                                    <span className="value">{tour.durationDays} </span>
                                 </div>
                                 <div>
                                     <span className="label">Ages:</span>{' '}
@@ -230,7 +229,7 @@ export default function SearchPackageDetailSidebar({
 
                         <Total>
                             <span className="label">Total:</span>
-                            <span className="amount">${totalPrice.toFixed(2)}</span>
+                            <span className="amount">{formatCurrency(tour.price)}</span>
                         </Total>
                     </div>
 

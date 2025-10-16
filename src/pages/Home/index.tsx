@@ -24,6 +24,16 @@ export type Destinations = {
     countryId: number;
 };
 
+/**
+ * Home Page Component
+ * @description Renders the main sections of the home page
+ * including popular destinations, trending tours, and more.
+ * @param {Object} props - Component props
+ * @param {Array} props.destinations - List of popular destinations
+ * @param {Array} props.tours - List of trending tours
+ * @param {boolean} props.loading - Loading state for tours
+ * @returns {JSX.Element} The rendered HomePage component
+ */
 export default function HomePage() {
     const { tours: toursService } = useApiServices();
     const { cachedData, fetchTopDestinations } = useDestinationsCache();

@@ -2,7 +2,7 @@ import styled, { css } from 'styled-components';
 import { ButtonProps } from '@/types/index';
 
 const StyledButton = styled.button.withConfig({
-    shouldForwardProp: (prop) => !['variant', 'size', 'fullWidth', 'startIcon', 'startText', 'endIcon'].includes(prop)
+    shouldForwardProp: (prop) => !['variant', 'size', 'fullWidth', 'startIcon', 'startText', 'endIcon'].includes(prop),
 })<Omit<ButtonProps, 'children'>>`
     display: inline-flex;
     align-items: center;
@@ -24,36 +24,63 @@ const StyledButton = styled.button.withConfig({
             cursor: not-allowed;
         `}
   
-    ${({ size }) => {
+    ${({ size, theme }) => {
         switch (size) {
             case 'mini':
                 return css`
                     padding: 0.3rem 0.7rem;
-                    font-size: ${({ theme }) => theme.fontSizes.xs};
+                    font-size: ${theme.fontSizes.xs};
                     height: auto;
                     min-height: 24px;
+                    white-space: nowrap;
+                    flex-shrink: 0;
+
+                    ${theme.responsive.maxMobile} {
+                        padding: 0.4rem 0.8rem;
+                        min-height: 20px;
+                        font-size: 10px;
+                    }
                 `;
             case 'xs':
                 return css`
                     padding: 0.7rem;
-                    font-size: ${({ theme }) => theme.fontSizes.sm};
+                    font-size: ${theme.fontSizes.sm};
                     height: auto;
+
+                    ${theme.responsive.maxMobile} {
+                        padding: 0.5rem;
+                        font-size: ${theme.fontSizes.xs};
+                    }
                 `;
             case 'sm':
                 return css`
                     padding: 0.5rem 1rem;
-                    font-size: ${({ theme }) => theme.fontSizes.sm};
+                    font-size: ${theme.fontSizes.sm};
+
+                    ${theme.responsive.maxMobile} {
+                        padding: 0.4rem 0.75rem;
+                        font-size: ${theme.fontSizes.xs};
+                    }
                 `;
             case 'lg':
                 return css`
                     padding: 0.75rem 1.5rem;
-                    font-size: ${({ theme }) => theme.fontSizes.lg};
+                    font-size: ${theme.fontSizes.lg};
+
+                    ${theme.responsive.maxMobile} {
+                        padding: 0.6rem 1rem;
+                        font-size: ${theme.fontSizes.md};
+                    }
                 `;
             case 'md':
             default:
                 return css`
                     padding: 0.625rem 1.25rem;
-                    font-size: ${({ theme }) => theme.fontSizes.md};
+                    font-size: ${theme.fontSizes.md};
+
+                    ${theme.responsive.maxMobile} {
+                        font-size: ${theme.fontSizes.sm};
+                    }
                 `;
         }
     }}
@@ -132,6 +159,11 @@ const StyledButton = styled.button.withConfig({
                         color: ${theme.colors.border};
                         border-color: ${theme.colors.border};
                         box-shadow: none;
+                    }
+
+                    ${theme.responsive.maxMobile} {
+                        width: 40px;
+                        height: 40px;
                     }
                 `;
 

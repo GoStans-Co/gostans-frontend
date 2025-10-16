@@ -199,7 +199,7 @@ const ReviewsSection = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         margin-bottom: 0;
@@ -643,7 +643,7 @@ export default function SearchPackageContent({
                             >
                                 Duration
                             </div>
-                            <InfoCardItemValue>{tour.duration}</InfoCardItemValue>
+                            <InfoCardItemValue>{tour.durationDays}</InfoCardItemValue>
                         </div>
                     </StyledInfoCard>
 
