@@ -262,8 +262,9 @@ const StyledLink = styled(Link)`
 `;
 
 /**
- * BannerCard -  Atom Ui Component
- * @description A card component that displays a banner with an image, title, price, and location information.
+ * BannerCard -  Atom Component
+ * @description A card component that displays
+ * a banner with an image, title, price, and location information.
  * @param {BannerCardProps} props - The properties for the BannerCard component.
  */
 export default function BannerCard({ title, price, mainImage, currency, uuid }: BannerCardProps) {

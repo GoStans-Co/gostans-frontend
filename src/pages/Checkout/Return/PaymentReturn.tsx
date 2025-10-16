@@ -108,7 +108,7 @@ export default function PaymentReturn() {
 
     const handlePaymentExecution = async (paymentId: string, PayerID: string) => {
         if (hasExecuted.current) {
-            console.log('Payment execution already in progress or completed');
+            console.info('Payment execution already in progress or completed');
             return;
         }
 

@@ -131,11 +131,11 @@ const MobileDestinationItem = styled.div`
     }
 `;
 
-const ScrollButton = styled.button<{ direction: 'left' | 'right' }>`
+const ScrollButton = styled.button<{ $direction: 'left' | 'right' }>`
     position: absolute;
     top: 40%;
     transform: translateY(-50%);
-    ${({ direction }) => (direction === 'left' ? 'left: -20px;' : 'right: -20px;')}
+    ${({ $direction }) => ($direction === 'left' ? 'left: -20px;' : 'right: -20px;')}
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -168,11 +168,11 @@ export default function PopularDestinations({ destinations, loading = false, cou
     const [activeTab, setActiveTab] = useState('all');
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-    const handleScroll = (direction: 'left' | 'right') => {
+    const handleScroll = ($direction: 'left' | 'right') => {
         if (scrollContainerRef.current) {
             const scrollAmount = 300;
             const currentScroll = scrollContainerRef.current.scrollLeft;
-            const targetScroll = direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount;
+            const targetScroll = $direction === 'left' ? currentScroll - scrollAmount : currentScroll + scrollAmount;
 
             scrollContainerRef.current.scrollTo({
                 left: targetScroll,
@@ -225,10 +225,14 @@ export default function PopularDestinations({ destinations, loading = false, cou
             <DestinationsContainer>
                 {!loading && filteredDestinations.length > 4 && (
                     <>
-                        <ScrollButton direction="left" onClick={() => handleScroll('left')} aria-label="Scroll left">
+                        <ScrollButton $direction="left" onClick={() => handleScroll('left')} aria-label="Scroll left">
                             <ChevronLeft size={20} />
                         </ScrollButton>
-                        <ScrollButton direction="right" onClick={() => handleScroll('right')} aria-label="Scroll right">
+                        <ScrollButton
+                            $direction="right"
+                            onClick={() => handleScroll('right')}
+                            aria-label="Scroll right"
+                        >
                             <ChevronRight size={20} />
                         </ScrollButton>
                     </>

@@ -15,7 +15,7 @@ export default function usePayPalReturn() {
         if (paymentId && PayerID) {
             handlePayPalReturn(paymentId, PayerID);
         } else if (token) {
-            console.log('Payment cancelled');
+            console.info('Payment cancelled');
             navigate('/cart/checkout/payment?error=cancelled');
         }
     }, [searchParams]);

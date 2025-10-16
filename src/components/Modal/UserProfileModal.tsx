@@ -159,13 +159,11 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
     };
 
     const handleTrips = () => {
-        console.log('Navigate to trips');
         window.location.href = '/mypage?section=trips';
         onClose();
     };
 
     const handleFavorites = () => {
-        console.log('Navigate to favorites');
         window.location.href = '/mypage?section=favorites';
         onClose();
     };

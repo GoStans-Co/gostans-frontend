@@ -227,7 +227,6 @@ export default function MyTrips({ bookings, onTripClick }: TripsPageProps) {
                                     <TripCard
                                         variant="compact"
                                         key={trip.id}
-                                        id={trip.id}
                                         image={trip.image}
                                         title={trip.title}
                                         subtitle={trip.dayInfo}

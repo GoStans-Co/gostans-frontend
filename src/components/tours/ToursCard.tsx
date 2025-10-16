@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import Button from '@/components/common/Button';
 import { TourPropsResponse } from '@/services/api/tours';
+import { formatCurrency } from '@/utils/general/formatCurrency';
 
 const ImageContainer = styled.div`
     width: 100%;
@@ -212,6 +213,12 @@ const CardWrapper = styled(Link)`
     display: block;
 `;
 
+/**
+ * TourCard - Molecule Component
+ * @description A card component to display tour information
+ * with an image, title, description, price, and a call-to-action button or link.
+ * @param {TourPropsResponse} props - The properties of the tour card.
+ */
 export default function TourCard({
     title,
     shortDescription: description,
@@ -220,27 +227,7 @@ export default function TourCard({
     variant = 'button',
     buttonText = 'Book Now',
     uuid,
-    currency = 'USD',
 }: TourPropsResponse) {
-    const formatPrice = (price: number | undefined, currency: string) => {
-        const numericPrice = Math.round(parseFloat(price?.toString() || '0'));
-        try {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: currency,
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-            }).format(numericPrice);
-        } catch {
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-            }).format(numericPrice);
-        }
-    };
-
     const content = (
         <CardContainer>
             <ImageContainer>
@@ -251,7 +238,7 @@ export default function TourCard({
                 <Description>{description}</Description>
                 <PriceRow>
                     <Price>
-                        <PriceValue>{formatPrice(price, currency)}</PriceValue>
+                        <PriceValue>{formatCurrency(Number(price))}</PriceValue>
                         <PriceLabel>/ Person</PriceLabel>
                     </Price>
                     {variant === 'button' && (

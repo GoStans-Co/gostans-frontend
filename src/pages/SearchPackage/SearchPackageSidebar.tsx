@@ -4,6 +4,7 @@ import { DatePicker } from 'antd';
 import Button from '@/components/common/Button';
 import Card from '@/components/common/Card';
 import { TourDetailsResponse } from '@/services/api/tours';
+import { formatCurrency } from '@/utils/general/formatCurrency';
 
 type RightSidebarProps = {
     tour: TourDetailsResponse;
@@ -195,7 +196,7 @@ export default function SearchPackageDetailSidebar({
             <PriceCard>
                 <PriceHeader>
                     <div className="from">From</div>
-                    <div className="price">$ {Math.round(parseFloat(tour.price))}</div>
+                    <div className="price">{formatCurrency(tour.price)}</div>
                 </PriceHeader>
 
                 <BookingForm>
@@ -228,7 +229,7 @@ export default function SearchPackageDetailSidebar({
 
                         <Total>
                             <span className="label">Total:</span>
-                            <span className="amount">$ {Math.round(parseFloat(tour.price))}</span>
+                            <span className="amount">{formatCurrency(tour.price)}</span>
                         </Total>
                     </div>
 

@@ -211,7 +211,6 @@ export default function ModalAuth({ onClose, initialTab = 'login' }: ModalAuthPr
             if (activeTab !== 'signup' || !debouncedEmail || !shouldCheckEmail) return;
 
             const exists = await authService.checkEmailExists(debouncedEmail);
-            console.log('Email check result:', exists);
 
             if (exists) {
                 messageApi.error('Email already exists');

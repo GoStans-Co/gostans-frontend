@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import Button from '@/components/common/Button';
-import type { TripCardProps } from '@/components/Card/types';
+import { formatCurrency } from '@/utils/general/formatCurrency';
+import { TripCardProps } from '@/components/Card/type';
 
 const CardContainer = styled.div<{ variant?: 'default' | 'compact' }>`
     display: flex;
@@ -24,9 +25,9 @@ const CardContainer = styled.div<{ variant?: 'default' | 'compact' }>`
 `;
 
 const CardImage = styled.div<{ $imageUrl: string; $size?: 'default' | 'small' | 'large' }>`
-    width: ${({ $size }) => ($size === 'small' ? '95px' : $size === 'large' ? '160px' : '120px')};
-    min-width: ${({ $size }) => ($size === 'small' ? '100px' : $size === 'large' ? '160px' : '120px')};
-    height: ${({ $size }) => ($size === 'small' ? '100px' : $size === 'large' ? '180px' : '125px')};
+    width: ${({ $size }) => ($size === 'small' ? '95px' : $size === 'large' ? '160px' : '130px')};
+    min-width: ${({ $size }) => ($size === 'small' ? '100px' : $size === 'large' ? '160px' : '130px')};
+    height: ${({ $size }) => ($size === 'small' ? '100px' : $size === 'large' ? '180px' : '130px')};
     background-image: url(${(props) => props.$imageUrl});
     background-size: cover;
     background-position: center;
@@ -47,8 +48,8 @@ const CardInfo = styled.div<{ $hasActions?: boolean }>`
     flex: 1;
     display: flex;
     flex-direction: column;
-    ${({ $hasActions }) => $hasActions && 'justify-content: space-between;'}
-    min-height: ${({ $hasActions }) => ($hasActions ? '100px' : 'auto')};
+    justify-content: space-between;
+    min-height: auto;
 
     ${({ theme }) => theme.responsive.mobile} {
         padding: ${({ theme }) => theme.spacing.md};
@@ -61,31 +62,13 @@ const CardHeader = styled.div`
     justify-content: space-between;
     width: 100%;
     align-items: flex-start;
-    gap: ${({ theme }) => theme.spacing.md};
+    gap: ${({ theme }) => theme.spacing.lg};
+    min-width: 0;
 
     ${({ theme }) => theme.responsive.mobile} {
         flex-direction: row;
         gap: ${({ theme }) => theme.spacing.sm};
-        align-items: stretch;
-    }
-`;
-
-const CardTitle = styled.h3<{ size?: 'default' | 'large' | 'small' }>`
-    font-size: ${({ theme, size }) => {
-        if (size === 'large') return theme.fontSizes.xl;
-        if (size === 'small') return theme.fontSizes.sm;
-        return theme.fontSizes.lg;
-    }};
-    color: ${({ theme }) => theme.colors.text};
-    margin: 0 0 ${({ theme }) => theme.spacing.xs} 0;
-    font-weight: 600;
-    line-height: 1.4;
-
-    ${({ theme }) => theme.responsive.mobile} {
-        font-size: ${({ theme }) => theme.fontSizes.md};
-        line-height: 1.3;
-        margin-bottom: ${({ theme }) => theme.spacing.sm};
-        flex: 1;
+        align-items: flex-start;
     }
 `;
 
@@ -94,10 +77,11 @@ const LeftContent = styled.div`
     flex-direction: column;
     flex: 1;
     min-width: 0;
-    justify-content: center;
+    justify-content: flex-start;
     overflow: hidden;
     align-items: flex-start;
     text-align: left;
+    gap: ${({ theme }) => theme.spacing.xs};
 `;
 
 const RightContent = styled.div`
@@ -106,6 +90,8 @@ const RightContent = styled.div`
     align-items: flex-end;
     justify-content: flex-start;
     flex-shrink: 0;
+    min-width: fit-content;
+    gap: ${({ theme }) => theme.spacing.sm};
 
     ${({ theme }) => theme.responsive.mobile} {
         align-items: flex-end;
@@ -119,12 +105,51 @@ const CardPrice = styled.span`
     font-weight: 700;
     color: ${({ theme }) => theme.colors.primary};
     white-space: nowrap;
-    padding-bottom: ${({ theme }) => theme.spacing.sm};
 
     ${({ theme }) => theme.responsive.mobile} {
         font-size: ${({ theme }) => theme.fontSizes.lg};
         font-weight: 700;
-        margin-top: 0;
+    }
+`;
+
+const CardTitle = styled.h3<{ size?: 'default' | 'large' | 'small' }>`
+    font-size: ${({ theme, size }) => {
+        if (size === 'large') return theme.fontSizes.xl;
+        if (size === 'small') return theme.fontSizes.sm;
+        return theme.fontSizes.lg;
+    }};
+    color: ${({ theme }) => theme.colors.text};
+    margin: 0;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-word;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        line-height: 1.3;
+    }
+`;
+
+const CardSubtitle = styled.p`
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    color: ${({ theme }) => theme.colors.lightText};
+    margin: 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        -webkit-line-clamp: 2;
     }
 `;
 
@@ -147,13 +172,6 @@ const CardActions = styled.div`
             min-width: 0;
         }
     }
-`;
-
-const CardSubtitle = styled.p`
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    color: ${({ theme }) => theme.colors.lightText};
-    margin: 0;
-    line-height: 1.3;
 `;
 
 const StatusPill = styled.div<{ status: string }>`
@@ -349,7 +367,7 @@ export default function TripCard(props: TripCardProps) {
                             <RightContent>
                                 {price !== undefined && (
                                     <>
-                                        <CardPrice>${Math.round(price)}</CardPrice>
+                                        <CardPrice>{formatCurrency(price)}</CardPrice>
                                         {status && (
                                             <StatusPill status={status}>
                                                 {status === 'waiting'

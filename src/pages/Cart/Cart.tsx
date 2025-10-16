@@ -526,7 +526,6 @@ export default function CartPage() {
 
             if (response.statusCode === 200) {
                 setPaymentCreated(response.data);
-                console.log('Payment initialized:', response.data);
                 setSuccess('Payment initialized successfully');
             } else {
                 throw new Error(response.message);
@@ -823,8 +822,6 @@ export default function CartPage() {
 
         return counts.adults * basePrice + counts.children * basePrice * 0.5;
     };
-
-    console.log('Cart Items:', cartItems);
 
     if (searchParams.get('paymentId') && searchParams.get('PayerID')) {
         return (

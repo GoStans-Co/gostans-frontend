@@ -25,6 +25,7 @@ import dayjs from 'dayjs';
 import bannerImage from '@/assets/banner1.png';
 import Lottie from 'lottie-react';
 import loadingAnimation from '@/assets/animation/loading.json';
+import { formatCurrency } from '@/utils/general/formatCurrency';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -245,12 +246,12 @@ const TourTitle = styled.h3`
     color: ${({ theme }) => theme.colors.text};
     margin: 0;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.4;
-    max-width: 100%;
+    line-height: 1.2;
+    max-width: 90%;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         font-size: ${({ theme }) => theme.fontSizes.md};
@@ -1018,7 +1019,7 @@ export default function SearchPackageList() {
                                                 <TourContent>
                                                     <TourHeader>
                                                         <TourTitle>{tour.title}</TourTitle>
-                                                        <Price>$ {Math.round(parseFloat(tour.price))}</Price>
+                                                        <Price>{formatCurrency(tour.price)}</Price>
                                                     </TourHeader>
 
                                                     <TourDescription>{tour.shortDescription}</TourDescription>

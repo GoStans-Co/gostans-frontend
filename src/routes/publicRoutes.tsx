@@ -12,14 +12,8 @@ export default function PublicRoute({ children, redirectTo = '/mypage' }: Public
     const isAuthenticated = useRecoilValue(isAuthenticatedSelector);
     const location = useLocation();
 
-    console.log('PublicRoute check:', {
-        isAuthenticated,
-        currentPath: location.pathname,
-        shouldRedirect: isAuthenticated,
-    });
-
     if (isAuthenticated) {
-        console.log('Already authenticated, redirecting from login to:', redirectTo);
+        console.info('Already authenticated, redirecting from login to:', redirectTo);
         const from = (location.state as any)?.from || redirectTo;
         return <Navigate to={from} replace />;
     }

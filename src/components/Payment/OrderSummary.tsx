@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import Button from '@/components/common/Button';
 import { CartItem } from '@/services/api/cart';
+import { formatCurrency } from '@/utils/general/formatCurrency';
 
 type OrderSummaryProps = {
     cartItems: CartItem[];
@@ -220,12 +221,10 @@ export default function OrderSummary({
                             <OrderItem key={item.tourId}>
                                 <ItemRow>
                                     <ItemTitle>{item.tourData.title}</ItemTitle>
-                                    <ItemPrice>
-                                        $ {Math.round(parseFloat(item.tourData.price) * item.quantity)}
-                                    </ItemPrice>
+                                    <ItemPrice>{formatCurrency(item.tourData.price)}</ItemPrice>
                                 </ItemRow>
                                 <ItemDetails>
-                                    <DetailItem>{item.tourData.duration}</DetailItem>
+                                    <DetailItem>{item.tourData.durationDays}</DetailItem>
                                     <DetailItem>{item.adults || 1} adults</DetailItem>
                                     <DetailItem>Quantity: {item.quantity}</DetailItem>
                                 </ItemDetails>
@@ -238,11 +237,11 @@ export default function OrderSummary({
                     <>
                         <SummaryRow>
                             <span>Subtotal ({cartItems.length} items)</span>
-                            <span>$ {Math.round(subtotal)}</span>
+                            <span>{formatCurrency(subtotal)}</span>
                         </SummaryRow>
                         <SummaryRow>
                             <span>Tax</span>
-                            <span>$ {Math.round(tax)}</span>
+                            <span>{formatCurrency(tax)}</span>
                         </SummaryRow>
                     </>
                 )}
@@ -252,14 +251,14 @@ export default function OrderSummary({
                         <Divider />
                         <SummaryRow>
                             <span>Tax (10%)</span>
-                            <span>$ {Math.round(tax)}</span>
+                            <span>{formatCurrency(tax)}</span>
                         </SummaryRow>
                     </>
                 )}
 
                 <TotalRow>
                     <span>{showItemDetails ? 'Total' : 'Total:'}</span>
-                    <span>$ {Math.round(total)}</span>
+                    <span>{formatCurrency(total)}</span>
                 </TotalRow>
 
                 {paymentCreated && (

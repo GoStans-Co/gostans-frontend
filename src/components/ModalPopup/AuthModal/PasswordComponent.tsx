@@ -77,7 +77,7 @@ const PasswordRequirements = styled.div`
     padding: ${theme.spacing.md};
     margin-top: ${theme.spacing.sm};
     justify-content: center;
-    align-items: left;
+    align-items: flex-start;
 `;
 
 const RequirementsTitle = styled.h4`

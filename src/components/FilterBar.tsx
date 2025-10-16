@@ -93,7 +93,7 @@ const FilterHeader = styled.div`
     padding: 20px 24px 16px;
     border-bottom: 1px solid ${({ theme }) => theme.colors.border};
     justify-content: flex-start;
-    align-items: left;
+    align-items: flex-start;
     display: flex;
     flex-direction: row;
     gap: 8px;
@@ -276,7 +276,7 @@ const CountryHeaderContainer = styled.div`
 `;
 
 const CountryAllOption = styled.button.withConfig({
-    shouldForwardProp: (prop) => !['isSelected'].includes(prop)
+    shouldForwardProp: (prop) => !['isSelected'].includes(prop),
 })<{ isSelected?: boolean }>`
     display: flex;
     align-items: center;
