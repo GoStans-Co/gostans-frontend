@@ -7,7 +7,10 @@
         "dev": "pnpm vite",
         "build": "pnpm tsc -b && pnpm vite build",
         "lint": "pnpm eslint .",
-        "preview": "pnpm vite preview"
+        "preview": "pnpm vite preview",
+        "test": "vitest",
+        "test:ui": "vitest --ui",
+        "test:coverage": "vitest --coverage"
     },
     "dependencies": {
         "@paypal/react-paypal-js": "^8.8.3",
@@ -43,6 +46,13 @@
         "globals": "^16.0.0",
         "typescript": "~5.7.2",
         "typescript-eslint": "^8.26.1",
-        "vite": "^6.3.1"
+        "vite": "^6.3.1",
+        "vitest": "^2.1.8",
+        "@vitest/ui": "^2.1.8",
+        "@testing-library/react": "^16.1.0",
+        "@testing-library/jest-dom": "^6.6.3",
+        "@testing-library/user-event": "^14.5.2",
+        "jsdom": "^26.0.0",
+        "@vitest/coverage-v8": "^2.1.8"
     }
 }
