@@ -5,7 +5,7 @@ export type CartItem = {
         title: string;
         price: string;
         mainImage: string;
-        duration: string;
+        durationDays: number | null;
         about: string;
         tourType: number;
         shortDescription: string;
@@ -15,7 +15,7 @@ export type CartItem = {
     adults: number;
     addedAt: number;
     price?: number;
-    duration?: string;
+    durationDays?: number | null;
     trip_start_date?: string;
     trip_end_date?: string;
 };

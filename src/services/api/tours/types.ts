@@ -78,7 +78,7 @@ export type TourDetailsResponse = {
     title: string;
     shortDescription: string;
     tourType: string;
-    duration: DurationTypes;
+    durationDays: DurationTypes;
     about: string;
     price: string;
     currency: CurrencyTypes;

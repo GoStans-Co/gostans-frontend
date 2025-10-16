@@ -643,7 +643,7 @@ export default function SearchPackageContent({
                             >
                                 Duration
                             </div>
-                            <InfoCardItemValue>{tour.duration}</InfoCardItemValue>
+                            <InfoCardItemValue>{tour.durationDays}</InfoCardItemValue>
                         </div>
                     </StyledInfoCard>
 

@@ -190,8 +190,6 @@ export default function SearchPackageDetailSidebar({
     cartItemsCount,
     onBookingAction,
 }: RightSidebarProps) {
-    const totalPrice = parseFloat(tour.price);
-
     return (
         <RightSidebar>
             <PriceCard>
@@ -217,7 +215,7 @@ export default function SearchPackageDetailSidebar({
                             <TourDetailsContent>
                                 <div>
                                     <span className="label">Duration:</span>{' '}
-                                    <span className="value">{tour.duration}</span>
+                                    <span className="value">{tour.durationDays} </span>
                                 </div>
                                 <div>
                                     <span className="label">Ages:</span>{' '}
