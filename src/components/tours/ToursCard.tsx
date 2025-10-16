@@ -231,7 +231,7 @@ export default function TourCard({
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
             }).format(numericPrice);
-        } catch (error) {
+        } catch {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'USD',
