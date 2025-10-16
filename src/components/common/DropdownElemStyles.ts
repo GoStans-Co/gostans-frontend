@@ -102,6 +102,11 @@ export const ModalHeader = styled.div`
     border-bottom: 1px solid ${theme.colors.border};
     background: ${theme.colors.lightBackground};
     border-radius: ${theme.borderRadius.lg} ${theme.borderRadius.lg} 0 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${theme.spacing.md};
+        border-radius: ${theme.borderRadius.md} ${theme.borderRadius.md} 0 0;
+    }
 `;
 
 export const ModalTitle = styled.h3`
@@ -110,6 +115,11 @@ export const ModalTitle = styled.h3`
     font-size: ${theme.fontSizes.md};
     font-weight: ${theme.typography.fontWeight.bold};
     color: ${theme.colors.text};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${theme.fontSizes.sm};
+        line-height: 1.2;
+    }
 `;
 
 export const ModalContent = styled.div`

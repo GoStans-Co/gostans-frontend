@@ -350,7 +350,7 @@ export default function PartnerForm({ onClose, onSubmit, loading = false }: Part
                                     aria-label="Enter your first name"
                                     inputConfig={{ variant: 'outlined', size: 'sm' }}
                                     label="First Name"
-                                    placeholder="Javohir"
+                                    placeholder="Dave"
                                     value={formData.firstName}
                                     onChange={(e) => handleChange('firstName', e.target.value)}
                                     error={errors.firstName}
@@ -361,7 +361,7 @@ export default function PartnerForm({ onClose, onSubmit, loading = false }: Part
                                 <Input
                                     aria-label="Enter your last name"
                                     label="Last Name"
-                                    placeholder="Toshtemirov"
+                                    placeholder="Smith"
                                     value={formData.lastName}
                                     onChange={(e) => handleChange('lastName', e.target.value)}
                                     error={errors.lastName}
@@ -374,7 +374,7 @@ export default function PartnerForm({ onClose, onSubmit, loading = false }: Part
                                     <Input
                                         label="Email Address"
                                         type="email"
-                                        placeholder="java.toshtemirov@gmail.com"
+                                        placeholder="dave.smith@example.com"
                                         value={formData.email}
                                         onChange={(e) => handleChange('email', e.target.value)}
                                         error={errors.email}

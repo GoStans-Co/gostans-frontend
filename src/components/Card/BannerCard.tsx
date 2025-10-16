@@ -195,7 +195,7 @@ const RouteInfo = styled.div`
 
 const RouteText = styled.div`
     color: ${({ theme }) => theme.colors.lightText};
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-size: ${({ theme }) => theme.fontSizes.xs};
     font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
     margin-bottom: ${({ theme }) => theme.spacing.xs};
     display: flex;
