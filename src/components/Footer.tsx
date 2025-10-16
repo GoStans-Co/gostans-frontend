@@ -188,10 +188,14 @@ export default function Footer() {
                         >
                             <FaFacebook style={{ color: 'black' }} />
                         </SocialLink>
-                        <SocialLink href="#" target="_blank" aria-label="Twitter">
+                        <SocialLink href="https://x.com/Gostans_Company" target="_blank" aria-label="Twitter">
                             <FaTwitter style={{ color: 'black' }} />
                         </SocialLink>
-                        <SocialLink href="#" target="_blank" aria-label="Instagram">
+                        <SocialLink
+                            href="https://www.instagram.com/gostans_com/"
+                            target="_blank"
+                            aria-label="Instagram"
+                        >
                             <FaInstagram style={{ color: 'black' }} />
                         </SocialLink>
                         <SocialLink
