@@ -35,7 +35,7 @@ const RightSidebar = styled.div`
 
 const PriceCard = styled(Card)`
     padding: 1.5rem;
-    border: 2px solid ${({ theme }) => theme.colors.border};
+    border: 1px solid ${({ theme }) => theme.colors.border};
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: ${({ theme }) => theme.spacing.md};
@@ -55,7 +55,7 @@ const PriceHeader = styled.div`
     }
 
     .price {
-        font-size: 2rem;
+        font-size: 1.4rem;
         font-weight: bold;
         color: ${({ theme }) => theme.colors.text};
     }
@@ -197,7 +197,7 @@ export default function SearchPackageDetailSidebar({
             <PriceCard>
                 <PriceHeader>
                     <div className="from">From</div>
-                    <div className="price">${tour.price}</div>
+                    <div className="price">$ {Math.round(parseFloat(tour.price))}</div>
                 </PriceHeader>
 
                 <BookingForm>
@@ -230,7 +230,7 @@ export default function SearchPackageDetailSidebar({
 
                         <Total>
                             <span className="label">Total:</span>
-                            <span className="amount">${totalPrice.toFixed(2)}</span>
+                            <span className="amount">$ {Math.round(parseFloat(tour.price))}</span>
                         </Total>
                     </div>
 

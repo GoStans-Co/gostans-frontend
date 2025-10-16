@@ -21,10 +21,15 @@ const CartItemContainer = styled.div`
     align-items: flex-start;
     gap: ${theme.spacing.md};
     padding: ${theme.spacing.md} ${theme.spacing.lg};
-    border-bottom: 1px solid ${theme.colors.border};
+    border-bottom: 1px solid #f0f0f0;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: ${theme.spacing.sm} ${theme.spacing.md};
+        gap: ${theme.spacing.sm};
+    }
+
+    ${({ theme }) => theme.responsive.minTablet} {
+        padding: ${theme.spacing.md};
         gap: ${theme.spacing.sm};
     }
 
@@ -41,7 +46,7 @@ const CartItemImage = styled.div.attrs<{ src?: string }>((props) => ({
     width: 60px;
     height: 60px;
     border-radius: ${theme.borderRadius.md};
-    background: ${theme.colors.lightBackground};
+    background: #f5f5f5;
     background-size: cover;
     background-position: center;
     flex-shrink: 0;
@@ -50,53 +55,87 @@ const CartItemImage = styled.div.attrs<{ src?: string }>((props) => ({
         width: 50px;
         height: 50px;
     }
+
+    ${({ theme }) => theme.responsive.minTablet} {
+        width: 55px;
+        height: 55px;
+    }
 `;
 
 const CartItemDetails = styled.div`
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: ${theme.spacing.xs};
+    justify-content: space-between;
+    min-width: 0;
 `;
 
 const CartItemName = styled.span`
     font-size: ${theme.fontSizes.sm};
     font-weight: ${theme.typography.fontWeight.medium};
     color: ${theme.colors.text};
+    text-align: left;
+    margin-bottom: ${theme.spacing.xs};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 13px;
+    }
 `;
 
 const CartItemPrice = styled.span`
     font-size: ${theme.fontSizes.sm};
     color: ${theme.colors.primary};
     font-weight: ${theme.typography.fontWeight.bold};
+    align-self: flex-end;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 13px;
+    }
 `;
 
 const RemoveButton = styled.button`
     width: 24px;
-    height: 24px;
     border: none;
     background: transparent;
-    color: ${theme.colors.lightText};
+    color: #999;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: ${theme.transitions.default};
     flex-shrink: 0;
-    margin-top: 2px;
 
     &:hover {
         color: #d32f2f;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        width: 20px;
+        height: 20px;
+    }
+`;
+
+const ShowMoreSection = styled.div`
+    text-align: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 4px 0;
     }
 `;
 
 const CartFooter = styled.div`
     padding: ${theme.spacing.lg};
-    border-top: 1px solid ${theme.colors.border};
-    background: ${theme.colors.lightBackground};
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: ${theme.spacing.md};
+    }
+
+    ${({ theme }) => theme.responsive.minTablet} {
+        padding: ${theme.spacing.md} ${theme.spacing.lg};
     }
 `;
 
@@ -108,13 +147,23 @@ const CartTotal = styled.div`
     font-size: ${theme.fontSizes.md};
     font-weight: ${theme.typography.fontWeight.bold};
     color: ${theme.colors.text};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${theme.fontSizes.sm};
+        margin-bottom: ${theme.spacing.sm};
+    }
 `;
 
 const EmptyCartMessage = styled.div`
     padding: ${theme.spacing.xl};
     text-align: center;
-    color: ${theme.colors.lightText};
+    color: #999;
     font-size: ${theme.fontSizes.sm};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${theme.spacing.lg};
+        font-size: 13px;
+    }
 `;
 
 export default function CartModal({
@@ -191,7 +240,7 @@ export default function CartModal({
                     ))}
 
                     {cartItems.length > 1 && (
-                        <div style={{ textAlign: 'center', padding: '6px 0', borderBottom: '0.5px solid #eee' }}>
+                        <ShowMoreSection>
                             <Button
                                 variant="text"
                                 size="sm"
@@ -200,7 +249,7 @@ export default function CartModal({
                             >
                                 Show More ({cartItems.length - 1} more items)
                             </Button>
-                        </div>
+                        </ShowMoreSection>
                     )}
 
                     <CartFooter>

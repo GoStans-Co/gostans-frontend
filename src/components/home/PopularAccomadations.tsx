@@ -160,12 +160,16 @@ const CardImage = styled.img`
 `;
 
 const CardContent = styled.div`
-    padding: 1.5rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     align-items: flex-start;
     text-align: left;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 1rem;
+    }
 `;
 
 const AccommodationTitle = styled.h3`
@@ -280,7 +284,7 @@ export default function PopularAccommodations({ accommodations }: PopularAccommo
                                 <AccommodationDescription>{accommodation.description}</AccommodationDescription>
                                 <PriceContainer>
                                     <Price>${accommodation.price}</Price>
-                                    <PriceLabel>/Person</PriceLabel>
+                                    <PriceLabel>/ Person</PriceLabel>
                                 </PriceContainer>
                             </CardContent>
                         </AccommodationCard>

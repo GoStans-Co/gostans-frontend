@@ -3,6 +3,21 @@ import { Link } from 'react-router-dom';
 import Button from '@/components/common/Button';
 import { TourPropsResponse } from '@/services/api/tours';
 
+const ImageContainer = styled.div`
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    position: relative;
+
+    ${({ theme }) => theme.responsive.minTablet} {
+        height: 180px;
+    }
+
+    ${({ theme }) => theme.responsive.mobile} {
+        height: 140px;
+    }
+`;
+
 const CardContainer = styled.div`
     border: 0.5px solid ${({ theme }) => theme.colors.border};
     border-radius: ${({ theme }) => theme.borderRadius.lg};
@@ -18,13 +33,18 @@ const CardContainer = styled.div`
         box-shadow: ${({ theme }) => theme.shadows.md};
     }
     padding-bottom: 0;
-`;
-
-const ImageContainer = styled.div`
     width: 100%;
-    height: 200px;
-    overflow: hidden;
-    position: relative;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        max-width: none;
+        width: 100%;
+    }
 `;
 
 const Image = styled.img`
@@ -39,65 +59,153 @@ const Image = styled.img`
 `;
 
 const CardContent = styled.div`
-    padding: 1.5rem 1.5rem 1rem;
+    padding: ${({ theme }) => theme.spacing.md};
     align-items: flex-start;
     text-align: left;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        padding: 1rem;
+        padding: ${({ theme }) => theme.spacing.md};
     }
 `;
 
 const Title = styled.h3`
-    font-size: ${({ theme }) => theme.fontSizes.lg};
+    font-size: 1.125rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: ${({ theme }) => theme.spacing.xs};
     color: ${({ theme }) => theme.colors.text};
-    line-height: 1.4;
+    line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-height: 2.8em;
+    min-height: 2.6em;
+    word-wrap: break-word;
+    word-break: break-word;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        line-height: 1.2;
+        min-height: 2.4em;
+        -webkit-line-clamp: 2;
+    }
+
+    ${({ theme }) => theme.responsive.minTablet} {
+        font-size: ${({ theme }) => theme.fontSizes.lg};
+    }
 `;
 
 const Description = styled.p`
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+    font-size: 0.875rem;
     color: ${({ theme }) => theme.colors.lightText};
-    margin-bottom: 1rem;
+    margin-bottom: ${({ theme }) => theme.spacing.md};
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.4;
+    flex: 1;
+    word-wrap: break-word;
+    word-break: break-word;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 0.8125rem;
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+        line-height: 1.3;
+        -webkit-line-clamp: 2;
+    }
+
+    ${({ theme }) => theme.responsive.minTablet} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
 `;
 
 const PriceRow = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: ${({ theme }) => theme.spacing.sm};
+    flex-wrap: wrap;
+    min-width: 0;
+    margin-top: auto;
+    width: 100%;
+    box-sizing: border-box;
+
+    > :last-child {
+        flex-shrink: 0;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        flex-direction: column;
+        align-items: stretch;
+        gap: ${({ theme }) => theme.spacing.sm};
+
+        > :last-child {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+    }
 `;
 
 const Price = styled.div`
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+    flex-direction: row;
+    gap: ${({ theme }) => theme.spacing.xs};
+    align-items: baseline;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        gap: 4px;
+        flex-shrink: 0;
+        justify-content: flex-start;
+        width: 100%;
+    }
 `;
 
 const PriceValue = styled.span`
-    font-size: ${({ theme }) => theme.fontSizes.xl};
+    font-size: ${({ theme }) => theme.fontSizes.lg};
     font-weight: 700;
     color: ${({ theme }) => theme.colors.text};
     line-height: 1;
+    white-space: nowrap;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 1rem;
+    }
+
+    ${({ theme }) => theme.responsive.minTablet} {
+        font-size: ${({ theme }) => theme.fontSizes.xl};
+    }
 `;
 
 const PriceLabel = styled.span`
     font-size: ${({ theme }) => theme.fontSizes.xs};
     color: ${({ theme }) => theme.colors.lightText};
     line-height: 1;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: 10px;
+    }
+
+    ${({ theme }) => theme.responsive.minTablet} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
 `;
+
 const CardWrapper = styled(Link)`
     text-decoration: none;
     color: inherit;
@@ -115,16 +223,20 @@ export default function TourCard({
     currency = 'USD',
 }: TourPropsResponse) {
     const formatPrice = (price: number | undefined, currency: string) => {
-        const numericPrice = price || 0;
+        const numericPrice = Math.round(parseFloat(price?.toString() || '0'));
         try {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: currency,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
             }).format(numericPrice);
         } catch (error) {
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
                 currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
             }).format(numericPrice);
         }
     };
@@ -140,7 +252,7 @@ export default function TourCard({
                 <PriceRow>
                     <Price>
                         <PriceValue>{formatPrice(price, currency)}</PriceValue>
-                        <PriceLabel>/Person</PriceLabel>
+                        <PriceLabel>/ Person</PriceLabel>
                     </Price>
                     {variant === 'button' && (
                         <Button variant="light" size="mini" as={Link} to={`/searchTrips/${uuid}`}>

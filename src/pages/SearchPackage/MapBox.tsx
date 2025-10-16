@@ -29,7 +29,6 @@ const MapContainer = styled.div<{ height: string }>`
     .mapboxgl-popup-content {
         background: ${theme.colors.background};
         border-radius: ${theme.borderRadius.md};
-        padding: ${theme.spacing.md};
         box-shadow: ${theme.shadows.lg};
         border: 1px solid ${theme.colors.border};
         max-width: 300px;
@@ -456,9 +455,7 @@ export default function MapBox({ itineraries, tourUuid, height = '500px' }: Enha
 
         const popupContainer = document.createElement('div');
         const popupRoot = createRoot(popupContainer);
-        popupRoot.render(
-            <MapPopup cityName={cityGroup.cityName} dayRange={cityGroup.dayRange} isOffset={cityGroup.isOffset} />,
-        );
+        popupRoot.render(<MapPopup cityName={cityGroup.cityName} dayRange={cityGroup.dayRange} />);
 
         const popup = new mapboxgl.Popup({
             offset: [0, -15],

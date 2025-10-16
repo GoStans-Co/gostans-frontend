@@ -36,6 +36,12 @@ const PaymentContainer = styled.div`
     box-shadow: ${({ theme }) => theme.shadows.md};
     border: 1px solid ${({ theme }) => theme.colors.border};
     position: relative;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        border-radius: ${({ theme }) => theme.borderRadius.md};
+        margin: 0;
+    }
 `;
 
 const HeaderContainer = styled.div`
@@ -44,6 +50,13 @@ const HeaderContainer = styled.div`
     align-items: center;
     margin-bottom: ${({ theme }) => theme.spacing.xl};
     width: 100%;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: ${({ theme }) => theme.spacing.xs};
+        margin-bottom: ${({ theme }) => theme.spacing.md};
+    }
 `;
 
 const SectionTitle = styled.h2`
@@ -53,6 +66,11 @@ const SectionTitle = styled.h2`
     color: ${({ theme }) => theme.colors.primary};
     margin: 0;
     text-align: left;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xl};
+        text-align: center;
+    }
 `;
 
 const TimerContainer = styled.div`
@@ -63,6 +81,12 @@ const TimerContainer = styled.div`
     gap: ${({ theme }) => theme.spacing.md};
     width: auto;
     text-align: right;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        text-align: center;
+        justify-content: space-between;
+        width: 100%;
+    }
 `;
 
 const TimerText = styled.div`
@@ -70,6 +94,12 @@ const TimerText = styled.div`
     font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.lightText};
     white-space: nowrap;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        white-space: normal;
+        text-align: center;
+    }
 `;
 
 const TimerValue = styled.div<{ $isUrgent: boolean }>`
@@ -77,6 +107,10 @@ const TimerValue = styled.div<{ $isUrgent: boolean }>`
     font-size: ${({ theme }) => theme.fontSizes.lg};
     font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
     color: ${({ $isUrgent }) => ($isUrgent ? '#dc3545' : '#007bff')};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xl};
+    }
 `;
 
 const PaymentButtonsContainer = styled.div`
@@ -101,6 +135,13 @@ const PaymentOption = styled.button<{ variant: 'paypal' | 'card' | 'visa'; selec
     background-color: ${({ theme }) => theme.colors.background};
     min-height: 60px;
     width: 100%;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        min-height: 70px;
+        border-radius: ${({ theme }) => theme.borderRadius.lg};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
 
     ${({ variant, theme, selected }) => {
         if (selected) return '';
@@ -188,6 +229,15 @@ const PaymentIcon = styled.div`
     height: 24px;
     margin-left: auto;
     min-width: 80px;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        min-width: 60px;
+
+        img {
+            max-height: 40px;
+            width: auto;
+        }
+    }
 `;
 
 const LoadingMessage = styled.div`
@@ -207,6 +257,12 @@ const ErrorMessage = styled.div`
     margin-bottom: ${({ theme }) => theme.spacing.lg};
     font-family: ${({ theme }) => theme.typography.fontFamily.body};
     font-size: ${({ theme }) => theme.fontSizes.sm};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        text-align: center;
+    }
 `;
 
 const SuccessMessage = styled.div`
@@ -225,6 +281,13 @@ const ButtonsContainer = styled.div`
     align-items: center;
     gap: 110px;
     margin-top: ${({ theme }) => theme.spacing.xl};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        flex-direction: column;
+        gap: ${({ theme }) => theme.spacing.md};
+        align-items: stretch;
+        margin-top: ${({ theme }) => theme.spacing.lg};
+    }
 `;
 
 const PayNowButtonWrapper = styled.div`
@@ -232,6 +295,17 @@ const PayNowButtonWrapper = styled.div`
     display: flex;
     justify-content: center;
     margin-left: ${({ theme }) => theme.spacing.md};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        margin-left: 0;
+        width: 100%;
+
+        button {
+            width: 100%;
+            padding: ${({ theme }) => theme.spacing.lg} ${({ theme }) => theme.spacing.xl};
+            font-size: ${({ theme }) => theme.fontSizes.lg};
+        }
+    }
 `;
 
 const SecuritySection = styled.div`
@@ -256,6 +330,14 @@ const CardIconsContainer = styled.div`
         width: auto;
         border-radius: 2px;
     }
+
+    ${({ theme }) => theme.responsive.mobile} {
+        gap: 2px;
+
+        img {
+            height: 24px;
+        }
+    }
 `;
 
 const InfoMessage = styled.div`
@@ -267,6 +349,12 @@ const InfoMessage = styled.div`
     margin-bottom: ${({ theme }) => theme.spacing.lg};
     font-family: ${({ theme }) => theme.typography.fontFamily.body};
     font-size: ${({ theme }) => theme.fontSizes.sm};
+
+    ${({ theme }) => theme.responsive.mobile} {
+        padding: ${({ theme }) => theme.spacing.md};
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+        text-align: left;
+    }
 `;
 
 export default function PaymentStepUI({
@@ -498,7 +586,7 @@ export default function PaymentStepUI({
             )}
 
             <ButtonsContainer>
-                <Button variant="outline" onClick={onBack} disabled={isProcessing} size="lg">
+                <Button variant="outline" onClick={onBack} disabled={isProcessing} size="md">
                     Back
                 </Button>
                 {selectedMethod === 'paypal' && (

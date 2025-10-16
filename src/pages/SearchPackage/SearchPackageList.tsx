@@ -156,7 +156,7 @@ const ToursList = styled.div`
 const TourCard = styled(Card)`
     display: flex;
     gap: 1.5rem;
-    padding: 1.5rem;
+    padding: 1rem;
     transition: all 0.3s ease;
 
     &:hover {
@@ -244,13 +244,27 @@ const TourTitle = styled.h3`
     font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
     color: ${({ theme }) => theme.colors.text};
     margin: 0;
-`;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+    max-width: 100%;
 
-const TourPrice = styled.div`
-    text-align: right;
-
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-        text-align: left;
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        -webkit-line-clamp: 3;
+        line-height: 1.2;
+        max-width: 100%;
+        font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+        color: ${({ theme }) => theme.colors.primary};
+        margin-bottom: -4px;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        max-width: 100%;
+        line-height: 1.2;
     }
 `;
 
@@ -258,6 +272,21 @@ const Price = styled.span`
     font-size: ${({ theme }) => theme.fontSizes.xl};
     font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
     color: ${({ theme }) => theme.colors.text};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.lg};
+        margin-top: -4px;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        max-width: 100%;
+        line-height: 1.2;
+        font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+        color: ${({ theme }) => theme.colors.primary};
+    }
 `;
 
 const TourDescription = styled.p`
@@ -989,11 +1018,7 @@ export default function SearchPackageList() {
                                                 <TourContent>
                                                     <TourHeader>
                                                         <TourTitle>{tour.title}</TourTitle>
-                                                        <TourPrice>
-                                                            <Price>
-                                                                {tour.currency} {tour.price}
-                                                            </Price>
-                                                        </TourPrice>
+                                                        <Price>$ {Math.round(parseFloat(tour.price))}</Price>
                                                     </TourHeader>
 
                                                     <TourDescription>{tour.shortDescription}</TourDescription>
@@ -1024,6 +1049,7 @@ export default function SearchPackageList() {
                                                             size="sm"
                                                             onClick={() => navigate(`/searchTrips/${tour.uuid}`)}
                                                             fullWidth={window.innerWidth < 768}
+                                                            style={{ minWidth: 10 }}
                                                         >
                                                             See details
                                                         </Button>

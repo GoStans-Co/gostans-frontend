@@ -20,21 +20,26 @@ const PageContainer = styled.div`
     padding-bottom: ${({ theme }) => theme.spacing['5xl']};
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        padding: ${({ theme }) => theme.spacing.md} 0;
+        padding: ${({ theme }) => theme.spacing.md};
     }
 `;
 
 const ContentContainer = styled.div`
     padding: 0 ${({ theme }) => theme.spacing.lg};
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
+    width: 100%;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        padding: 0 ${({ theme }) => theme.spacing.md};
-        margin: 0 auto;
+        padding: 0;
+        margin: 0;
         gap: ${({ theme }) => theme.spacing.sm};
+    }
+
+    ${({ theme }) => theme.responsive.tablet} {
+        padding: 0 ${({ theme }) => theme.spacing.md};
     }
 `;
 
@@ -81,25 +86,35 @@ const PageSubtitle = styled.p`
 
 const ToursGrid = styled.div`
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem;
     margin: 0 auto;
     margin-bottom: 3rem;
     padding-top: 1rem;
     padding-bottom: 3rem;
+    width: 100%;
+    max-width: 100%;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         grid-template-columns: 1fr;
         gap: 1rem;
         margin-bottom: 2rem;
+        padding-top: 0.5rem;
+        padding-bottom: 1.5rem;
     }
 
     ${({ theme }) => theme.responsive.tablet} {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
     }
 
     ${({ theme }) => theme.responsive.laptop} {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.25rem;
+    }
+
+    @media (min-width: 1200px) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 `;
 

@@ -706,15 +706,11 @@ export default function OrderHistory({ bookingDetail, loading, error, onBack, on
                                 <PriceBreakdown>
                                     <PriceRow>
                                         <span>Tour Price</span>
-                                        <span>
-                                            {payment.currency} {payment.amount}
-                                        </span>
+                                        <span>$ {Math.round(parseFloat(payment.amount)) / 100}</span>
                                     </PriceRow>
                                     <TotalRow>
                                         <span>Total Amount</span>
-                                        <span>
-                                            {payment.currency} {payment.amount}
-                                        </span>
+                                        <span>$ {Math.round(parseFloat(payment.amount)) / 100}</span>
                                     </TotalRow>
                                 </PriceBreakdown>
                             </PaymentCard>

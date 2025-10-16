@@ -32,7 +32,7 @@ const HeaderSection = styled.div`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: ${({ theme }) => theme.spacing.md};
+    gap: ${({ theme }) => theme.spacing.sm};
 
     ${({ theme }) => theme.responsive.maxMobile} {
         text-align: left;
@@ -41,7 +41,6 @@ const HeaderSection = styled.div`
 `;
 
 const BackButtonContainer = styled.div`
-    margin-bottom: ${({ theme }) => theme.spacing.md};
     text-align: left;
 
     ${({ theme }) => theme.responsive.maxMobile} {
@@ -163,11 +162,15 @@ const EmptyStateTitle = styled.h3`
 `;
 
 const EmptyStateDescription = styled.p`
-    font-size: ${({ theme }) => theme.fontSizes.lg};
+    font-size: ${({ theme }) => theme.fontSizes.md};
     color: ${({ theme }) => theme.colors.lightText};
     max-width: 500px;
     line-height: 1.6;
     margin-bottom: ${({ theme }) => theme.spacing.xl};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
 `;
 
 /**
@@ -261,7 +264,7 @@ export default function TopDestinationsByCity() {
             <HeaderSection>
                 <BackButtonContainer>
                     <Button
-                        variant="outline"
+                        variant="text"
                         size={window.innerWidth <= 768 ? 'xs' : 'sm'}
                         onClick={handleBackClick}
                         startIcon={<FaArrowLeft size={window.innerWidth <= 768 ? 12 : 14} />}
@@ -323,7 +326,7 @@ export default function TopDestinationsByCity() {
                                             country={tour.countryName || countryName}
                                             isLiked={tour.isLiked || false}
                                             variant="button"
-                                            buttonText="View Details"
+                                            buttonText="View more"
                                             uuid={tour.uuid}
                                         />
                                     </TourCardWrapper>
@@ -339,7 +342,7 @@ export default function TopDestinationsByCity() {
                             Unfortunately, there are no tours available for this destination at the moment. Please check
                             back later or explore other destinations.
                         </EmptyStateDescription>
-                        <Button variant="primary" size="lg" onClick={handleBackClick} startIcon={<FaArrowLeft />}>
+                        <Button variant="secondary" size="md" onClick={handleBackClick} startIcon={<FaArrowLeft />}>
                             Explore Other Destinations
                         </Button>
                     </EmptyStateContainer>

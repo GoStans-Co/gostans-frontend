@@ -107,7 +107,7 @@ const EmptyText = styled.p`
  * @param {TripsPageProps} props - Props for the TripsPage component
  * @returns JSX.Element
  */
-export default function TripsPage({ bookings, onTripClick }: TripsPageProps) {
+export default function MyTips({ bookings, onTripClick }: TripsPageProps) {
     const { handlePayment, handleCancel, handleDelete, handleBookAgain } = useTripActions(bookings ?? { all: [] });
     const [activeTab, setActiveTab] = useState<TripStatus>('all');
     const [messageApi, contextHolder] = message.useMessage();
@@ -225,6 +225,7 @@ export default function TripsPage({ bookings, onTripClick }: TripsPageProps) {
                             <TripsList>
                                 {filteredTrips.map((trip) => (
                                     <TripCard
+                                        variant="compact"
                                         key={trip.id}
                                         id={trip.id}
                                         image={trip.image}

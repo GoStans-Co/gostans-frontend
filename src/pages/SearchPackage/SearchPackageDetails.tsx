@@ -108,27 +108,12 @@ const Title = styled.h1`
 
     ${({ theme }) => theme.responsive.maxMobile} {
         text-align: left;
-        font-size: ${({ theme }) => theme.fontSizes['2xl']};
+        font-size: ${({ theme }) => theme.fontSizes.lg};
         line-height: 1.3;
-        white-space: nowrap;
-        -webkit-line-clamp: unset;
-        -webkit-box-orient: unset;
-        display: block;
-        text-overflow: ellipsis;
-        max-width: calc(100% - 90px);
+        -webkit-line-clamp: 3;
+        max-width: 100%;
         overflow: hidden;
-    }
-`;
-
-const ActionButtons = styled.div`
-    display: flex;
-    gap: 0.5rem;
-    flex-shrink: 0;
-    align-items: flex-start;
-
-    ${({ theme }) => theme.responsive.maxMobile} {
-        gap: ${({ theme }) => theme.spacing.sm};
-        flex-shrink: 0;
+        text-overflow: ellipsis;
     }
 `;
 
@@ -152,10 +137,18 @@ const IconButton = styled.button`
     }
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        width: 36px;
-        height: 36px;
-        border-radius: ${({ theme }) => theme.borderRadius.sm};
-        box-shadow: ${({ theme }) => theme.shadows.sm};
+        display: none;
+    }
+`;
+
+const ActionButtons = styled.div`
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    align-items: flex-start;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        display: none;
     }
 `;
 
@@ -164,10 +157,11 @@ const MetaInfo = styled.div`
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
 
     ${({ theme }) => theme.responsive.maxMobile} {
         gap: ${({ theme }) => theme.spacing.sm};
-        font-size: ${({ theme }) => theme.fontSizes.sm};
+        font-size: ${({ theme }) => theme.fontSizes.xs};
     }
 `;
 
@@ -418,7 +412,7 @@ export default function SearchPackageDetails() {
     const setTourDetailsCache = useSetRecoilState(tourDetailsAtom);
     const [cart, setCart] = useRecoilState(cartAtom);
 
-    /*  api services calls and hooks here */
+    /* api services calls and hooks here */
     const { tours: toursService, cart: cartApiService } = useApiServices();
     const { tours: trendingTours, fetchTrendingTours } = useTrendingTours();
     const { toggleWishlistWithTour, getHeartColor, isProcessing } = useFavorite();
@@ -436,7 +430,6 @@ export default function SearchPackageDetails() {
         isOpen: boolean;
         type: 'wishlist-login' | 'select-package-login' | 'date-confirmation' | null;
     }>({ isOpen: false, type: null });
-
     const tour = id ? tourDetailsCache[id]?.data : null;
     const isInCart = cart.some((item) => item.tourId === tour?.uuid);
     const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -482,7 +475,7 @@ export default function SearchPackageDetails() {
         };
 
         fetchTourDetails();
-    }, [id, tourDetailsCache, toursService, setTourDetailsCache]);
+    }, [id, tourDetailsCache, setTourDetailsCache]);
 
     useEffect(() => {
         fetchTrendingTours();
@@ -538,7 +531,13 @@ export default function SearchPackageDetails() {
             } else {
                 if (!tour) return;
                 const cartItem = createCartItem(tour, selectedDate?.format('YYYY-MM-DD'));
-                setCart((prev) => [...prev, cartItem]);
+                await cartApiService.addToCart(
+                    {
+                        tourUuid: tour.uuid,
+                        quantity: 1,
+                    },
+                    cartItem,
+                );
                 messageApi.success(`Tour "${tour.title}" added to your cart!`);
             }
         }

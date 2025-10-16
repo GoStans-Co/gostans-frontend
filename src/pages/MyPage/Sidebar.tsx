@@ -37,11 +37,11 @@ const SidebarContainer = styled.div`
     max-width: 300px;
     background-color: ${({ theme }) => theme.colors.background};
     border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
     padding: ${({ theme }) => theme.spacing.lg};
     margin: ${({ theme }) => theme.spacing.lg};
     position: sticky;
-    top: 100px;
+    top: 110px;
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 80px);
@@ -80,12 +80,12 @@ const ProfileSection = styled.div`
     }
 `;
 
-const Avatar = styled.div<{ hasImage?: boolean }>`
+const Avatar = styled.div<{ $hasImage?: boolean }>`
     width: 60px;
     height: 60px;
     border-radius: 50%;
     background-color: ${({ theme }) => theme.colors.lightBackground};
-    background-image: ${({ hasImage }) => (hasImage ? `url(${hasImage})` : 'none')};
+    background-image: ${({ $hasImage }) => ($hasImage ? `url(${$hasImage})` : 'none')};
     background-size: cover;
     background-position: center;
     display: flex;
@@ -157,7 +157,7 @@ const NavSection = styled.div`
 const NavItem = styled.button<{ $active?: boolean }>`
     display: flex;
     align-items: center;
-    padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+    padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.md};
     text-decoration: none;
     border-radius: ${({ theme }) => theme.borderRadius.md};
     color: ${({ theme, $active }) => ($active ? theme.colors.primary : theme.colors.text)};
@@ -171,37 +171,6 @@ const NavItem = styled.button<{ $active?: boolean }>`
     border: none;
     position: relative;
     overflow: hidden;
-
-    &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: ${({ $active }) => ($active ? '2px' : '0')};
-        height: 60%;
-        background: linear-gradient(
-            135deg,
-            ${({ theme }) => theme.colors.primary},
-            ${({ theme }) => theme.colors.secondary}
-        );
-        border-radius: 0 4px 4px 0;
-        transition: width 0.3s ease;
-    }
-
-    &:hover {
-        background-color: ${({ theme }) => theme.colors.lightBackground};
-        transform: translateX(2px);
-        box-shadow: ${({ theme }) => theme.shadows.sm};
-
-        &::before {
-            width: 2px;
-        }
-    }
-
-    &:active {
-        transform: translateX(2px);
-    }
 `;
 
 const IconWrapper = styled.span<{ $active?: boolean }>`
@@ -237,7 +206,7 @@ export default function Sidebar({
         <SidebarContainer>
             <ProfileSection>
                 <Avatar
-                    hasImage={!!profileImage}
+                    $hasImage={!!profileImage}
                     onMouseEnter={onMouseEnter}
                     onMouseLeave={onMouseLeave}
                     onClick={onAvatarClick}

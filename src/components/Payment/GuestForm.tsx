@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Input from '@/components/common/Input';
 import { useValidation } from '@/hooks/utils/useValidation';
 import { COUNTRY_CODES } from '@/constants/countryCodes';
+import { theme } from '@/styles/theme';
 
 type LeadGuestFormProps = {
     onSubmit: (data: any) => void;
@@ -26,11 +27,10 @@ const FormTitle = styled.h2`
 `;
 
 const FormSubtitle = styled.p`
-    font-family: ${({ theme }) => theme.typography.fontFamily.body};
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    color: ${({ theme }) => theme.colors.lightText};
-    margin-top: ${({ theme }) => theme.spacing.xs};
+    font-size: ${theme.fontSizes.sm};
+    color: ${theme.colors.secondary};
     text-align: left;
+    margin-top: ${theme.spacing.xs};
 `;
 
 const FormGrid = styled.div`
@@ -39,8 +39,9 @@ const FormGrid = styled.div`
     gap: ${({ theme }) => theme.spacing.lg};
     margin-bottom: ${({ theme }) => theme.spacing.lg};
 
-    @media (max-width: 768px) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing.md};
     }
 `;
 

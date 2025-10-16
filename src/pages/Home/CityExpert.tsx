@@ -37,29 +37,29 @@ const ExpertContent = styled.div`
 `;
 
 const ExpertTitle = styled.h2`
-    font-size: 2.5rem;
+    font-size: 2.4rem;
     color: ${({ theme }) => theme.colors.primary};
     margin-bottom: 1rem;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: 2rem;
+        font-size: 1.4rem;
         text-align: center;
     }
 
     ${({ theme }) => theme.responsive.tablet} {
-        font-size: 2.2rem;
+        font-size: 1.6rem;
     }
 `;
 
 const ExpertDescription = styled.p`
-    font-size: 1.125rem;
+    font-size: 1rem;
     color: ${({ theme }) => theme.colors.text};
     margin-bottom: 1.5rem;
     max-width: 90%;
     text-align: left;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: 1rem;
+        font-size: 0.9rem;
         text-align: center;
         max-width: 100%;
         margin-bottom: 1rem;
