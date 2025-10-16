@@ -1,0 +1,6 @@
+review:
+    enabled: true
+    reviewers:
+        - coderabbit
+    rules:
+        - all
