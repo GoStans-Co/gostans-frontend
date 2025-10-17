@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import AtomicDropdownModal from '@/components/common/AtomicDropdownElements';
 import { useEffect } from 'react';
 import { CartItem } from '@/services/api/cart';
+import { formatCurrency } from '@/utils/general/formatCurrency';
 
 type CartModalProps = {
     isOpen: boolean;
@@ -74,8 +75,14 @@ const CartItemName = styled.span`
     font-size: ${theme.fontSizes.sm};
     font-weight: ${theme.typography.fontWeight.medium};
     color: ${theme.colors.text};
+    line-height: 1.4;
     text-align: left;
     margin-bottom: ${theme.spacing.xs};
+    padding-top: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         font-size: 13px;
@@ -126,7 +133,7 @@ const ShowMoreSection = styled.div`
 `;
 
 const CartFooter = styled.div`
-    padding: ${theme.spacing.lg};
+    padding: ${theme.spacing.md};
     border-top: 1px solid #f0f0f0;
     background: #fafafa;
 
@@ -135,7 +142,7 @@ const CartFooter = styled.div`
     }
 
     ${({ theme }) => theme.responsive.minTablet} {
-        padding: ${theme.spacing.md} ${theme.spacing.lg};
+        padding: ${theme.spacing.md};
     }
 `;
 
@@ -208,9 +215,9 @@ export default function CartModal({
             isOpen={isOpen}
             onClose={onClose}
             anchorElement={anchorElement}
-            width="400px"
-            modalWidth={400}
-            modalHeight={550}
+            width="350px"
+            modalWidth={350}
+            modalHeight={490}
             gap={20}
             alignment="right"
         >
@@ -229,9 +236,7 @@ export default function CartModal({
                             <CartItemImage src={item.tourData?.mainImage ?? ''} />
                             <CartItemDetails>
                                 <CartItemName>{item.tourData?.title ?? 'No title'}</CartItemName>
-                                <CartItemPrice>
-                                    ${item.tourData?.price ? parseFloat(item.tourData.price).toFixed(2) : '0.00'}
-                                </CartItemPrice>
+                                <CartItemPrice>{formatCurrency(item.tourData?.price)}</CartItemPrice>
                             </CartItemDetails>
                             <RemoveButton onClick={() => onRemoveItem(item.tourId)}>
                                 <X size={16} />
@@ -255,7 +260,7 @@ export default function CartModal({
                     <CartFooter>
                         <CartTotal>
                             <span>Subtotal ({totalItems} items)</span>
-                            <span>${totalPrice.toFixed(2)}</span>
+                            <span>{formatCurrency(totalPrice)}</span>
                         </CartTotal>
                         <Button variant="primary" size="md" onClick={handleGoToCart} style={{ width: '100%' }}>
                             Go to cart

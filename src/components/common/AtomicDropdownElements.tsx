@@ -14,6 +14,13 @@ type AtomicDropdownModalProps = {
     children: React.ReactNode;
 };
 
+/**
+ * Atomic Dropdown Modal Component
+ * This component renders a dropdown modal that is anchored to a specified element.
+ * It uses the `useDropdownModal` hook to manage positioning and visibility
+ * @param {AtomicDropdownModalProps} props - Props for the AtomicDropdownModal component
+ * @returns {JSX.Element | null} The rendered AtomicDropdownModal component or null if not open
+ */
 export default function AtomicDropdownModal({
     isOpen,
     onClose,

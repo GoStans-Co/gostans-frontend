@@ -225,6 +225,7 @@ export default function MyTrips({ bookings, onTripClick }: TripsPageProps) {
                             <TripsList>
                                 {filteredTrips.map((trip) => (
                                     <TripCard
+                                        id={trip.id}
                                         variant="compact"
                                         key={trip.id}
                                         image={trip.image}

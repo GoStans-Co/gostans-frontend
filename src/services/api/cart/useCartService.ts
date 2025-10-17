@@ -74,9 +74,14 @@ export const useCartService = () => {
 
                 if (!existsOnServer) {
                     try {
-                        await addToCart({
-                            tourUuid: localItem.tourId,
-                            quantity: localItem.quantity,
+                        /* we call the api directly without updating local state during sync */
+                        await fetchData({
+                            url: '/user/addTocart/',
+                            method: 'POST',
+                            data: {
+                                tourUuid: localItem.tourId,
+                                quantity: localItem.quantity,
+                            },
                         });
                     } catch (error) {
                         console.info('Failed to sync item:', localItem.tourData.title, error);
@@ -85,6 +90,7 @@ export const useCartService = () => {
             });
 
             await Promise.all(syncPromises);
+            /* once all syncing is complete, then we fetch the final cart state from server */
             await getCartList(true);
         } catch (error) {
             console.info('Cart sync failed:', error);

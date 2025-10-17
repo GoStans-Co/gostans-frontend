@@ -33,18 +33,20 @@ const CardImage = styled.div<{ $imageUrl: string; $size?: 'default' | 'small' | 
     background-position: center;
     border-radius: ${({ theme }) => theme.borderRadius.md};
     flex-shrink: 0;
+    margin-right: ${({ theme }) => theme.spacing.md};
 
     ${({ theme }) => theme.responsive.mobile} {
         width: 100%;
         height: 200px;
         min-width: unset;
         margin-bottom: 0;
+        margin-right: 0;
         border-radius: ${({ theme }) => `${theme.borderRadius.lg} ${theme.borderRadius.lg} 0 0`};
     }
 `;
 
 const CardInfo = styled.div<{ $hasActions?: boolean }>`
-    padding-left: ${({ theme }) => theme.spacing.lg};
+    padding-left: 0;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -54,6 +56,32 @@ const CardInfo = styled.div<{ $hasActions?: boolean }>`
     ${({ theme }) => theme.responsive.mobile} {
         padding: ${({ theme }) => theme.spacing.md};
         min-height: auto;
+    }
+`;
+
+const CardTitle = styled.h3<{ size?: 'default' | 'large' | 'small' }>`
+    font-size: ${({ theme, size }) => {
+        if (size === 'large') return theme.fontSizes.xl;
+        if (size === 'small') return theme.fontSizes.sm;
+        return theme.fontSizes.lg;
+    }};
+    color: ${({ theme }) => theme.colors.text};
+    margin: 0;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    word-break: break-word;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+
+    ${({ theme }) => theme.responsive.mobile} {
+        font-size: ${({ theme }) => theme.fontSizes.md};
+        line-height: 1.3;
     }
 `;
 
@@ -112,37 +140,13 @@ const CardPrice = styled.span`
     }
 `;
 
-const CardTitle = styled.h3<{ size?: 'default' | 'large' | 'small' }>`
-    font-size: ${({ theme, size }) => {
-        if (size === 'large') return theme.fontSizes.xl;
-        if (size === 'small') return theme.fontSizes.sm;
-        return theme.fontSizes.lg;
-    }};
-    color: ${({ theme }) => theme.colors.text};
-    margin: 0;
-    font-weight: 600;
-    line-height: 1.4;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    word-break: break-word;
-
-    ${({ theme }) => theme.responsive.mobile} {
-        font-size: ${({ theme }) => theme.fontSizes.md};
-        line-height: 1.3;
-    }
-`;
-
 const CardSubtitle = styled.p`
     font-size: ${({ theme }) => theme.fontSizes.sm};
     color: ${({ theme }) => theme.colors.lightText};
     margin: 0;
     line-height: 1.4;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     word-break: break-word;
@@ -227,13 +231,12 @@ const CardWrapper = styled.div`
 const TourActions = styled.div`
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
-
     ${({ theme }) => theme.responsive.mobile} {
-        flex-direction: column;
+        flex-direction: row;
         gap: ${({ theme }) => theme.spacing.md};
-        align-items: stretch;
+        align-items: center;
     }
 `;
 
@@ -301,7 +304,7 @@ export default function TripCard(props: TripCardProps) {
                     </Button>
                 )}
                 {onRemove && (
-                    <Button variant="text" size="sm" onClick={onRemove}>
+                    <Button variant="light" size="mini" onClick={onRemove} style={{ color: 'red' }}>
                         Remove
                     </Button>
                 )}
@@ -341,10 +344,13 @@ export default function TripCard(props: TripCardProps) {
 
     const renderNewActions = () => {
         const hasNewActions = onEdit || onRemove || props.actionButtons?.length || price || props.pricing;
-
         if (!hasNewActions) return null;
-
-        return <TourActions>{renderActionButtons()}</TourActions>;
+        return (
+            <TourActions>
+                {renderCustomContent()}
+                {renderActionButtons()}
+            </TourActions>
+        );
     };
 
     return (
@@ -385,10 +391,6 @@ export default function TripCard(props: TripCardProps) {
 
                         {/* legacy custom content support */}
                         {props.customContent}
-
-                        {/* render custom content at bottom (default) */}
-                        {(!props.customContentData?.position || props.customContentData?.position === 'bottom') &&
-                            renderCustomContent()}
                     </div>
 
                     {/* legacy actions support */}

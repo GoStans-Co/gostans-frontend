@@ -1,6 +1,7 @@
 type Status = 'awaiting' | 'waiting' | 'booked' | 'all' | string;
 
 type BaseCardProps = {
+    id: string | number;
     image: string;
     title: string;
     subtitle?: string;
@@ -9,7 +10,7 @@ type BaseCardProps = {
 
 type MetaProps = {
     meta?: {
-        duration?: string;
+        duration?: number | null;
         peopleCount?: number;
     };
 };
@@ -33,11 +34,14 @@ type ActionProps = {
 };
 
 type ContentProps = {
+    quantity?: number;
+    showQuantity?: boolean;
     customContent?: React.ReactNode;
     customContentData?: {
         position?: 'top' | 'bottom';
         details?: string;
     };
+    showQuantityControls?: boolean;
 };
 
 type PricingProps = {
