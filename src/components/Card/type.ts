@@ -38,11 +38,14 @@ type ActionProps = {
 };
 
 type ContentProps = {
+    quantity?: number;
+    showQuantity?: boolean;
     customContent?: React.ReactNode;
     customContentData?: {
         position?: 'top' | 'bottom';
         details?: string;
     };
+    showQuantityControls?: boolean;
 };
 
 type PricingProps = {

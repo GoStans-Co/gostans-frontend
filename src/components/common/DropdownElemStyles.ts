@@ -51,7 +51,6 @@ export const DropdownModal = styled.div<{
         height: 0;
         border-left: 8px solid transparent;
         border-right: 8px solid transparent;
-        border-bottom: 8px solid ${theme.colors.background};
 
         ${({ theme }) => theme.responsive.maxMobile} {
             left: 50%;
@@ -69,7 +68,6 @@ export const DropdownModal = styled.div<{
         height: 0;
         border-left: 8px solid transparent;
         border-right: 8px solid transparent;
-        border-bottom: 8px solid ${theme.colors.border};
 
         ${({ theme }) => theme.responsive.maxMobile} {
             left: 50%;
@@ -98,8 +96,7 @@ export const DropdownModal = styled.div<{
 `;
 
 export const ModalHeader = styled.div`
-    padding: ${theme.spacing.md} ${theme.spacing.lg};
-    border-bottom: 1px solid ${theme.colors.border};
+    padding: ${theme.spacing.md};
     background: ${theme.colors.lightBackground};
     border-radius: ${theme.borderRadius.lg} ${theme.borderRadius.lg} 0 0;
 

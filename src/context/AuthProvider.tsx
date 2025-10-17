@@ -120,26 +120,6 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         return () => clearInterval(interval);
     }, []);
 
-    useEffect(() => {
-        const handleAuthChange = async () => {
-            /* Only run if auth state changed to true and we haven't synced yet and not currently loading */
-            if (isAuthenticated && !hasInitializedCart && !isLoading) {
-                try {
-                    await syncCartOnLogin();
-                    setHasInitializedCart(true);
-                    localStorage.setItem('cartSynced', 'true');
-                } catch (error) {
-                    console.error('Cart sync failed after authentication change:', error);
-                }
-            }
-        };
-
-        /* only trigger if isAuthenticated is true, we haven't initialized cart, and not during initial load */
-        if (isAuthenticated && !hasInitializedCart && !isLoading) {
-            handleAuthChange();
-        }
-    }, [isAuthenticated, hasInitializedCart, isLoading]);
-
     return (
         <AuthContext.Provider
             value={{
