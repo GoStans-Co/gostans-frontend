@@ -6,6 +6,12 @@ type ProtectedRouteProps = {
     children: React.ReactNode;
 };
 
+/**
+ * ProtectedRoute - Component to protect routes that require authentication
+ * This component checks if the user is authenticated using cookies.
+ * If not authenticated, it redirects the user to the login page.
+ * @param {ProtectedRouteProps} props - Props for the ProtectedRoute component
+ */
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const { isAuthenticated } = useCookieAuth();
     const location = useLocation();

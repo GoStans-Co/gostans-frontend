@@ -93,6 +93,10 @@ const ButtonWrapper = styled.div`
     }
 `;
 
+/**
+ * CityExpertSection - Sub Component
+ * @description This component displays a section inviting users to become local city experts.
+ */
 export default function CityExpertSection() {
     return (
         <ExpertSectionContainer>

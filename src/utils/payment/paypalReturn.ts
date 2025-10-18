@@ -2,6 +2,11 @@ import { useApiServices } from '@/services/api';
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
+/**
+ * Custom hook to handle PayPal return URLs
+ * @returns {void}
+ * @description This hook processes the return URLs from PayPal after a payment attempt.
+ */
 export default function usePayPalReturn() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();

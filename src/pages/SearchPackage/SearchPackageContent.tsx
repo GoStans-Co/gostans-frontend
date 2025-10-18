@@ -562,6 +562,11 @@ const SlotDescription = styled.div`
     line-height: 1.6;
 `;
 
+/**
+ * SearchPackageContent - Sub Component
+ * @description This component displays the main content for the search package page,
+ * including tour details, itinerary, reviews, and related tours.
+ */
 export default function SearchPackageContent({
     tour,
     expandedDays,
@@ -580,7 +585,7 @@ export default function SearchPackageContent({
     const { startLocation, endLocation, isLoop } = getLocationInfo(tour.itineraries);
     const endMessage = isLoop ? "You'll return to the starting point" : `You'll end at ${endLocation}`;
 
-    const renderIncludedItems = (items: any[], type: 'included' | 'excluded') => {
+    const renderIncludedItems = (items: TourDetailsResponse['includedItem'], type: 'included' | 'excluded') => {
         const Icon = type === 'included' ? FaCheck : FaTimes;
         const color = type === 'included' ? '#228b22' : '#ff0000';
         const defaultText = type === 'included' ? 'No included items specified.' : 'No excluded items specified.';

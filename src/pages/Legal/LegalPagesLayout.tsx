@@ -79,7 +79,12 @@ const NavLink = styled(Link)<{ $isActive?: boolean }>`
     }
 `;
 
-export default function LegalPageLayout({ children }: LegalPageLayoutProps) {
+/**
+ * LegalPageLayout - Page Component
+ * @description This component provides a layout for legal pages,
+ * including a side navigation menu for different legal documents.
+ */
+export default function LegalPagesLayout({ children }: LegalPageLayoutProps) {
     const location = useLocation();
 
     const legalLinks = [

@@ -127,7 +127,7 @@ const FormTextarea = styled.textarea`
 `;
 /**
  * ContactUs - Component for the contact us page
- * This component allows users to send messages to the company.
+ * @description This component allows users to send messages to the company.
  */
 export default function ContactUs() {
     const [form, setForm] = useState({
@@ -181,7 +181,7 @@ export default function ContactUs() {
                             </InfoIcon>
                             <InfoText>
                                 <h4>Email Us</h4>
-                                <p>info@gostans.com</p>
+                                <p>gostans.com@gmail.com</p>
                             </InfoText>
                         </InfoItem>
 
@@ -216,7 +216,7 @@ export default function ContactUs() {
                             label="Your Name"
                             value={form.name}
                             onChange={handleChange}
-                            placeholder="Bolta Teshaboev"
+                            placeholder="Dave Smith"
                             required
                         />
                     </FormGroup>

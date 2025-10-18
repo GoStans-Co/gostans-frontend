@@ -183,6 +183,11 @@ const TourDetailsContent = styled.div`
     }
 `;
 
+/**
+ * SearchPackageDetailSidebar - Sub Component
+ * @description This component displays the sidebar for the search package detail page,
+ * including price, date selection, tour details, and booking action.
+ */
 export default function SearchPackageDetailSidebar({
     tour,
     selectedDate,

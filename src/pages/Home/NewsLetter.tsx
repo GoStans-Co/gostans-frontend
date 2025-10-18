@@ -100,6 +100,11 @@ const SubscribeButton = styled.button`
     }
 `;
 
+/**
+ * NewsletterSection - Sub Component
+ * @description This component displays a newsletter subscription section
+ * with an input field and a subscribe button.
+ */
 export default function NewsletterSection() {
     return (
         <NewsletterContainer>

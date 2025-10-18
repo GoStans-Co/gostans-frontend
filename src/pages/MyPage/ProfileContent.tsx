@@ -61,6 +61,11 @@ const SectionTitle = styled.h2`
     text-align: left;
 `;
 
+/**
+ * ProfileContent - Sub Component
+ * @description This component displays the user's profile information in a read-only format.
+ * @param {ProfileContentProps} props - Props for the ProfileContent component
+ */
 export default function ProfileContent({ userData }: ProfileContentProps) {
     return (
         <ProfileContentContainer>
