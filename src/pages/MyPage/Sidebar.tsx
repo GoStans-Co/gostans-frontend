@@ -189,6 +189,11 @@ const IconWrapper = styled.span<{ $active?: boolean }>`
     }
 `;
 
+/**
+ * Sidebar - Sub Component
+ * @description This component displays the sidebar navigation for the MyPage section,
+ * allowing users to navigate between different sections like Profile, Trips, and Favorites.
+ */
 export default function Sidebar({
     userName,
     joinDate,

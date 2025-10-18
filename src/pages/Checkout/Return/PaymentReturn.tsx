@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 
+type PaymentStatus = 'processing' | 'success' | 'error' | 'cancelled';
+
 const Container = styled.div`
     display: flex;
     justify-content: center;
@@ -75,13 +77,18 @@ const SuccessMessage = styled.div`
     margin-bottom: ${({ theme }) => theme.spacing.lg};
 `;
 
+/**
+ * PaymentReturn - Page Component
+ * @description This component handles the return process after a payment attempt,
+ * confirming the payment with the backend and providing user feedback.
+ */
 export default function PaymentReturn() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { checkout } = useApiServices();
     const hasExecuted = useRef(false);
 
-    const [status, setStatus] = useState<'processing' | 'success' | 'error' | 'cancelled'>('processing');
+    const [status, setStatus] = useState<PaymentStatus>('processing');
     const [message, setMessage] = useState('Processing your payment...');
 
     useEffect(() => {

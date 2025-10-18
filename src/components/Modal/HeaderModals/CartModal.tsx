@@ -173,6 +173,13 @@ const EmptyCartMessage = styled.div`
     }
 `;
 
+/**
+ * Cart Modal Component
+ * This component renders a modal displaying the user's cart items.
+ * It shows a summary of items, total price, and provides options to remove items or go to the cart page.
+ * @param {CartModalProps} props - Props for the CartModal component
+ * @returns {JSX.Element} The rendered CartModal component
+ */
 export default function CartModal({
     isOpen,
     onClose,

@@ -1,5 +1,12 @@
 import { COOKIE_OPTIONS } from '@/services/cache/cookieAuthService';
 
+/**
+ * Set a cookie - utility function
+ * @description Sets a cookie with the given name and value.
+ * @param {string} name - The name of the cookie
+ * @param {string} value - The value of the cookie
+ * @param {Object} options - Additional cookie options
+ */
 const setCookie = (name: string, value: string, options = COOKIE_OPTIONS) => {
     let cookieString = `${name}=${value}; path=${options.path}`;
 

@@ -92,7 +92,7 @@ const Title = styled.h3`
     word-break: break-word;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: ${({ theme }) => theme.fontSizes.md};
+        font-size: ${({ theme }) => theme.fontSizes.sm};
         line-height: 1.2;
         min-height: 2.4em;
         -webkit-line-clamp: 2;
@@ -117,7 +117,7 @@ const Description = styled.p`
     word-break: break-word;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        font-size: 0.8125rem;
+        font-size: 0.63rem;
         margin-bottom: ${({ theme }) => theme.spacing.sm};
         line-height: 1.3;
         -webkit-line-clamp: 2;
@@ -151,7 +151,7 @@ const PriceRow = styled.div`
         > :last-child {
             width: 100%;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
         }
     }
 `;
@@ -170,6 +170,8 @@ const Price = styled.div`
         flex-shrink: 0;
         justify-content: flex-start;
         width: 100%;
+        text-align: left;
+        align-items: baseline;
     }
 `;
 

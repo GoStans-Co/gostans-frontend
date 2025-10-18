@@ -31,6 +31,8 @@ jobs:
                   VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
                   VITE_PAYPAL_CLIENT_ID: ${{ secrets.VITE_PAYPAL_CLIENT_ID }}
                   VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+                  VITE_PUBLIC_POSTHOG_KEY: ${{ secrets.VITE_PUBLIC_POSTHOG_KEY }}
+                  VITE_PUBLIC_POSTHOG_HOST: ${{ secrets.VITE_PUBLIC_POSTHOG_HOST }}
 
             - name: 🚀 Deploy to Firebase Hosting
               uses: FirebaseExtended/action-hosting-deploy@v0

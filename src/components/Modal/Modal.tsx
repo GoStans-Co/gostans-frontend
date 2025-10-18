@@ -16,7 +16,7 @@ export type ModalProps = BaseModalProps & {
 };
 
 const ModalOverlay = styled.div.withConfig({
-    shouldForwardProp: (prop) => !['isOpen', 'zIndex'].includes(prop)
+    shouldForwardProp: (prop) => !['isOpen', 'zIndex'].includes(prop),
 })<{ isOpen: boolean; zIndex: number }>`
     position: fixed;
     top: 0;
@@ -40,7 +40,7 @@ const ModalOverlay = styled.div.withConfig({
 `;
 
 const ModalContainer = styled.div.withConfig({
-    shouldForwardProp: (prop) => !['width', 'padding'].includes(prop)
+    shouldForwardProp: (prop) => !['width', 'padding'].includes(prop),
 })<{ width: string; padding: string }>`
     position: relative;
     width: ${(props) => props.width};

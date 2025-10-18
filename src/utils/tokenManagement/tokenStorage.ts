@@ -1,5 +1,9 @@
 const TOKEN_PREFIX = 'gostans_';
 
+/**
+ * Token storage manager - Utility functions for
+ * managing tokens in local storage
+ */
 export const TokenStorage = {
     setAccessToken: (token: string) => {
         localStorage.setItem(`${TOKEN_PREFIX}accessToken`, token);

@@ -166,6 +166,11 @@ const WrappedCard = styled(Card)`
     }
 `;
 
+/**
+ * FavoritesPage - Page Component
+ * @description This component displays the user's favorite destinations.
+ * It allows users to view and remove destinations from their favorites list.
+ */
 export default function FavoritesPage() {
     const wishlist = useRecoilValue(wishlistAtom);
     const { wishlist: wishlistService } = useApiServices();

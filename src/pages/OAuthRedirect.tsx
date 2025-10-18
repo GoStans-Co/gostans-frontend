@@ -50,6 +50,8 @@ const ErrorText = styled.div`
 /**
  * OAuthRedirect - Page Component
  * @description This component handles the OAuth redirection process for user authentication.
+ * It processes the OAuth callback parameters, exchanges the authorization code for tokens,
+ * and manages user login state.
  */
 export default function OAuthRedirect() {
     const [searchParams] = useSearchParams();

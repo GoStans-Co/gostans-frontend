@@ -103,9 +103,9 @@ const EmptyText = styled.p`
 
 /**
  * My Trips - Page Component
- * @description This component displays the user's trip bookings and allows them to manage their trips.
+ * @description This component displays the user's trip bookings
+ * and allows them to manage their trips.
  * @param {TripsPageProps} props - Props for the TripsPage component
- * @returns JSX.Element
  */
 export default function MyTrips({ bookings, onTripClick }: TripsPageProps) {
     const { handlePayment, handleCancel, handleDelete, handleBookAgain } = useTripActions(bookings ?? { all: [] });

@@ -55,6 +55,12 @@ const Button = styled.button`
     }
 `;
 
+/**
+ * PaymentCancel - Page Component
+ * @description This component informs the user that the
+ * payment process has been cancelled
+ * and redirects them back to the payment page after a short delay.
+ */
 export default function PaymentCancel() {
     const navigate = useNavigate();
 

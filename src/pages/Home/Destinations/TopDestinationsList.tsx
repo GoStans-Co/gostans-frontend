@@ -334,8 +334,10 @@ const ResultsCount = styled.div`
 
 /**
  * TopDestinationsList - Page Component
- * @description This component displays a list of top travel destinations, allowing users to filter
- * by country and search by name. It fetches data from an API service and caches it for performance.
+ * @description This component displays a list
+ * of top travel destinations, allowing users to filter
+ * by country and search by name. It fetches data from
+ * an API service and caches it for performance.
  */
 export default function TopDestinationsList() {
     const [destinations, setDestinations] = useState<DestinationData[]>([]);
