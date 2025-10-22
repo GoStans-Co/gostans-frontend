@@ -252,7 +252,7 @@ export default function ManageFavorites() {
             <FavoritesContainer>
                 <PageHeader>
                     <PageTitle>Favorites</PageTitle>
-                    <PageSubtitle>Manage your payment options</PageSubtitle>
+                    <PageSubtitle>See and manage your saved favorites</PageSubtitle>
                 </PageHeader>
 
                 {wishlist.length === 0 ? (
