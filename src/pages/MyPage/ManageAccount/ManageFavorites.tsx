@@ -8,24 +8,41 @@ import { wishlistAtom } from '@/atoms/wishlist';
 import { message } from 'antd';
 import { useApiServices } from '@/services/api';
 import { Link } from 'react-router-dom';
+import Lottie from 'lottie-react';
+import loadingAnimation from '@/assets/animation/loading.json';
 
 const FavoritesContainer = styled.div`
     width: 100%;
     max-width: 100%;
-    padding: ${({ theme }) => theme.spacing.xl};
-    padding-left: ${({ theme }) => theme.spacing.xl};
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        padding: 1rem;
-        padding-left: 1rem;
+        padding: 0;
     }
+`;
+
+const PageHeader = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
 
 const PageTitle = styled.h1`
     font-size: ${({ theme }) => theme.fontSizes['2xl']};
-    color: ${({ theme }) => theme.colors.primary};
-    margin-bottom: ${({ theme }) => theme.spacing.sm};
-    text-align: left;
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: ${({ theme }) => theme.spacing.xs};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xl};
+        margin-bottom: ${({ theme }) => theme.spacing.sm};
+    }
+`;
+
+const PageSubtitle = styled.p`
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    color: ${({ theme }) => theme.colors.muted};
+    margin: 0;
 `;
 
 const FavoritesGrid = styled.div`
@@ -125,16 +142,23 @@ const EmptyState = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: ${({ theme }) => theme.spacing['3xl']};
+    padding: 7rem ${({ theme }) => theme.spacing['4xl']};
     background-color: white;
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     text-align: center;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        padding: 5rem ${({ theme }) => theme.spacing.xl};
+    }
 `;
 
 const EmptyIcon = styled.div`
     font-size: 3rem;
-    margin-bottom: ${({ theme }) => theme.spacing.lg};
     color: ${({ theme }) => theme.colors.lightText};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        margin-bottom: 0;
+    }
 `;
 
 const EmptyTitle = styled.h3`
@@ -150,7 +174,6 @@ const EmptyText = styled.p`
 `;
 
 const WrappedCard = styled(Card)`
-    background-color: ${({ theme }) => theme.colors.grayBackground};
     padding-left: 0;
     transition: all 0.3s ease-in-out;
     transform: scale(1);
@@ -159,11 +182,20 @@ const WrappedCard = styled(Card)`
         transform: scale(1.03);
     }
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
+    ${({ theme }) => theme.responsive.maxMobile} {
         padding: ${({ theme }) => theme.spacing.md};
         background-color: rgba(255, 255, 255, 0.8);
         border-radius: ${({ theme }) => theme.borderRadius.md};
     }
+`;
+
+const LoadingAnimationContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    flex-direction: column;
+    gap: 1rem;
 `;
 
 /**
@@ -171,7 +203,7 @@ const WrappedCard = styled(Card)`
  * @description This component displays the user's favorite destinations.
  * It allows users to view and remove destinations from their favorites list.
  */
-export default function FavoritesPage() {
+export default function ManageFavorites() {
     const wishlist = useRecoilValue(wishlistAtom);
     const { wishlist: wishlistService } = useApiServices();
     const setWishlist = useSetRecoilState(wishlistAtom);
@@ -204,9 +236,13 @@ export default function FavoritesPage() {
 
     if (isLoading) {
         return (
-            <FavoritesContainer>
-                <div style={{ textAlign: 'center', padding: '2rem' }}>Loading favorites...</div>
-            </FavoritesContainer>
+            <LoadingAnimationContainer>
+                <Lottie
+                    animationData={loadingAnimation}
+                    loop={true}
+                    style={{ width: 120, height: 120, marginBottom: 24 }}
+                />
+            </LoadingAnimationContainer>
         );
     }
 
@@ -214,7 +250,10 @@ export default function FavoritesPage() {
         <>
             {contextHolder}
             <FavoritesContainer>
-                <PageTitle>Favorites</PageTitle>
+                <PageHeader>
+                    <PageTitle>Favorites</PageTitle>
+                    <PageSubtitle>See and manage your saved favorites</PageSubtitle>
+                </PageHeader>
 
                 {wishlist.length === 0 ? (
                     <EmptyState>

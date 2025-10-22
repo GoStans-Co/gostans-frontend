@@ -20,18 +20,17 @@ type TripsPageProps = {
 
 const TripsContainer = styled.div`
     width: 100%;
-    max-width: 720px;
-    padding: ${({ theme }) => theme.spacing.xl};
+    max-width: 100%;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        padding: 1rem;
         max-width: 100%;
     }
 `;
 
-const PageTitle = styled.h1`
+const PageTitle = styled.h2`
     font-size: ${({ theme }) => theme.fontSizes['2xl']};
-    color: ${({ theme }) => theme.colors.primary};
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
     margin-bottom: ${({ theme }) => theme.spacing.md};
     text-align: left;
 
@@ -69,7 +68,6 @@ const EmptyState = styled.div`
 
 const EmptyIcon = styled.div`
     font-size: 3rem;
-    margin-bottom: ${({ theme }) => theme.spacing.lg};
     color: ${({ theme }) => theme.colors.lightText};
 
     ${({ theme }) => theme.responsive.maxMobile} {
@@ -102,12 +100,12 @@ const EmptyText = styled.p`
 `;
 
 /**
- * My Trips - Page Component
+ * My Tours - Page Component
  * @description This component displays the user's trip bookings
  * and allows them to manage their trips.
  * @param {TripsPageProps} props - Props for the TripsPage component
  */
-export default function MyTrips({ bookings, onTripClick }: TripsPageProps) {
+export default function ManageTours({ bookings, onTripClick }: TripsPageProps) {
     const { handlePayment, handleCancel, handleDelete, handleBookAgain } = useTripActions(bookings ?? { all: [] });
     const [activeTab, setActiveTab] = useState<TripStatus>('all');
     const [messageApi, contextHolder] = message.useMessage();
@@ -192,7 +190,7 @@ export default function MyTrips({ bookings, onTripClick }: TripsPageProps) {
         <>
             {contextHolder}
             <TripsContainer>
-                <PageTitle>My Trips</PageTitle>
+                <PageTitle>My Tours</PageTitle>
 
                 {showEmptyState ? (
                     <EmptyState>

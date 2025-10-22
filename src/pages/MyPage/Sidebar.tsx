@@ -1,52 +1,45 @@
-import { CalendarOutlined, HeartOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
-import { AlignVerticalSpaceAround, Camera } from 'lucide-react';
+import {
+    CalendarOutlined,
+    HeartOutlined,
+    UserOutlined,
+    TagsOutlined,
+    RightOutlined,
+    CreditCardOutlined,
+} from '@ant-design/icons';
 import React from 'react';
 import styled from 'styled-components';
-
-enum PageSection {
-    TRIPS = 'trips',
-    FAVORITES = 'favorites',
-    PROFILE = 'profile',
-    ORDER_HISTORY = 'order_history',
-}
+import { PageSection } from '@/types/pageSection';
+import Button from '@/components/common/Button';
 
 type SidebarProps = {
     userName: string;
-    joinDate: string;
     activePage: PageSection;
     onSectionChange: (section: PageSection) => void;
     handleLogout?: () => void;
-    profileImage?: string | null;
-    isHovering?: boolean;
-    onImageUpload?: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    onAvatarClick?: () => void;
-    onMouseEnter?: () => void;
-    onMouseLeave?: () => void;
+    email: string;
 };
 
 type SidebarItemProps = {
     active?: boolean;
     icon?: React.ReactNode;
     label: string;
-    href: string;
+    description?: string;
     onClick?: () => void;
 };
 
 const SidebarContainer = styled.div`
-    width: calc(100% - ${({ theme }) => theme.spacing.lg}*2);
-    max-width: 300px;
-    background-color: ${({ theme }) => theme.colors.background};
-    border: 1px solid ${({ theme }) => theme.colors.border};
-    border-radius: ${({ theme }) => theme.borderRadius.md};
-    padding: ${({ theme }) => theme.spacing.lg};
-    margin: ${({ theme }) => theme.spacing.lg};
+    width: calc(100% - ${({ theme }) => theme.spacing.md}*1);
+    max-width: 320px;
+    padding: ${({ theme }) => theme.spacing.sm};
+    margin: 0;
     position: sticky;
     top: 110px;
     display: flex;
     flex-direction: column;
     max-height: calc(100vh - 80px);
     overflow-y: auto;
-    box-shadow: ${({ theme }) => theme.shadows.lg};
+    gap: 1rem;
+
     z-index: 10;
     align-self: flex-start;
     backdrop-filter: blur(10px);
@@ -64,12 +57,11 @@ const SidebarContainer = styled.div`
 
 const ProfileSection = styled.div`
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: ${({ theme }) => theme.spacing.md};
-    margin-bottom: ${({ theme }) => theme.spacing.xl};
-    padding-bottom: ${({ theme }) => theme.spacing.lg};
-    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: ${({ theme }) => theme.spacing.sm};
+    margin-bottom: 4px;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         flex-direction: column;
@@ -80,113 +72,86 @@ const ProfileSection = styled.div`
     }
 `;
 
-const Avatar = styled.div<{ $hasImage?: boolean }>`
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-color: ${({ theme }) => theme.colors.lightBackground};
-    background-image: ${({ $hasImage }) => ($hasImage ? `url(${$hasImage})` : 'none')};
-    background-size: cover;
-    background-position: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-    flex-shrink: 0;
-
-    &:hover {
-        transform: scale(1.05);
-    }
-`;
-
-const AvatarOverlay = styled.div<{ show: boolean }>`
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: ${({ show }) => (show ? 1 : 0)};
-    transition: opacity 0.3s ease;
-
-    svg {
-        color: white;
-        width: 24px;
-        height: 24px;
-    }
-`;
-
-const HiddenFileInput = styled.input`
-    display: none;
-`;
-
 const ProfileInfo = styled.div`
-    text-align: left;
+    text-align: flex-start;
     flex: 1;
     min-width: 0;
+    width: 100%;
+    margin-left: 4px;
 `;
 
 const ProfileName = styled.h3`
-    font-size: ${({ theme }) => theme.fontSizes.md};
-    font-weight: 500;
+    font-size: ${({ theme }) => theme.fontSizes.xl || '20px'};
+    font-weight: 700;
     margin: 0;
     margin-bottom: ${({ theme }) => theme.spacing.xs};
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: ${({ theme }) => theme.colors.text || '#1a1a1a'};
 `;
 
-const JoinDate = styled.p`
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    color: ${({ theme }) => theme.colors.lightText};
+const ProfileEmail = styled.p`
+    font-size: ${({ theme }) => theme.fontSizes.sm || '14px'};
+    color: ${({ theme }) => theme.colors.muted || '#666'};
     margin: 0;
-`;
-
-const NavSection = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.md};
+    font-weight: 400;
 `;
 
 const NavItem = styled.button<{ $active?: boolean }>`
     display: flex;
     align-items: center;
-    padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.md};
-    text-decoration: none;
-    border-radius: ${({ theme }) => theme.borderRadius.md};
-    color: ${({ theme, $active }) => ($active ? theme.colors.primary : theme.colors.text)};
-    background-color: ${({ theme, $active }) => ($active ? theme.colors.lightBackground : 'transparent')};
-    transition: all ${({ theme }) => theme.transitions.default};
-    font-weight: ${({ $active }) => ($active ? '600' : '500')};
-    font-size: ${({ theme }) => theme.fontSizes.md};
+    justify-content: space-between;
+    padding: ${({ theme }) => theme.spacing.md};
+    border: ${({ theme, $active }) => ($active ? `1px solid ${theme.colors.primary} ` : '1px solid #e5e7eb')};
+    border-radius: 12px;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+    font-weight: 500;
+    font-size: 15px;
+    color: #1a1a1a;
     cursor: pointer;
     width: 100%;
     text-align: left;
-    border: none;
     position: relative;
     overflow: hidden;
+
+    &:hover {
+        background-color: #f5f6f7;
+    }
 `;
 
 const IconWrapper = styled.span<{ $active?: boolean }>`
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: ${({ theme }) => theme.spacing.md};
-    width: 20px;
-    height: 20px;
-    color: ${({ theme, $active }) => ($active ? theme.colors.primary : theme.colors.lightText)};
+    margin-right: ${({ theme }) => theme.spacing.lg};
+    width: 24px;
+    height: 24px;
+    color: ${({ theme, $active }) => ($active ? theme.colors.text : theme.colors.text)};
     transition: color ${({ theme }) => theme.transitions.default};
 
     svg {
-        width: 18px;
-        height: 18px;
+        width: 22px;
+        height: 22px;
     }
+`;
+
+const ItemContent = styled.div`
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+const ItemLabel = styled.span`
+    font-size: ${({ theme }) => theme.fontSizes.md};
+    font-weight: 500;
+`;
+
+const Description = styled.span`
+    font-size: ${({ theme }) => theme.fontSizes.sm || '14px'};
+    color: ${({ theme }) => theme.colors.muted || '#666'};
 `;
 
 /**
@@ -194,83 +159,71 @@ const IconWrapper = styled.span<{ $active?: boolean }>`
  * @description This component displays the sidebar navigation for the MyPage section,
  * allowing users to navigate between different sections like Profile, Trips, and Favorites.
  */
-export default function Sidebar({
-    userName,
-    joinDate,
-    activePage,
-    onSectionChange,
-    handleLogout,
-    profileImage,
-    isHovering,
-    onImageUpload,
-    onAvatarClick,
-    onMouseEnter,
-    onMouseLeave,
-}: SidebarProps) {
+export default function Sidebar({ userName, activePage, onSectionChange, handleLogout, email }: SidebarProps) {
     return (
         <SidebarContainer>
             <ProfileSection>
-                <Avatar
-                    $hasImage={!!profileImage}
-                    onMouseEnter={onMouseEnter}
-                    onMouseLeave={onMouseLeave}
-                    onClick={onAvatarClick}
-                >
-                    {!profileImage && <AlignVerticalSpaceAround />}
-                    <AvatarOverlay show={isHovering || false}>
-                        <Camera />
-                    </AvatarOverlay>
-                    <HiddenFileInput id="avatar-upload" type="file" accept="image/*" onChange={onImageUpload} />
-                </Avatar>
                 <ProfileInfo>
-                    <ProfileName>{userName}</ProfileName>
-                    <JoinDate>Since: {joinDate}</JoinDate>
+                    <ProfileName>Hi, {userName}</ProfileName>
+                    <ProfileEmail>{email ? email : 'No email found'}</ProfileEmail>
                 </ProfileInfo>
             </ProfileSection>
 
-            <NavSection>
-                <SidebarItem
-                    active={activePage === 'profile'}
-                    label="Personal Info"
-                    href="/mypage"
-                    icon={<UserOutlined />}
-                    onClick={() => onSectionChange(PageSection.PROFILE)}
-                />
-                <SidebarItem
-                    active={activePage === 'trips'}
-                    label="Trips"
-                    href="/mypage/trips"
-                    icon={<CalendarOutlined />}
-                    onClick={() => onSectionChange(PageSection.TRIPS)}
-                />
-                <SidebarItem
-                    active={activePage === 'favorites'}
-                    label="Favorites"
-                    href="/mypage/favorites"
-                    icon={<HeartOutlined />}
-                    onClick={() => onSectionChange(PageSection.FAVORITES)}
-                />
+            <SidebarItem
+                active={activePage === PageSection.PROFILE}
+                label="Profile"
+                description="Provide your personal details"
+                icon={<UserOutlined />}
+                onClick={() => onSectionChange(PageSection.PROFILE)}
+            />
+            <SidebarItem
+                active={activePage === PageSection.TRIPS}
+                label="Trips"
+                description="Manage your travel bookings"
+                icon={<CalendarOutlined />}
+                onClick={() => onSectionChange(PageSection.TRIPS)}
+            />
+            <SidebarItem
+                active={activePage === PageSection.FAVORITES}
+                label="Favorites"
+                description="See your saved trips"
+                icon={<HeartOutlined />}
+                onClick={() => onSectionChange(PageSection.FAVORITES)}
+            />
+            <SidebarItem
+                active={activePage === PageSection.PAYMENT_MANAGE}
+                label="Payment methods"
+                description="Manage your payment options"
+                icon={<CreditCardOutlined />}
+                onClick={() => onSectionChange(PageSection.PAYMENT_MANAGE)}
+            />
+            <SidebarItem
+                active={activePage === PageSection.COUPONS}
+                label="Coupons"
+                description="Check your available discounts"
+                icon={<TagsOutlined />}
+                onClick={() => onSectionChange(PageSection.COUPONS)}
+            />
 
-                <div
-                    style={{
-                        borderTop: '1px solid #e5e5e5',
-                        margin: '10px 0',
-                        color: '#888',
-                        fontSize: '0.875rem',
-                    }}
-                ></div>
-
-                <SidebarItem icon={<LogoutOutlined />} label="Logout" href="/" onClick={handleLogout} />
-            </NavSection>
+            <Button size="md" variant="text" onClick={handleLogout}>
+                {' '}
+                Log out{' '}
+            </Button>
         </SidebarContainer>
     );
 }
 
-function SidebarItem({ active, icon, label, onClick }: SidebarItemProps) {
+function SidebarItem({ active, icon, label, description, onClick }: SidebarItemProps) {
     return (
         <NavItem $active={active} onClick={onClick}>
-            <IconWrapper $active={active}>{icon}</IconWrapper>
-            {label}
+            <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                {icon && <IconWrapper $active={active}>{icon}</IconWrapper>}
+                <ItemContent>
+                    <ItemLabel>{label}</ItemLabel>
+                    {description && <Description>{description}</Description>}
+                </ItemContent>
+                <RightOutlined style={{ color: '#999' }} />
+            </div>
         </NavItem>
     );
 }

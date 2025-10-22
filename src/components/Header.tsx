@@ -18,18 +18,9 @@ import { useRecoilState } from 'recoil';
 import { cartAtom } from '@/atoms/cart';
 import { useApiServices } from '@/services/api';
 import goStansLogo from '@/assets/white.jpg';
-import {
-    CloseOutlined,
-    FireOutlined,
-    HomeOutlined,
-    MenuOutlined,
-    SearchOutlined,
-    UserOutlined,
-    CalendarOutlined,
-    HeartOutlined,
-    LoginOutlined,
-} from '@ant-design/icons';
+import { CloseOutlined, MenuOutlined, LoginOutlined } from '@ant-design/icons';
 import { Drawer, Menu } from 'antd';
+import { getMenuItems } from '@/utils/general/menuConfig';
 
 const HeaderContainer = styled.header`
     padding: 1rem 2rem;
@@ -40,7 +31,7 @@ const HeaderContainer = styled.header`
     z-index: 100;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        padding: 1.1rem 1.5rem;
+        padding: 1.1rem 0.7rem;
     }
 `;
 
@@ -642,78 +633,7 @@ export default function Header() {
                         mode="vertical"
                         selectedKeys={getMenuSelectedKeys()}
                         style={{ border: 'none', height: '100%' }}
-                        items={[
-                            {
-                                key: '/top-destinations',
-                                icon: <HomeOutlined />,
-                                label: 'Destinations',
-                                onClick: () => {
-                                    navigate('/top-destinations');
-                                    setMobileMenuOpen(false);
-                                },
-                            },
-                            {
-                                key: '/searchTrips',
-                                icon: <SearchOutlined />,
-                                label: 'Search Trips',
-                                onClick: () => {
-                                    navigate('/searchTrips');
-                                    setMobileMenuOpen(false);
-                                },
-                            },
-                            {
-                                key: '/trendingTours',
-                                icon: <FireOutlined />,
-                                label: 'Trending Tours',
-                                onClick: () => {
-                                    navigate('/trendingTours');
-                                    setMobileMenuOpen(false);
-                                },
-                            },
-                            {
-                                key: '/become-partner',
-                                icon: <UserOutlined />,
-                                label: 'Become a Partner',
-                                onClick: () => {
-                                    navigate('/become-partner');
-                                    setMobileMenuOpen(false);
-                                },
-                            },
-                            ...(isLoggedIn
-                                ? [
-                                      {
-                                          type: 'divider' as const,
-                                      },
-                                      {
-                                          key: '/mypage?section=profile',
-                                          icon: <UserOutlined />,
-                                          label: 'Personal Info',
-                                          onClick: () => {
-                                              navigate('/mypage?section=profile');
-                                              setMobileMenuOpen(false);
-                                          },
-                                      },
-                                      {
-                                          key: '/mypage?section=trips',
-                                          icon: <CalendarOutlined />,
-                                          label: 'My Trips',
-                                          onClick: () => {
-                                              navigate('/mypage?section=trips');
-                                              setMobileMenuOpen(false);
-                                          },
-                                      },
-                                      {
-                                          key: '/mypage?section=favorites',
-                                          icon: <HeartOutlined />,
-                                          label: 'Favorites',
-                                          onClick: () => {
-                                              navigate('/mypage?section=favorites');
-                                              setMobileMenuOpen(false);
-                                          },
-                                      },
-                                  ]
-                                : []),
-                        ]}
+                        items={getMenuItems(isLoggedIn, navigate, () => setMobileMenuOpen(false))}
                     />
 
                     <DrawerFooter>

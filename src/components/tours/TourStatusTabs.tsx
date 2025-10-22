@@ -51,10 +51,10 @@ const TabsContainer = styled.div`
     overflow-x: auto;
     padding: ${({ theme }) => `${theme.spacing.sm} 0 ${theme.spacing.md} 0`};
     scrollbar-width: thin;
-    scrollbar-color: ${({ theme }) => theme.colors.border} transparent;
+    scrollbar-color: ${({ theme }) => theme.colors.lightBackground} transparent;
 
     &::-webkit-scrollbar {
-        height: 4px;
+        height: 0.1px;
     }
 
     &::-webkit-scrollbar-track {
@@ -67,7 +67,7 @@ const TabsContainer = styled.div`
     }
 
     &::-webkit-scrollbar-thumb:hover {
-        background: ${({ theme }) => theme.colors.muted};
+        background: ${({ theme }) => theme.colors.lightText};
     }
 
     ${({ theme }) => theme.responsive.maxMobile} {

@@ -38,11 +38,11 @@ export default function CurrencyModal({
             isOpen={isOpen}
             onClose={onClose}
             anchorElement={anchorElement}
-            width="150px"
-            modalWidth={150}
-            modalHeight={130}
+            width="110px"
+            modalWidth={110}
+            modalHeight={190}
             gap={20}
-            alignment="left"
+            alignment="right"
         >
             {currencies.map((currency) => (
                 <MenuItem

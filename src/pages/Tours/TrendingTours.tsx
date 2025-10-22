@@ -302,6 +302,7 @@ export default function TrendingTours() {
                             key={tour.id}
                         >
                             <TourCard
+                                variant="button"
                                 buttonText="See Details"
                                 id={tour.id}
                                 title={tour.title}
@@ -310,7 +311,6 @@ export default function TrendingTours() {
                                 mainImage={tour.mainImage ? tour.mainImage : defaultImage}
                                 country={tour.country}
                                 isLiked={tour.isLiked}
-                                variant="button"
                                 tourType={{ id: tour.tourType?.id || 0, name: tour.tourType?.name || 'General' }}
                                 currency={tour.currency}
                             />

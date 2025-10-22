@@ -1,9 +1,6 @@
 import styled from 'styled-components';
 import Sidebar from '@/pages/MyPage/Sidebar';
-import ProfileContent from '@/pages/MyPage/ProfileContent';
 import { useCallback, useEffect, useState } from 'react';
-import FavoritesPage from '@/pages/MyPage/MyFavorites';
-import TripsPage from '@/pages/MyPage/MyTrip';
 import { useSearchParams } from 'react-router-dom';
 import useCookieAuth from '@/services/cache/cookieAuthService';
 import { ModalAlert } from '@/components/ModalPopup';
@@ -13,13 +10,13 @@ import { createDefaultUserData, type UserData } from '@/services/api/user/types'
 import { BookingDetail } from '@/services/api/checkout';
 import OrderHistory from '@/pages/MyPage/Order/OrderHistory';
 import { useUserProfileQuery } from '@/hooks/queries/userProfileQuery';
-
-enum PageSection {
-    TRIPS = 'trips',
-    FAVORITES = 'favorites',
-    PROFILE = 'profile',
-    ORDER_HISTORY = 'order_history',
-}
+import ManageAccountDetails from '@/pages/MyPage/ManageAccount/ManageAccountDetails';
+import ManageFavorites from '@/pages/MyPage/ManageAccount/ManageFavorites';
+import ManageTours from '@/pages/MyPage/ManageAccount/ManageTours';
+import ManagePayments from '@/pages/MyPage/ManageAccount/ManagePayments';
+import ManageCoupons from '@/pages/MyPage/ManageAccount/ManageCoupons';
+import { getSectionFromParam } from '@/utils/general/getSectionFromPage';
+import { PageSection } from '@/types/pageSection';
 
 const PageContainer = styled.div`
     display: flex;
@@ -37,7 +34,6 @@ const SidebarContainer = styled.aside`
     width: 340px;
     min-width: 340px;
     flex-shrink: 0;
-    border-right: 1px solid #e5e5e5;
     background: white;
     position: relative;
     overflow: visible;
@@ -52,12 +48,21 @@ const SidebarContainer = styled.aside`
 
 const ContentContainer = styled.main`
     flex: 1;
-    background-color: #f0f3f5;
     overflow-y: auto;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid ${({ theme }) => theme.colors.border || '#E5E5E5'};
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    padding: ${({ theme }) => theme.spacing.lg};
     padding-bottom: ${({ theme }) => theme.spacing['2xl']};
+    margin: ${({ theme }) => theme.spacing['2xl']} ${({ theme }) => theme.spacing['2xl']}
+        ${({ theme }) => theme.spacing.xl} 0;
 
     ${({ theme }) => theme.responsive.maxMobile} {
+        padding: ${({ theme }) => theme.spacing.md};
         padding-bottom: ${({ theme }) => theme.spacing.xl};
+        margin: 0 0 ${({ theme }) => theme.spacing.md} 0;
+        border: none;
     }
 `;
 
@@ -66,9 +71,8 @@ const ContentContainer = styled.main`
  * @description Main component for the user account page, managing sections
  * and state and rendering the appropriate content
  * @param {React.PropsWithChildren} props - Component props
- * @returns {JSX.Element}
  */
-export default function MyPage() {
+export default function MyPageRoot() {
     const { removeAuthCookie } = useCookieAuth();
     const { auth: authService, user: userService } = useApiServices();
     const { data: profileData, isLoading: profileLoading } = useUserProfileQuery();
@@ -77,14 +81,8 @@ export default function MyPage() {
 
     const [messageApi, contextHolder] = message.useMessage();
 
-    const [activeSection, setActiveSection] = useState<PageSection>(() => {
-        if (sectionParam === 'trips') return PageSection.TRIPS;
-        if (sectionParam === 'favorites') return PageSection.FAVORITES;
-        return PageSection.PROFILE;
-    });
+    const [activeSection, setActiveSection] = useState<PageSection>(() => getSectionFromParam(sectionParam));
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-    const [isHovering, setIsHovering] = useState(false);
-    const [profileImage, setProfileImage] = useState<string | null>(null);
     const [userData, setUserData] = useState<UserData>(createDefaultUserData());
     const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
     const [bookingDetail, setBookingDetail] = useState<BookingDetail | null>(null);
@@ -92,9 +90,7 @@ export default function MyPage() {
     const [bookingError, setBookingError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (sectionParam === 'trips') setActiveSection(PageSection.TRIPS);
-        else if (sectionParam === 'favorites') setActiveSection(PageSection.FAVORITES);
-        else setActiveSection(PageSection.PROFILE);
+        setActiveSection(getSectionFromParam(sectionParam));
     }, [sectionParam]);
 
     useEffect(() => {
@@ -102,7 +98,6 @@ export default function MyPage() {
         if (profile) {
             const transformedData = transformUserResponse(profile);
             setUserData(transformedData);
-            setProfileImage(transformedData.image || null);
         } else if (!profileLoading) {
             handleUserDataError();
         }
@@ -167,7 +162,6 @@ export default function MyPage() {
             duration: 3,
         });
         setUserData(createDefaultUserData());
-        setProfileImage(null);
     };
 
     const handleSectionChange = (section: PageSection) => {
@@ -190,50 +184,6 @@ export default function MyPage() {
         }
     }, [authService, removeAuthCookie]);
 
-    const validateImageFile = (file: File): string | null => {
-        const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (!validTypes.includes(file.type)) {
-            return 'Invalid file type. Please upload a JPEG, PNG, or GIF image.';
-        }
-        if (file.size > 1 * 1024 * 1024) {
-            return 'File size exceeds 1MB limit.';
-        }
-        return null;
-    };
-
-    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const validationError = validateImageFile(file);
-        if (validationError) {
-            messageApi.error({
-                content: validationError,
-                duration: 3,
-            });
-            return;
-        }
-
-        try {
-            const response = await userService.uploadProfileImage(file);
-
-            if (response.success) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    setProfileImage(e.target?.result as string);
-                };
-                reader.readAsDataURL(file);
-            }
-        } catch (error) {
-            console.info('Image upload failed:', error);
-            messageApi.error({
-                content: 'Image upload failed. Please try again.',
-                duration: 3,
-            });
-            setProfileImage(null);
-        }
-    };
-
     const showLogoutConfirmation = () => {
         setIsLogoutModalOpen(true);
     };
@@ -254,18 +204,18 @@ export default function MyPage() {
 
         switch (activeSection) {
             case PageSection.PROFILE:
-                return <ProfileContent userData={userData} />;
+                return <ManageAccountDetails userData={userData} />;
             case PageSection.FAVORITES:
-                return <FavoritesPage />;
+                return <ManageFavorites />;
             case PageSection.TRIPS:
-                return <TripsPage bookings={userData.bookings} onTripClick={handleTripClick} />;
+                return <ManageTours bookings={userData.bookings} onTripClick={handleTripClick} />;
+            case PageSection.PAYMENT_MANAGE:
+                return <ManagePayments />;
+            case PageSection.COUPONS:
+                return <ManageCoupons />;
             default:
-                return <ProfileContent userData={userData} />;
+                return <ManageAccountDetails userData={userData} />;
         }
-    };
-
-    const handleAvatarClick = () => {
-        document.getElementById('avatar-upload')?.click();
     };
 
     return (
@@ -275,16 +225,10 @@ export default function MyPage() {
                 <SidebarContainer>
                     <Sidebar
                         userName={userData.name}
-                        joinDate={userData.dateJoined}
+                        email={userData.email}
                         activePage={activeSection}
                         onSectionChange={handleSectionChange}
                         handleLogout={showLogoutConfirmation}
-                        profileImage={profileImage}
-                        isHovering={isHovering}
-                        onImageUpload={handleImageUpload}
-                        onAvatarClick={handleAvatarClick}
-                        onMouseEnter={() => setIsHovering(true)}
-                        onMouseLeave={() => setIsHovering(false)}
                     />
                 </SidebarContainer>
                 <ContentContainer>{renderContent()}</ContentContainer>

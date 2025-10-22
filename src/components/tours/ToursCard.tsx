@@ -94,7 +94,7 @@ const Title = styled.h3`
     ${({ theme }) => theme.responsive.maxMobile} {
         font-size: ${({ theme }) => theme.fontSizes.sm};
         line-height: 1.2;
-        min-height: 2.4em;
+        min-height: 1.2em;
         -webkit-line-clamp: 2;
     }
 
@@ -144,8 +144,7 @@ const PriceRow = styled.div`
     }
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
         gap: ${({ theme }) => theme.spacing.sm};
 
         > :last-child {

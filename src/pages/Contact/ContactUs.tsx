@@ -257,14 +257,7 @@ export default function ContactUs() {
                             required
                         />
                     </FormGroup>
-                    <Button
-                        type="submit"
-                        size="lg"
-                        variant="secondary"
-                        disabled={loading}
-                        startIcon={<Send size={18} />}
-                        style={{ width: '100%' }}
-                    >
+                    <Button type="submit" size="lg" variant="secondary" disabled={loading} style={{ width: '100%' }}>
                         {loading ? 'Sending...' : 'Send Message'}
                     </Button>
                 </ContactForm>
