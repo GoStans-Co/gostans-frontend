@@ -1,4 +1,4 @@
-import { PageSection } from '@/pages/MyPage';
+import { PageSection } from '@/types/pageSection';
 
 /**
  * Maps a section parameter string to the

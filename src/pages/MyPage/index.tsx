@@ -16,14 +16,7 @@ import ManageTours from '@/pages/MyPage/ManageAccount/ManageTours';
 import ManagePayments from '@/pages/MyPage/ManageAccount/ManagePayments';
 import ManageCoupons from '@/pages/MyPage/ManageAccount/ManageCoupons';
 import { getSectionFromParam } from '@/utils/general/getSectionFromPage';
-
-export enum PageSection {
-    TRIPS = 'trips',
-    FAVORITES = 'favorites',
-    PROFILE = 'profile',
-    PAYMENT_MANAGE = 'paymentMethods',
-    COUPONS = 'coupons',
-}
+import { PageSection } from '@/types/pageSection';
 
 const PageContainer = styled.div`
     display: flex;

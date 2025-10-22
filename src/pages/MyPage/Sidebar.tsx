@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons';
 import React from 'react';
 import styled from 'styled-components';
-import { PageSection } from '.';
+import { PageSection } from '@/types/pageSection';
 import Button from '@/components/common/Button';
 
 type SidebarProps = {
