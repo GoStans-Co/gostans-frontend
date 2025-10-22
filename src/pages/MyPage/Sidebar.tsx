@@ -2,21 +2,14 @@ import {
     CalendarOutlined,
     HeartOutlined,
     UserOutlined,
-    WalletOutlined,
     TagsOutlined,
     RightOutlined,
+    CreditCardOutlined,
 } from '@ant-design/icons';
 import React from 'react';
 import styled from 'styled-components';
-
-enum PageSection {
-    TRIPS = 'trips',
-    FAVORITES = 'favorites',
-    PROFILE = 'profile',
-    ORDER_HISTORY = 'order_history',
-    PAYMENT_METHODS = 'payment_methods',
-    COUPONS = 'coupons',
-}
+import { PageSection } from '.';
+import Button from '@/components/common/Button';
 
 type SidebarProps = {
     userName: string;
@@ -110,11 +103,11 @@ const NavItem = styled.button<{ $active?: boolean }>`
     align-items: center;
     justify-content: space-between;
     padding: ${({ theme }) => theme.spacing.md};
-    border: 1px solid #e5e7eb;
+    border: ${({ theme, $active }) => ($active ? `1px solid ${theme.colors.primary} ` : '1px solid #e5e7eb')};
     border-radius: 12px;
-    background-color: ${({ theme, $active }) => ($active ? theme.colors.lightBackground : 'transparent')};
+    background-color: transparent;
     transition: background-color 0.2s ease;
-    font-weight: ${({ $active }) => ($active ? '600' : '500')};
+    font-weight: 500;
     font-size: 15px;
     color: #1a1a1a;
     cursor: pointer;
@@ -177,42 +170,45 @@ export default function Sidebar({ userName, activePage, onSectionChange, handleL
             </ProfileSection>
 
             <SidebarItem
-                active={activePage === 'profile'}
+                active={activePage === PageSection.PROFILE}
                 label="Profile"
                 description="Provide your personal details"
                 icon={<UserOutlined />}
                 onClick={() => onSectionChange(PageSection.PROFILE)}
             />
             <SidebarItem
-                active={activePage === 'trips'}
+                active={activePage === PageSection.TRIPS}
                 label="Trips"
                 description="Manage your travel bookings"
                 icon={<CalendarOutlined />}
                 onClick={() => onSectionChange(PageSection.TRIPS)}
             />
             <SidebarItem
-                active={activePage === 'favorites'}
+                active={activePage === PageSection.FAVORITES}
                 label="Favorites"
                 description="See your saved trips"
                 icon={<HeartOutlined />}
                 onClick={() => onSectionChange(PageSection.FAVORITES)}
             />
             <SidebarItem
-                active={activePage === 'payment_methods'}
+                active={activePage === PageSection.PAYMENT_MANAGE}
                 label="Payment methods"
                 description="Manage your payment options"
-                icon={<WalletOutlined />}
-                onClick={() => onSectionChange(PageSection.PAYMENT_METHODS)}
+                icon={<CreditCardOutlined />}
+                onClick={() => onSectionChange(PageSection.PAYMENT_MANAGE)}
             />
             <SidebarItem
-                active={activePage === 'coupons'}
+                active={activePage === PageSection.COUPONS}
                 label="Coupons"
                 description="Check your available discounts"
                 icon={<TagsOutlined />}
                 onClick={() => onSectionChange(PageSection.COUPONS)}
             />
 
-            <SidebarItem label="Log out | Sign out" onClick={handleLogout} />
+            <Button size="md" variant="text" onClick={handleLogout}>
+                {' '}
+                Log out{' '}
+            </Button>
         </SidebarContainer>
     );
 }
