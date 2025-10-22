@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { message } from 'antd';
-import { Send, Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin } from 'lucide-react';
 import Input from '@/components/common/Input';
 import Button from '@/components/common/Button';
 
