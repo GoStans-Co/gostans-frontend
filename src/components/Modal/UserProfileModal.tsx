@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { theme } from '@/styles/theme';
-import { User, BookOpen, Heart, LogOut } from 'lucide-react';
+import { User, Heart, LogOut, Luggage } from 'lucide-react';
 import useCookieAuth from '@/services/cache/cookieAuthService';
 import { ModalOverlay } from '@/components/common/DropdownElemStyles';
 import { useApiServices } from '@/services/api';
@@ -13,6 +13,19 @@ type UserProfileModalProps = {
     onLogout?: () => void;
 };
 
+const ModalHeader = styled.div`
+    padding: 0.8rem ${theme.spacing.md};
+    border-bottom: 1px solid ${theme.colors.border};
+`;
+
+const ModalTitle = styled.h3`
+    font-size: ${theme.fontSizes.md};
+    font-weight: ${theme.typography.fontWeight.medium};
+    color: ${theme.colors.text};
+    margin-left: 3px;
+    text-align: left;
+`;
+
 const UserDropdownModal = styled.div<{
     position: { top: number; left: number };
 }>`
@@ -20,7 +33,7 @@ const UserDropdownModal = styled.div<{
     top: ${({ position }) => position.top}px;
     left: ${({ position }) => position.left}px;
     background: ${theme.colors.background};
-    border-radius: ${theme.borderRadius.lg};
+    border-radius: ${theme.borderRadius.md};
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     border: 1px solid ${theme.colors.border};
     width: 200px;
@@ -30,12 +43,9 @@ const UserDropdownModal = styled.div<{
     z-index: 1001;
 
     ${({ theme }) => theme.responsive.maxMobile} {
-        top: ${({ position }) => position.top}px !important;
-        left: ${({ position }) => position.left}px !important;
-        transform: none !important;
-        width: 220px !important;
-        min-width: 220px;
-        max-width: 220px;
+        width: 190px !important;
+        min-width: 190px;
+        max-width: 190px;
     }
 `;
 
@@ -44,12 +54,12 @@ const MenuItemButton = styled.button<{ isLogout?: boolean }>`
     display: flex;
     align-items: center;
     gap: ${theme.spacing.md};
-    padding: ${theme.spacing.md} ${theme.spacing.lg};
+    padding: 0.6rem ${theme.spacing.md};
     background: none;
     border: none;
     color: ${({ isLogout }) => (isLogout ? '#d32f2f' : theme.colors.text)};
     font-family: ${theme.typography.fontFamily.body};
-    font-size: ${theme.fontSizes.md};
+    font-size: 0.9rem;
     font-weight: ${theme.typography.fontWeight.medium};
     cursor: pointer;
     transition: ${theme.transitions.default};
@@ -78,7 +88,8 @@ const MenuItemButton = styled.button<{ isLogout?: boolean }>`
     svg {
         width: 18px;
         height: 18px;
-        color: ${({ isLogout }) => (isLogout ? '#d32f2f' : theme.colors.lightText)};
+        margi
+        color: ${({ isLogout }) => (isLogout ? '#d32f2f' : theme.colors.text)};
         flex-shrink: 0;
     }
 `;
@@ -189,12 +200,15 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
     return (
         <ModalOverlay isOpen={isOpen} onClick={onClose}>
             <UserDropdownModal ref={modalRef} position={position} onClick={(e) => e.stopPropagation()}>
+                <ModalHeader>
+                    <ModalTitle>My Account</ModalTitle>
+                </ModalHeader>
                 <MenuItemButton onClick={handlePersonalInfo}>
                     <User />
-                    Personal Info
+                    Profile
                 </MenuItemButton>
                 <MenuItemButton onClick={handleTrips}>
-                    <BookOpen />
+                    <Luggage />
                     Trips
                 </MenuItemButton>
                 <MenuItemButton onClick={handleFavorites}>

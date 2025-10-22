@@ -21,7 +21,7 @@ export const DropdownModal = styled.div<{
     top: ${({ position }) => position.top}px;
     left: ${({ position }) => position.left}px;
     background: ${theme.colors.background};
-    border-radius: ${theme.borderRadius.lg};
+    border-radius: ${theme.borderRadius.md};
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     border: 1px solid ${theme.colors.border};
     width: ${({ width }) => width || '200px'};
@@ -96,9 +96,9 @@ export const DropdownModal = styled.div<{
 `;
 
 export const ModalHeader = styled.div`
-    padding: ${theme.spacing.md};
+    padding: ${theme.spacing.sm};
     background: ${theme.colors.lightBackground};
-    border-radius: ${theme.borderRadius.lg} ${theme.borderRadius.lg} 0 0;
+    border-radius: ${theme.borderRadius.md} ${theme.borderRadius.md} 0 0;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: ${theme.spacing.md};
@@ -109,7 +109,7 @@ export const ModalHeader = styled.div`
 export const ModalTitle = styled.h3`
     margin: 0;
     font-family: ${theme.typography.fontFamily.body};
-    font-size: ${theme.fontSizes.md};
+    font-size: ${theme.fontSizes.sm};
     font-weight: ${theme.typography.fontWeight.bold};
     color: ${theme.colors.text};
 
@@ -128,7 +128,7 @@ export const MenuItem = styled.button<{ isSelected?: boolean; isActive?: boolean
     display: flex;
     align-items: center;
     gap: ${theme.spacing.sm};
-    padding: ${theme.spacing.sm} ${theme.spacing.md};
+    padding: ${theme.spacing.sm} ${theme.spacing.sm};
     background: ${({ isSelected }) => (isSelected ? theme.colors.lightBackground : 'none')};
     border: none;
     color: ${({ isActive }) => (isActive ? theme.colors.primary : theme.colors.text)};

@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import Button from '@/components/common/Button';
 import { formatCurrency } from '@/utils/general/formatCurrency';
 import { TripCardProps } from '@/components/Card/type';
+import { theme } from '@/styles/theme';
 
 const CardContainer = styled.div<{ variant?: 'default' | 'compact' }>`
     display: flex;
@@ -304,7 +305,12 @@ export default function TripCard(props: TripCardProps) {
                     </Button>
                 )}
                 {onRemove && (
-                    <Button variant="light" size="mini" onClick={onRemove} style={{ color: 'red' }}>
+                    <Button
+                        variant="light"
+                        size="mini"
+                        onClick={onRemove}
+                        style={{ color: theme.colors.gradientStart }}
+                    >
                         Remove
                     </Button>
                 )}

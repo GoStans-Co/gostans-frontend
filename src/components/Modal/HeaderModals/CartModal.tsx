@@ -20,8 +20,8 @@ type CartModalProps = {
 const CartItemContainer = styled.div`
     display: flex;
     align-items: flex-start;
-    gap: ${theme.spacing.md};
-    padding: ${theme.spacing.md} ${theme.spacing.lg};
+    gap: ${theme.spacing.sm};
+    padding: ${theme.spacing.sm} ${theme.spacing.sm};
     border-bottom: 1px solid #f0f0f0;
 
     ${({ theme }) => theme.responsive.maxMobile} {
@@ -30,8 +30,8 @@ const CartItemContainer = styled.div`
     }
 
     ${({ theme }) => theme.responsive.minTablet} {
-        padding: ${theme.spacing.md};
-        gap: ${theme.spacing.sm};
+        padding: 0.8rem;
+        gap: 0.6rem;
     }
 
     &:last-child {
@@ -44,8 +44,8 @@ const CartItemImage = styled.div.attrs<{ src?: string }>((props) => ({
         backgroundImage: props.src ? `url(${props.src})` : 'none',
     },
 }))`
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     border-radius: ${theme.borderRadius.md};
     background: #f5f5f5;
     background-size: cover;
@@ -58,8 +58,8 @@ const CartItemImage = styled.div.attrs<{ src?: string }>((props) => ({
     }
 
     ${({ theme }) => theme.responsive.minTablet} {
-        width: 55px;
-        height: 55px;
+        width: 60px;
+        height: 60px;
     }
 `;
 
@@ -124,8 +124,7 @@ const RemoveButton = styled.button`
 
 const ShowMoreSection = styled.div`
     text-align: center;
-    padding: 6px 0;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 0;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: 4px 0;
@@ -133,16 +132,15 @@ const ShowMoreSection = styled.div`
 `;
 
 const CartFooter = styled.div`
-    padding: ${theme.spacing.md};
-    border-top: 1px solid #f0f0f0;
-    background: #fafafa;
+    padding: 0.8rem;
+    background: transparent;
 
     ${({ theme }) => theme.responsive.maxMobile} {
         padding: ${theme.spacing.md};
     }
 
     ${({ theme }) => theme.responsive.minTablet} {
-        padding: ${theme.spacing.md};
+        padding: 0.8rem;
     }
 `;
 
@@ -162,7 +160,7 @@ const CartTotal = styled.div`
 `;
 
 const EmptyCartMessage = styled.div`
-    padding: ${theme.spacing.xl};
+    padding: ${theme.spacing['2xl']};
     text-align: center;
     color: #999;
     font-size: ${theme.fontSizes.sm};
@@ -230,7 +228,7 @@ export default function CartModal({
         >
             <ModalHeader>
                 <ModalTitle>
-                    <ShoppingCart size={18} style={{ marginRight: theme.spacing.sm }} />
+                    <ShoppingCart size={14} style={{ marginRight: theme.spacing.sm }} />
                     Your Cart ({totalItems} {totalItems === 1 ? 'item' : 'items'})
                 </ModalTitle>
             </ModalHeader>
@@ -238,7 +236,7 @@ export default function CartModal({
                 <EmptyCartMessage>Your cart is empty</EmptyCartMessage>
             ) : (
                 <>
-                    {cartItems.slice(0, 1).map((item) => (
+                    {cartItems.slice(0, 3).map((item) => (
                         <CartItemContainer key={item.tourId}>
                             <CartItemImage src={item.tourData?.mainImage ?? ''} />
                             <CartItemDetails>
@@ -251,7 +249,7 @@ export default function CartModal({
                         </CartItemContainer>
                     ))}
 
-                    {cartItems.length > 1 && (
+                    {cartItems.length > 3 && (
                         <ShowMoreSection>
                             <Button
                                 variant="text"
@@ -259,7 +257,7 @@ export default function CartModal({
                                 onClick={handleGoToCart}
                                 style={{ fontSize: '14px', color: theme.colors.primary }}
                             >
-                                Show More ({cartItems.length - 1} more items)
+                                Show More ({cartItems.length - 3} more items)
                             </Button>
                         </ShowMoreSection>
                     )}

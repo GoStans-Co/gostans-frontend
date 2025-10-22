@@ -275,7 +275,7 @@ export default function MyPage() {
                 <SidebarContainer>
                     <Sidebar
                         userName={userData.name}
-                        joinDate={userData.dateJoined}
+                        email={userData.email}
                         activePage={activeSection}
                         onSectionChange={handleSectionChange}
                         handleLogout={showLogoutConfirmation}
