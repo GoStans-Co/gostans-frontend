@@ -31,7 +31,7 @@ const Container = styled.div<{ variant?: string }>`
     ${({ theme }) => theme.responsive.maxMobile} {
         gap: ${({ theme }) => theme.spacing.sm};
         justify-content: flex-start;
-        margin-bottom: 2rem;
+        margin-bottom: 0.4rem;
     }
 
     &::-webkit-scrollbar {

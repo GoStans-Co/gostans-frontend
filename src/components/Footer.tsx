@@ -1,7 +1,8 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import goStansLogo from '@/assets/white.jpg';
+import { Mail, MapPin, Phone } from 'lucide-react';
 
 const FooterContainer = styled.footer`
     background-color: white;
@@ -45,13 +46,23 @@ const FooterDescription = styled.p`
     line-height: 1.6;
     opacity: 0.8;
     text-align: left;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+    }
 `;
 
 const FooterHeading = styled.h3`
-    font-size: ${({ theme }) => theme.fontSizes.lg};
+    font-size: ${({ theme }) => theme.fontSizes.md};
     margin-bottom: 1.5rem;
     font-weight: 600;
     text-align: left;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+        margin-bottom: 1rem;
+    }
 `;
 
 const FooterNavList = styled.ul`
@@ -61,12 +72,17 @@ const FooterNavList = styled.ul`
 `;
 
 const FooterNavItem = styled.li`
+    font-size: ${({ theme }) => theme.fontSizes.sm};
     opacity: 0.8;
     transition: opacity 0.3s ease;
     text-align: left;
 
     &:hover {
         opacity: 1;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
     }
 `;
 
@@ -81,12 +97,31 @@ const ContactItem = styled.div`
 const ContactText = styled.div`
     text-align: left;
     flex: 1;
-    font-size: 1rem;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+    align-self: center;
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+    }
 `;
 
 const ContactIcon = styled.span`
-    font-size: 1.25rem;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
     margin-top: 0.25rem;
+    color: black;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+        width: 1.3em;
+        height: 1.3em;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.sm};
+    }
 `;
 
 const SocialLinks = styled.div`
@@ -98,8 +133,8 @@ const SocialLinks = styled.div`
 const SocialLink = styled.a`
     background-color: rgba(255, 255, 255, 0.1);
     color: transparent;
-    height: 40px;
-    width: 40px;
+    height: 36px;
+    width: 36px;
     border-radius: 50%;
     border: 1px solid ${({ theme }) => theme.colors.border};
     display: flex;
@@ -108,7 +143,12 @@ const SocialLink = styled.a`
     transition: background-color 0.3s ease;
 
     &:hover {
-        background-color: ${({ theme }) => theme.colors.accent};
+        background-color: ${({ theme }) => theme.colors.grayBackground};
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        height: 32px;
+        width: 32px;
     }
 `;
 
@@ -130,6 +170,11 @@ const BottomBar = styled.div`
 
 const Copyright = styled.p`
     opacity: 0.8;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
+    }
 `;
 
 const BottomLinks = styled.div`
@@ -145,18 +190,24 @@ const BottomLinks = styled.div`
 const BottomLink = styled.a`
     opacity: 0.8;
     transition: opacity 0.3s ease;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
 
     &:hover {
         opacity: 1;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
     }
 `;
 
 const ContactValue = styled.a`
     color: #000;
     text-decoration: none;
-    font-size: 1rem;
+    font-size: ${({ theme }) => theme.fontSizes.sm};
     opacity: 0.8;
     transition: opacity 0.3s ease;
+    align-self: center;
 
     &:hover {
         opacity: 70%;
@@ -165,6 +216,10 @@ const ContactValue = styled.a`
         text-decoration-thickness: 1px;
         color: ${({ theme }) => theme.colors.primary};
         highlight: none;
+    }
+
+    ${({ theme }) => theme.responsive.maxMobile} {
+        font-size: ${({ theme }) => theme.fontSizes.xs};
     }
 `;
 
@@ -251,13 +306,13 @@ export default function Footer() {
                     <FooterHeading>Contact Us</FooterHeading>
                     <ContactItem>
                         <ContactIcon>
-                            <FaMapMarkerAlt />
+                            <MapPin />
                         </ContactIcon>
                         <ContactText>Afrosiyob 9, Bukhara, Uzbekistan</ContactText>
                     </ContactItem>
                     <ContactItem>
                         <ContactIcon>
-                            <FaPhone />
+                            <Phone />
                         </ContactIcon>
                         <ContactValue href="tel:+998775035747" target="_blank" rel="noopener noreferrer">
                             +998-77-503-57-47
@@ -265,7 +320,7 @@ export default function Footer() {
                     </ContactItem>
                     <ContactItem>
                         <ContactIcon>
-                            <FaEnvelope />
+                            <Mail />
                         </ContactIcon>
                         <ContactValue href="mailto:info@gostans.com" target="_blank" rel="noopener noreferrer">
                             info@gostans.com

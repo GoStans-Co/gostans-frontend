@@ -36,10 +36,10 @@ const UserDropdownModal = styled.div<{
     border-radius: ${theme.borderRadius.md};
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     border: 1px solid ${theme.colors.border};
-    width: 200px;
-    min-width: 200px;
-    max-width: 200px;
-    overflow: visible;
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+    overflow: hidden;
     z-index: 1001;
 
     ${({ theme }) => theme.responsive.maxMobile} {
@@ -54,7 +54,7 @@ const MenuItemButton = styled.button<{ isLogout?: boolean }>`
     display: flex;
     align-items: center;
     gap: ${theme.spacing.md};
-    padding: 0.6rem ${theme.spacing.md};
+    padding: 0.8rem ${theme.spacing.md};
     background: none;
     border: none;
     color: ${({ isLogout }) => (isLogout ? '#d32f2f' : theme.colors.text)};
@@ -62,23 +62,34 @@ const MenuItemButton = styled.button<{ isLogout?: boolean }>`
     font-size: 0.9rem;
     font-weight: ${theme.typography.fontWeight.medium};
     cursor: pointer;
-    transition: ${theme.transitions.default};
+    // transition: ${theme.transitions.default};
     text-align: left;
 
     &:hover:not(:disabled) {
-        background-color: ${({ isLogout }) => (isLogout ? '' : theme.colors.lightBackground)};
+        position: relative;
+
+        &::before {
+          content: '';
+           position: absolute;
+           top: 4px;
+           bottom: 4px;
+           left: 4px;
+           right: 4px;
+           background-color: ${({ isLogout }) => (isLogout ? 'rgba(211, 47, 47, 0.08)' : 'rgba(0, 123, 255, 0.08)')};
+           border-radius: 5px;
+           z-index: -1;
+       }
 
         ${({ isLogout }) =>
             isLogout &&
             `
             color: #d32f2f;
-            background-color: rgba(211, 47, 47, 0.1);
-            
             svg {
                 color: #d32f2f;
             }
         `}
     }
+
 
     &:disabled {
         opacity: 0.6;
@@ -111,8 +122,8 @@ export default function UserProfileModal({ isOpen, onClose, anchorElement, onLog
     useEffect(() => {
         if (isOpen && anchorElement) {
             const rect = anchorElement.getBoundingClientRect();
-            const modalWidth = window.innerWidth <= 767 ? 220 : 200;
-            const modalHeight = 200;
+            const modalWidth = window.innerWidth <= 767 ? 220 : 220;
+            const modalHeight = 220;
 
             let top = rect.bottom + 8;
             let left = rect.right - modalWidth;

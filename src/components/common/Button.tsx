@@ -100,7 +100,7 @@ const StyledButton = styled.button.withConfig({
                 return css`
                     background-color: transparent;
                     color: ${theme.colors.primary};
-                    border: 1px solid ${theme.colors.primary};
+                    border: 1px solid ${theme.colors.border};
 
                     &:hover:not(:disabled) {
                         background-color: ${theme.colors.primary};
@@ -115,8 +115,8 @@ const StyledButton = styled.button.withConfig({
                     padding-right: 0;
 
                     &:hover:not(:disabled) {
-                        color: ${theme.colors.secondary};
-                        text-decoration: underline;
+                        color: ${theme.colors.muted};
+                        text-decoration: none;
                     }
                 `;
             case 'light':
