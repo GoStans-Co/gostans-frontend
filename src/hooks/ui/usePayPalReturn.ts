@@ -19,9 +19,9 @@ export const usePayPalReturn = () => {
         }
     }, [searchParams, navigate]);
 
-    const handlePayPalReturn = async (paymentId: string, PayerID: string) => {
+    const handlePayPalReturn = async (paymentId: string, payer_id: string) => {
         try {
-            const response = await checkout.executePayment({ paymentId, PayerID });
+            const response = await checkout.executePayment({ paymentId, payer_id });
 
             if (response.statusCode === 200) {
                 navigate('/cart/checkout/confirmation?success=true');

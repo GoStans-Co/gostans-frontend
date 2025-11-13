@@ -539,14 +539,14 @@ export default function CartPage() {
         }
     };
 
-    const handlePaymentReturn = async (paymentId: string, PayerID: string) => {
+    const handlePaymentReturn = async (paymentId: string, payer_id: string) => {
         try {
             setIsProcessing(true);
             setError('');
 
             const calculatedTotal = calculateTotal();
 
-            const executeResponse = await checkout.executePayment({ paymentId, PayerID });
+            const executeResponse = await checkout.executePayment({ paymentId, payer_id });
 
             if (executeResponse.statusCode === 200) {
                 const paymentDetails: PaymentDetails = {
@@ -556,7 +556,7 @@ export default function CartPage() {
                     currency: 'USD',
                     status: executeResponse.data.status as PaymentStatus,
                     paymentMethod: 'paypal',
-                    payerId: PayerID,
+                    payerId: payer_id,
                     transactionId: executeResponse.data.id,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),

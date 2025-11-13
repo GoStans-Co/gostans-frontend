@@ -113,7 +113,7 @@ export default function PaymentReturn() {
         }
     }, [searchParams, navigate]);
 
-    const handlePaymentExecution = async (paymentId: string, PayerID: string) => {
+    const handlePaymentExecution = async (paymentId: string, payer_id: string) => {
         if (hasExecuted.current) {
             console.info('Payment execution already in progress or completed');
             return;
@@ -124,7 +124,7 @@ export default function PaymentReturn() {
         try {
             setMessage('Confirming your payment with PayPal...');
 
-            const response = await checkout.executePayment({ paymentId, PayerID });
+            const response = await checkout.executePayment({ paymentId, payer_id });
 
             if (response.statusCode === 200) {
                 setStatus('success');
