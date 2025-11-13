@@ -87,7 +87,7 @@ export const useCheckoutService = () => {
             executePayment: async (
                 executeData: PaymentExecuteRequest,
             ): Promise<ApiResponse<PaymentExecuteResponse>> => {
-                const requestKey = `execute-${executeData.paymentId}-${executeData.PayerID}`;
+                const requestKey = `execute-${executeData.paymentId}-${executeData.payer_id}`;
 
                 const existingPromise = activeRequests.current.get(requestKey);
                 if (existingPromise) {
@@ -102,7 +102,7 @@ export const useCheckoutService = () => {
                         method: 'POST',
                         data: {
                             paymentId: executeData.paymentId,
-                            PayerID: executeData.PayerID,
+                            payer_id: executeData.payer_id,
                         },
                         headers: {
                             Authorization: `Bearer ${accessToken}`,

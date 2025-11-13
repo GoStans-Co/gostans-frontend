@@ -164,7 +164,7 @@ export type CardPaymentResponse = {
 
 export type PaymentExecuteRequest = {
     paymentId: string;
-    PayerID: string;
+    payer_id: string;
 };
 
 export type PaymentExecuteResponse = {
