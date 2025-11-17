@@ -1,15 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Button from '@/components/common/Button';
 import masterCard from '@/assets/cards/mastercard.svg';
 import visaCard from '@/assets/cards/visa.svg';
 import paypalIcon from '@/assets/cards/paypal.svg';
-import GuestForm from '@/components/Payment/GuestForm';
 import { StripePaymentResponse } from '@/services/api/checkout/types';
-import stripePromise from '@/services/stripe';
-import { Elements } from '@stripe/react-stripe-js';
-import StripeCardForm, { BillingInfo, StripeCardFormRef } from '@/components/Payment/StripeCardForm';
-import { useNavigate } from 'react-router-dom';
 
 type ApiResponse<T> = {
     data: T;
@@ -248,22 +243,22 @@ const LoadingMessage = styled.div`
     color: ${({ theme }) => theme.colors.secondary};
 `;
 
-const ErrorMessage = styled.div`
-    background-color: #fee;
-    border: 1px solid #fcc;
-    color: #c33;
-    padding: ${({ theme }) => theme.spacing.sm};
-    border-radius: ${({ theme }) => theme.borderRadius.md};
-    margin-bottom: ${({ theme }) => theme.spacing.lg};
-    font-family: ${({ theme }) => theme.typography.fontFamily.body};
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+// const ErrorMessage = styled.div`
+//     background-color: #fee;
+//     border: 1px solid #fcc;
+//     color: #c33;
+//     padding: ${({ theme }) => theme.spacing.sm};
+//     border-radius: ${({ theme }) => theme.borderRadius.md};
+//     margin-bottom: ${({ theme }) => theme.spacing.lg};
+//     font-family: ${({ theme }) => theme.typography.fontFamily.body};
+//     font-size: ${({ theme }) => theme.fontSizes.sm};
 
-    ${({ theme }) => theme.responsive.mobile} {
-        padding: ${({ theme }) => theme.spacing.md};
-        font-size: ${({ theme }) => theme.fontSizes.xs};
-        text-align: center;
-    }
-`;
+//     ${({ theme }) => theme.responsive.mobile} {
+//         padding: ${({ theme }) => theme.spacing.md};
+//         font-size: ${({ theme }) => theme.fontSizes.xs};
+//         text-align: center;
+//     }
+// `;
 
 const SuccessMessage = styled.div`
     background-color: #efe;
@@ -308,17 +303,17 @@ const PayNowButtonWrapper = styled.div`
     }
 `;
 
-const SecuritySection = styled.div`
-    margin-top: ${({ theme }) => theme.spacing.lg};
-    text-align: center;
-`;
+// const SecuritySection = styled.div`
+//     margin-top: ${({ theme }) => theme.spacing.lg};
+//     text-align: center;
+// `;
 
-const SecurityText = styled.p`
-    font-size: ${({ theme }) => theme.fontSizes.sm};
-    color: ${({ theme }) => theme.colors.lightText};
-    margin-bottom: ${({ theme }) => theme.spacing.md};
-    text-align: left;
-`;
+// const SecurityText = styled.p`
+//     font-size: ${({ theme }) => theme.fontSizes.sm};
+//     color: ${({ theme }) => theme.colors.lightText};
+//     margin-bottom: ${({ theme }) => theme.spacing.md};
+//     text-align: left;
+// `;
 
 const CardIconsContainer = styled.div`
     display: flex;
@@ -340,43 +335,34 @@ const CardIconsContainer = styled.div`
     }
 `;
 
-const InfoMessage = styled.div`
-    background-color: #eef;
-    border: 1px solid #ccf;
-    color: #33c;
-    padding: ${({ theme }) => theme.spacing.sm};
-    border-radius: ${({ theme }) => theme.borderRadius.md};
-    margin-bottom: ${({ theme }) => theme.spacing.lg};
-    font-family: ${({ theme }) => theme.typography.fontFamily.body};
-    font-size: ${({ theme }) => theme.fontSizes.sm};
+// const InfoMessage = styled.div`
+//     background-color: #eef;
+//     border: 1px solid #ccf;
+//     color: #33c;
+//     padding: ${({ theme }) => theme.spacing.sm};
+//     border-radius: ${({ theme }) => theme.borderRadius.md};
+//     margin-bottom: ${({ theme }) => theme.spacing.lg};
+//     font-family: ${({ theme }) => theme.typography.fontFamily.body};
+//     font-size: ${({ theme }) => theme.fontSizes.sm};
 
-    ${({ theme }) => theme.responsive.mobile} {
-        padding: ${({ theme }) => theme.spacing.md};
-        font-size: ${({ theme }) => theme.fontSizes.xs};
-        text-align: left;
-    }
-`;
+//     ${({ theme }) => theme.responsive.mobile} {
+//         padding: ${({ theme }) => theme.spacing.md};
+//         font-size: ${({ theme }) => theme.fontSizes.xs};
+//         text-align: left;
+//     }
+// `;
 
 export default function PaymentStepUI({
     isProcessing,
-    error,
     paymentCreated,
     onPayPalClick,
-    onCardClick,
     onBack,
 }: PaymentStepUIProps) {
-    const navigate = useNavigate();
     const [selectedMethod, setSelectedMethod] = useState<'paypal' | 'card' | null>(null);
     const [timeLeft, setTimeLeft] = useState(30 * 60);
     const [showSuccessTimer, setShowSuccessTimer] = useState(0);
     const [isPaymentInitializing, setIsPaymentInitializing] = useState(false);
-    const [guestFormValidation, setGuestFormValidation] = useState<(() => boolean) | null>(null);
-    const [validationError, setValidationError] = useState<string>('');
-    const [guestFormData, setGuestFormData] = useState<{ billingInfo: BillingInfo }>();
-    const [isBillingValid, setIsBillingValid] = useState(false);
-    const [clientSecret, setClientSecret] = useState<string>('');
-    const [isCardReady, setIsCardReady] = useState(false);
-    const stripeCardFormRef = useRef<StripeCardFormRef>(null);
+    // const stripeCardFormRef = useRef<StripeCardFormRef>(null);
 
     useEffect(() => {
         if (timeLeft <= 0) return;
@@ -397,12 +383,6 @@ export default function PaymentStepUI({
         }
     }, [showSuccessTimer]);
 
-    useEffect(() => {
-        if (validationError && guestFormValidation?.()) {
-            setValidationError('');
-        }
-    }, [guestFormValidation]);
-
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = seconds % 60;
@@ -411,17 +391,16 @@ export default function PaymentStepUI({
 
     const handlePaymentSelect = async (method: 'paypal' | 'card') => {
         try {
-            setValidationError('');
+            // Temporarily disabled - billing validation removed
+            // if (!isBillingValid || !guestFormData?.billingInfo) {
+            //     setValidationError('Please complete all billing information first');
+            //     return;
+            // }
 
-            if (!isBillingValid || !guestFormData?.billingInfo) {
-                setValidationError('Please complete all billing information first');
-                return;
-            }
-
-            if (guestFormValidation && !guestFormValidation()) {
-                setValidationError('Please correct all billing information errors');
-                return;
-            }
+            // if (guestFormValidation && !guestFormValidation()) {
+            //     setValidationError('Please correct all billing information errors');
+            //     return;
+            // }
 
             setSelectedMethod(method);
 
@@ -430,61 +409,41 @@ export default function PaymentStepUI({
                 await onPayPalClick();
                 setIsPaymentInitializing(false);
                 setShowSuccessTimer(10);
-            } else if (method === 'card' && !clientSecret) {
-                if (!guestFormData?.billingInfo) {
-                    setValidationError('Please complete billing information first');
-                    return;
-                }
-
-                setIsPaymentInitializing(true);
-                const response = await onCardClick();
-
-                if (response?.data?.clientSecret) {
-                    setClientSecret(response.data.clientSecret);
-                } else {
-                    setValidationError('Failed to initialize payment. Please try again.');
-                }
-                setIsPaymentInitializing(false);
             }
+            // Temporarily disabled - card payment option disabled
+            // else if (method === 'card') {
+            //     if (!guestFormData?.billingInfo) {
+            //         setValidationError('Please complete billing information first');
+            //         return;
+            // }
+
+            //     setIsPaymentInitializing(true);
+            //     const response = await onCardClick();
+
+            //     if (response?.data?.clientSecret) {
+            //         setClientSecret(response.data.clientSecret);
+            //     } else {
+            //         setValidationError('Failed to initialize payment. Please try again.');
+            //     }
+            //     setIsPaymentInitializing(false);
+            // }
         } catch (error) {
             setIsPaymentInitializing(false);
-            setValidationError('An error occurred. Please try again.');
-            console.info('Payment selection error:', error);
         }
     };
 
-    const handleStripeSuccess = (paymentIntent: any) => {
-        navigate(`/cart/checkout/confirmation?payment_intent=${paymentIntent.id}`);
-    };
-
-    const handleLeadGuestSubmit = (guestData: any) => {
-        setGuestFormData(guestData);
-
-        const { billingInfo } = guestData;
-        const isComplete = !!(
-            billingInfo.firstName &&
-            billingInfo.lastName &&
-            billingInfo.email &&
-            billingInfo.phone &&
-            billingInfo.address &&
-            billingInfo.city &&
-            billingInfo.state &&
-            billingInfo.postalCode &&
-            billingInfo.country
-        );
-
-        setIsBillingValid(isComplete);
-    };
-    const handleGuestFormValidationReady = useCallback((validateFn: () => boolean, fieldsComplete: boolean) => {
-        setGuestFormValidation(() => validateFn);
-        setIsBillingValid(fieldsComplete);
-    }, []);
+    // const handleStripeSuccess = (paymentIntent: any) => {
+    //     navigate(`/cart/checkout/confirmation?payment_intent=${paymentIntent.id}`);
+    // };
 
     const isUrgent = timeLeft < 5 * 60;
 
     return (
         <PaymentContainer>
-            <GuestForm onSubmit={handleLeadGuestSubmit} onValidationReady={handleGuestFormValidationReady} />
+            {/* Temporarily disabled - guest form hidden */}
+            <div style={{ display: 'none' }}>
+                {/* <GuestForm onSubmit={handleLeadGuestSubmit} onValidationReady={handleGuestFormValidationReady} /> */}
+            </div>
             <HeaderContainer>
                 <SectionTitle>Select a Payment Method</SectionTitle>
                 <TimerContainer>
@@ -492,13 +451,14 @@ export default function PaymentStepUI({
                     <TimerValue $isUrgent={isUrgent}>{formatTime(timeLeft)}</TimerValue>
                 </TimerContainer>
             </HeaderContainer>
-            {!isBillingValid && (
+            {/* Temporarily disabled - billing validation message removed */}
+            {/* {!isBillingValid && (
                 <InfoMessage style={{ marginBottom: '1rem', color: '#666' }}>
                     Please complete all billing information fields before selecting a payment method
                 </InfoMessage>
-            )}
+            )} */}
 
-            {(error || validationError) && <ErrorMessage>{error || validationError}</ErrorMessage>}
+            {/* {(error || validationError) && <ErrorMessage>{error || validationError}</ErrorMessage>} */}
             {showSuccessTimer > 0 && <SuccessMessage>Payment initialized successfully</SuccessMessage>}
 
             {isProcessing && (
@@ -510,7 +470,7 @@ export default function PaymentStepUI({
                     <PaymentOption
                         variant="paypal"
                         onClick={() => handlePaymentSelect('paypal')}
-                        disabled={isProcessing || isPaymentInitializing || !isBillingValid}
+                        disabled={isProcessing || isPaymentInitializing} // Temporarily removed isBillingValid check
                     >
                         <PaymentOptionContent>
                             <PaymentRadio selected={selectedMethod === 'paypal'} />
@@ -521,17 +481,21 @@ export default function PaymentStepUI({
                         </PaymentIcon>
                     </PaymentOption>
 
-                    <PaymentOption
-                        variant="card"
-                        selected={selectedMethod === 'card'}
-                        onClick={() => handlePaymentSelect('card')}
-                        disabled={isProcessing || isPaymentInitializing || !isBillingValid}
-                        style={{
-                            flexDirection: 'column',
-                            alignItems: 'stretch',
-                            padding: selectedMethod === 'card' ? '0' : undefined,
-                        }}
-                    >
+                    {/* Temporarily disabled - card payment option hidden */}
+                    <div style={{ display: 'none' }}>
+                        <PaymentOption
+                            variant="card"
+                            selected={selectedMethod === 'card'}
+                            onClick={() => handlePaymentSelect('card')}
+                            disabled={true}
+                            style={{
+                                flexDirection: 'column',
+                                alignItems: 'stretch',
+                                padding: selectedMethod === 'card' ? '0' : undefined,
+                                opacity: 0.5,
+                                cursor: 'not-allowed',
+                            }}
+                        >
                         <div
                             style={{
                                 padding: selectedMethod === 'card' ? '1.5rem' : '0',
@@ -551,13 +515,13 @@ export default function PaymentStepUI({
                                 </CardIconsContainer>
                             </PaymentIcon>
                         </div>
-                        {selectedMethod === 'card' && (
+                        {/* {selectedMethod === 'card' && (
                             <div style={{ padding: '2rem', borderTop: '1px solid #e5e5e5' }}>
-                                {!clientSecret ? (
+                                {false ? (
                                     <div style={{ textAlign: 'center', padding: '2rem' }}>
                                         <p>Initializing secure payment...</p>
                                     </div>
-                                ) : guestFormData?.billingInfo ? (
+                                ) : false ? (
                                     <Elements stripe={stripePromise}>
                                         <StripeCardForm
                                             ref={stripeCardFormRef}
@@ -580,8 +544,9 @@ export default function PaymentStepUI({
                                     </SecurityText>
                                 </SecuritySection>
                             </div>
-                        )}
-                    </PaymentOption>
+                        )} */}
+                        </PaymentOption>    
+                    </div>
                 </PaymentButtonsContainer>
             )}
 
@@ -593,12 +558,17 @@ export default function PaymentStepUI({
                     <PayNowButtonWrapper>
                         <Button
                             variant="primary"
-                            onClick={() => {
+                            onClick={async () => {
                                 if (paymentCreated?.approvalUrl) {
                                     window.location.href = paymentCreated.approvalUrl;
+                                } else if (!paymentCreated && !isPaymentInitializing) {
+                                    // Initialize payment if not already created
+                                    setIsPaymentInitializing(true);
+                                    await onPayPalClick();
+                                    setIsPaymentInitializing(false);
                                 }
                             }}
-                            disabled={isProcessing || !selectedMethod || isPaymentInitializing || !paymentCreated}
+                            disabled={isProcessing || isPaymentInitializing}
                             fullWidth
                             size="lg"
                             style={{
@@ -614,7 +584,7 @@ export default function PaymentStepUI({
                         </Button>
                     </PayNowButtonWrapper>
                 )}
-                {selectedMethod === 'card' && clientSecret && isCardReady && (
+                {/* {selectedMethod === 'card' &&  isCardReady && (
                     <PayNowButtonWrapper>
                         <Button
                             variant="primary"
@@ -624,7 +594,8 @@ export default function PaymentStepUI({
                                 }
                             }}
                             disabled={
-                                isProcessing || stripeCardFormRef.current?.isProcessing || !isCardReady || !clientSecret
+                                isProcessing || stripeCardFormRef.current?.isProcessing || !isCardReady || 
+                                false
                             }
                             fullWidth
                             size="lg"
@@ -640,7 +611,7 @@ export default function PaymentStepUI({
                             {stripeCardFormRef.current?.isProcessing ? 'Processing...' : '🔒 Pay Now'}
                         </Button>
                     </PayNowButtonWrapper>
-                )}
+                )} */}
             </ButtonsContainer>
         </PaymentContainer>
     );
