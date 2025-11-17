@@ -3,6 +3,9 @@ import { Itinerary, TourDetailsResponse } from '@/services/api/tours';
 import default_n1 from '@/assets/default/default_1.jpg';
 import default_n2 from '@/assets/default/default_2.jpg';
 
+export type StarType = 'full' | 'half' | 'empty';
+
+
 /**
  * Create a cart item from tour details
  * @param {TourDetailsResponse} tour - Tour details from API response
@@ -98,4 +101,80 @@ export const getLocationInfo = (itineraries: Itinerary[]) => {
         endLocation,
         isLoop: startLocation === endLocation,
     };
+};
+
+/**
+ * Generates a consistent random number 
+ * between min and max based on a seed string.
+ * The same seed will always produce the 
+ * same number, ensuring consistency per tour.
+ */
+export const getSeededRandom = (seed: string, min: number, max: number): number => {
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+        const char = seed.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash = hash & hash; 
+    }
+    const normalized = Math.abs(hash) / 2147483647; // Normalize to 0-1
+    return Math.floor(normalized * (max - min + 1)) + min;
+};
+
+/**
+ * Gets the number of people booked for a tour (Temporary method)
+ * @param {string} tourUuid - The tour UUID to use as seed
+ * @returns {number} Number of people booked
+ */
+export const getPeopleBooked = (tourUuid: string): number => {
+    if (!tourUuid) return 0;
+    return getSeededRandom(tourUuid, 1, 50);
+};
+
+/**
+ * Gets the number of reviews for a tour (Temporary method)
+ * @param {string} tourUuid - The tour UUID to use as seed
+ * @returns {number} Number of reviews
+ */
+export const getReviewsCount = (tourUuid: string): number => {
+    if (!tourUuid) return 0;
+    return getSeededRandom(tourUuid + '_reviews', 1, 5);
+};
+
+/**
+ * Gets the rating value for a tour (random between 1-5, consistent per tour)
+ * @param {string} tourUuid - The tour UUID to use as seed
+ * @returns {number} Rating value (1-5)
+ */
+export const getRating = (tourUuid: string): number => {
+    if (!tourUuid) return 0;
+
+    const integerPart = getSeededRandom(tourUuid + '_rating_int', 3, 4);
+    const decimalPart = getSeededRandom(tourUuid + '_rating_dec', 0, 9);
+
+    let rating = parseFloat(`${integerPart}.${decimalPart}`);
+
+    return rating;
+};
+
+/**
+ * Gets star configuration array based on rating value
+ * @param {number} rating - Rating value (0-5)
+ * @returns {StarType[]} Array of 5 star types
+ */
+export const getStarConfig = (rating: number): StarType[] => {
+    const stars: StarType[] = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < 5; i++) {
+        if (i < fullStars) {
+            stars.push('full');
+        } else if (i === fullStars && hasHalfStar) {
+            stars.push('half');
+        } else {
+            stars.push('empty');
+        }
+    }
+
+    return stars;
 };

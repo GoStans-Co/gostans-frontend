@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import styled from 'styled-components';
 import type { Dayjs } from 'dayjs';
 import { FaStar, FaMapMarkerAlt, FaHeart } from 'react-icons/fa';
@@ -18,9 +18,9 @@ import { useApiServices } from '@/services/api';
 import useTrendingTours from '@/hooks/api/useTrendingTours';
 import Lottie from 'lottie-react';
 import loadingAnimation from '@/assets/animation/loading.json';
-import SearchPackageContent from './SearchPackageContent';
-import SearchPackageDetailSidebar from './SearchPackageSidebar';
-import { createCartItem, processImages } from '@/utils/general/tourDetailsHelper';
+import SearchPackageContent from '@/pages/SearchPackage/SearchPackageContent';
+import SearchPackageDetailSidebar from '@/pages/SearchPackage/SearchPackageSidebar';
+import { createCartItem, processImages, getPeopleBooked, getReviewsCount } from '@/utils/general/tourDetailsHelper';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -435,6 +435,16 @@ export default function SearchPackageDetails() {
     const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
     const images = tour ? processImages(tour) : [];
 
+    const peopleBooked = useMemo(() => {
+        if (!tour?.uuid) return 0;
+        return getPeopleBooked(tour.uuid);
+    }, [tour?.uuid]);
+
+    const reviewsCount = useMemo(() => {
+        if (!tour?.uuid) return 0;
+        return getReviewsCount(tour.uuid);
+    }, [tour?.uuid]);
+
     /* fetch tour details defined */
     useEffect(() => {
         if (!id) {
@@ -710,13 +720,13 @@ export default function SearchPackageDetails() {
 
                     <TitleSection>
                         <Title>{tour.title}</Title>
-                        <IconButton
-                            onClick={handleWishlistToggle}
-                            disabled={isProcessing(tour?.uuid)}
+                            <IconButton
+                                onClick={handleWishlistToggle}
+                                disabled={isProcessing(tour?.uuid)}
                             style={{ color: getHeartColor(tour?.uuid, tour) }}
-                        >
-                            <FaHeart />
-                        </IconButton>
+                            >
+                                <FaHeart />
+                            </IconButton>
                         <ActionButtons>
                             <CopyLink
                                 url={typeof window !== 'undefined' ? window.location.href : ''}
@@ -732,10 +742,10 @@ export default function SearchPackageDetails() {
                             {[...Array(5)].map((_, i) => (
                                 <FaStar key={i} color="#ffc107" size={14} />
                             ))}
-                            <span>(25 reviews)</span>
+                            <span>({reviewsCount} reviews)</span>
                         </Rating>
                         <span>•</span>
-                        <span>{tour.groupSize}+ people booked</span>
+                        <span>{peopleBooked}+ people booked</span>
                         <span>•</span>
                         <span>
                             <FaMapMarkerAlt /> {tour.country}, {tour.city}

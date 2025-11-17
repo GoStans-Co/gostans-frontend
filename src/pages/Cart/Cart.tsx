@@ -16,6 +16,7 @@ import { useValidation } from '@/hooks/utils/useValidation';
 import { useApiServices } from '@/services/api';
 import { BookingFormData, CartItem, PaymentDetails } from '@/services/api/cart';
 import { CardPaymentResponse, Participant, PaymentStatus } from '@/services/api/checkout';
+import useCookieAuthService from '@/services/cache/cookieAuthService';
 
 type CheckoutStep = 'cart' | 'checkout' | 'payment' | 'confirmation';
 
@@ -424,6 +425,10 @@ const ValidationError = styled.div`
 export default function CartPage() {
     const navigate = useNavigate();
     const location = useLocation();
+    const {
+        cart: { removeFromCart },
+    } = useApiServices();
+    const {isAuthenticated} = useCookieAuthService();
 
     const getCurrentStep = (): CheckoutStep => {
         const path = location.pathname;
@@ -717,8 +722,17 @@ export default function CartPage() {
         setCurrentMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + direction, 1));
     };
 
-    const removeItem = (tourId: string) => {
-        setCartItems((prev) => prev.filter((item) => item.tourId !== tourId));
+    const handleRemoveItem = async (tourId: string) => {
+        if (isAuthenticated()) {
+            try {
+                await removeFromCart(tourId);
+                setCartItems((items) => items.filter((item) => item.tourId !== tourId));
+            } catch (error) {
+                console.error('Failed to remove item from cart:', error);
+            }
+        } else {
+            setCartItems((items) => items.filter((item) => item.tourId !== tourId));
+        }
     };
 
     const handleCheckout = () => {
@@ -950,7 +964,7 @@ export default function CartPage() {
                                         price={parseFloat(item.tourData.price)}
                                         quantity={item.quantity}
                                         showQuantity={true}
-                                        onRemove={() => removeItem(item.tourId)}
+                                        onRemove={() => handleRemoveItem(item.tourId)}
                                     />
                                     <TestButton
                                         $active={isFamilyPackage}

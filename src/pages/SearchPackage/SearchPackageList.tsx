@@ -26,6 +26,7 @@ import bannerImage from '@/assets/banner1.png';
 import Lottie from 'lottie-react';
 import loadingAnimation from '@/assets/animation/loading.json';
 import { formatCurrency } from '@/utils/general/formatCurrency';
+import { getPeopleBooked, getReviewsCount, getRating, getStarConfig } from '@/utils/general/tourDetailsHelper';
 
 const PageContainer = styled.div`
     min-height: 100vh;
@@ -512,6 +513,51 @@ const LoadingAnimationContainer = styled.div`
     flex-direction: column;
     gap: 1rem;
 `;
+
+/**
+ * Helper component to render stars based on star configuration
+ */
+const RatingStarsDisplay = ({ starConfig }: { starConfig: Array<'full' | 'half' | 'empty'> }) => {
+    return (
+        <>
+            {starConfig.map((type, i) => {
+                if (type === 'full') {
+                    return <FaStar key={i} size={12} color="#ffc107" />;
+                } else if (type === 'half') {
+                    return (
+                        <span
+                            key={i}
+                            style={{
+                                position: 'relative',
+                                display: 'inline-block',
+                                width: '12px',
+                                height: '12px',
+                                lineHeight: 0,
+                            }}
+                        >
+                            <FaStar size={12} color="#e0e0e0" style={{ position: 'absolute', top: 0, left: 0 }} />
+                            <span
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '6px',
+                                    height: '12px',
+                                    overflow: 'hidden',
+                                    display: 'inline-block',
+                                }}
+                            >
+                                <FaStar size={12} color="#ffc107" style={{ position: 'absolute', top: 0, left: 0 }} />
+                            </span>
+                        </span>
+                    );
+                } else {
+                    return <FaStar key={i} size={12} color="#e0e0e0" />;
+                }
+            })}
+        </>
+    );
+};
 
 /**
  * SearchPackageList - Page Component
@@ -1034,15 +1080,21 @@ export default function SearchPackageList() {
 
                                                     <TourMeta>
                                                         <MetaLeft>
-                                                            <BookedInfo>10K+ people booked</BookedInfo>
+                                                            <BookedInfo>{getPeopleBooked(tour.uuid)}+ people booked</BookedInfo>
                                                             <Rating>
-                                                                <RatingValue>4.5</RatingValue>
-                                                                <RatingStars>
-                                                                    {Array.from({ length: 5 }, (_, i) => (
-                                                                        <FaStar key={i} size={12} color="#ffc107" />
-                                                                    ))}
-                                                                </RatingStars>
-                                                                <span>(50 reviews)</span>
+                                                                {(() => {
+                                                                    const rating = getRating(tour.uuid);
+                                                                    const starConfig = getStarConfig(rating);
+                                                                    return (
+                                                                        <>
+                                                                            <RatingValue>{rating.toFixed(1)}</RatingValue>
+                                                                            <RatingStars>
+                                                                                <RatingStarsDisplay starConfig={starConfig} />
+                                                                            </RatingStars>
+                                                                            <span>({getReviewsCount(tour.uuid)} reviews)</span>
+                                                                        </>
+                                                                    );
+                                                                })()}
                                                             </Rating>
                                                         </MetaLeft>
                                                         <Button
